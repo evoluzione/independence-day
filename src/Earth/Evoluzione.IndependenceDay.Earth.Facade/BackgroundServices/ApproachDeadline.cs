@@ -13,7 +13,7 @@ public class ApproachSettings
     /// <summary>Quanto tempo ha la difesa per abbattere una nave prima che tocchi terra.</summary>
     public int ApproachSeconds { get; set; } = Invasion.ApproachSeconds;
 
-    public int TickMs { get; set; } = 500;
+    public int TickMs { get; set; } = 100;
 
     /// <summary>Dopo quanto si torna a dichiarare scaduto il tempo a una nave ancora aperta.</summary>
     public int RetryMs { get; set; } = 2000;

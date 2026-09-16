@@ -13,7 +13,7 @@ public class InvasionSettings
     public int LaunchIntervalMs { get; set; } = 1000;
 
     /// <summary>Ogni quanto il generatore si guarda intorno.</summary>
-    public int TickMs { get; set; } = 500;
+    public int TickMs { get; set; } = 100;
 }
 
 /// <summary>
