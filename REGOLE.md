@@ -7,12 +7,12 @@ lì, è di quella città, e cade con lei.
 
 | | |
 | --- | --- |
-| Colpi in dotazione | **100 per città**, 500 in tutto |
-| Ricarica | un colpo ogni **400 ms** |
+| Colpi in dotazione | **110 per città**, 550 in tutto |
+| Ricarica | un colpo ogni **250 ms** |
 | Bersagli | **uno alla volta**: un cannone spara a una nave sola |
 | Raggio | tutte le città sparano a **tutte** le navi, non solo a quella sopra di loro |
 
-Le munizioni **non si ricaricano mai** — né fra un'ondata e l'altra, né durante. I 500 colpi sono
+Le munizioni **non si ricaricano mai** — né fra un'ondata e l'altra, né durante. I 550 colpi sono
 tutti quelli che ci sono da qui alla fine della campagna.
 
 **Quale cannone spari non lo decidi tu.** Chiedi di aprire il fuoco su una nave, e la Terra sceglie:
@@ -21,12 +21,16 @@ prende quello libero con più colpi. È lei a sapere chi è impegnato, chi è ro
 ## Il fuoco continuato
 
 Un ordine di apertura non è un colpo: **accende** un cannone. Da quel momento spara da solo, ogni
-400 ms, finché non gli si dice di smettere.
+250 ms, finché non gli si dice di smettere.
 
 **Non si ferma quando la nave cade.** Continua a sparare su un relitto, e ogni colpo è perso due
 volte: la munizione, e il cannone che non c'è quando arriva la nave dopo.
 
 Fermarlo è un ordine a parte — `CeaseFire` — e va **confermato**. Anche lui può perdersi.
+
+**Un colpo su tre manca il bersaglio.** La munizione se ne va e la nave regge. Non c'è niente da
+fare e non te lo dice nessuno: il fuoco è aperto, quindi il cannone ricarica e riprova da solo. Il
+prezzo vero non è la munizione, è che quel cannone resta occupato più a lungo.
 
 ## Le navi
 
@@ -50,8 +54,8 @@ Non difendersi non è un'opzione con un costo: è la sconfitta alla prima ondata
 
 Dalla presa in carico di una nave hai **8 secondi**. Poi tocca terra.
 
-Otto secondi sono venti colpi: **un cannone solo basta** anche per una corazzata, e non serve
-mandarne due. Quello che scarseggia non è il tempo, sono i cannoni — e un cannone impegnato su una
+Otto secondi sono trentadue grilletti, e una corazzata ne chiede nove fra colpi a segno e colpi a
+vuoto: **un cannone solo basta**, e non serve mandarne due. Quello che scarseggia non è il tempo, sono i cannoni — e un cannone impegnato su una
 nave già caduta è un cannone che non c'è.
 
 ## I tre guasti
@@ -72,15 +76,18 @@ un evento. Quelli che si perdono non ci arrivano proprio.
 
 Due ordini di fila non si perdono mai: riprovare basta sempre, e non può avvitarsi.
 
-### 2. L'inceppamento — ogni nove colpi
+### 2. L'inceppamento — ogni venti colpi
 
-Al nono grilletto un cannone si inceppa. Il colpo non parte, non consuma munizioni, e il cannone si
-ferma — lasciando la nave che stava affrontando **senza nessuno addosso**.
+Al ventesimo grilletto un cannone si inceppa: il colpo non parte, non consuma munizioni, e il
+cannone si ferma — lasciando la nave che stava affrontando **senza nessuno addosso**.
+
+Il conto è sui grilletti premuti, non sui colpi a segno: valgono anche quelli che hanno mancato il
+bersaglio e quelli sparati contro un relitto.
 
 Non si sblocca da solo. Se nessuno manda `RepairCannon` è perso per il resto della campagna. La
 riparazione costa **3 colpi** e **non riapre il fuoco**: rimette il cannone disponibile, fermo.
 
-### 3. Il colpo nel vuoto
+### 3. Il colpo su un relitto
 
 Un cannone lasciato acceso su una nave che non c'è più spara comunque. Non è un guasto della Terra:
 è un cessate il fuoco che non è arrivato.
@@ -115,11 +122,13 @@ arriva dopo trova i cannoni già impegnati.
 | 9 | 13 | 1 | 8 | 4 | 49 | 203 |
 | 10 | 14 | 0 | 9 | 5 | 57 | **260** |
 
-260 colpi a bersaglio contro 500 in dotazione. Il margine sembra ampio, e non lo è: gli
-inceppamenti se ne mangiano un centinaio fra colpi mancati e riparazioni, e ogni colpo sparato nel
-vuoto è tolto da lì. **La soluzione di riferimento arriva al livello 10 con centocinquanta colpi e
-cinque città in piedi, senza lasciar passare nemmeno una nave.** Una che non chiude i cannoni muore
-al sesto, con quattro colpi su cinque sparati contro relitti.
+I colpi in tabella sono quelli **a segno**. Con un colpo su tre mancati, quelli da sparare sono la
+metà in più: circa 390 su tutta la campagna.
+
+390 colpi da sparare contro 550 in dotazione, meno quelli che se ne vanno nelle riparazioni. **La
+soluzione di riferimento arriva al livello 10 con un centinaio di colpi e cinque città in piedi,
+senza lasciar passare nemmeno una nave.** Una che non chiude i cannoni muore al quarto, con nove
+colpi su dieci sparati contro relitti.
 
 Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. Al decimo livello le corazzate
 partono insieme e se li prendono tutti, e chi arriva dopo aspetta. Un cannone lasciato acceso su un

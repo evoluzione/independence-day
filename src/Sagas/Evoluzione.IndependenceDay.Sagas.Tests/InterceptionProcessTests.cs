@@ -105,7 +105,7 @@ public class InterceptionProcessTests
     /// </summary>
     /// <remarks>
     /// E' il punto in cui si sbaglia senza vedere un errore: chiudere qui sembra corretto, e lascia
-    /// un cannone a sparare nel vuoto per il resto della campagna.
+    /// un cannone a sparare su relitti per il resto della campagna.
     /// </remarks>
     [Fact]
     public void Il_processo_non_chiude_finche_il_cannone_non_e_tornato()

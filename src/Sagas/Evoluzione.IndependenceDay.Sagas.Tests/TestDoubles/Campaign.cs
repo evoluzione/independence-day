@@ -23,6 +23,7 @@ public sealed record CampaignResult(
     int ShipsDestroyed,
     int ShipsLanded,
     int RoundsSpent,
+    int RoundsMissed,
     int RoundsWasted,
     int RoundsLeft,
     int Jams,
@@ -33,7 +34,8 @@ public sealed record CampaignResult(
 
     public override string ToString() =>
         $"livello {LevelReached}, {CitiesStanding} citta' in piedi, {ShipsDestroyed} abbattute, " +
-        $"{ShipsLanded} atterrate, {RoundsSpent} colpi ({RoundsWasted} nel vuoto), {RoundsLeft} rimasti, " +
+        $"{ShipsLanded} atterrate, {RoundsSpent} colpi ({RoundsMissed} mancati, {RoundsWasted} su relitti), " +
+        $"{RoundsLeft} rimasti, " +
         $"{Jams} inceppamenti, {OrdersLost} ordini persi, {OpenCannons} cannoni lasciati accesi";
 }
 
@@ -56,7 +58,7 @@ public sealed class Campaign
 {
     private const int TickMs = 100;
     private const int HeartbeatMs = 500;
-    private const int LaunchIntervalMs = 1000;
+    private const int LaunchIntervalMs = 1300;
 
     private static readonly Account Who = new("test", "Campaign");
     private static readonly EarthId Earth = new(Cities.DefenseId);
@@ -73,6 +75,7 @@ public sealed class Campaign
 
     private int _orders;
     private int _spent;
+    private int _missed;
     private int _wasted;
     private int _jams;
     private int _lost;
@@ -98,7 +101,7 @@ public sealed class Campaign
                 break;
         }
 
-        return new CampaignResult(level, Standing().Count, _destroyed, _landed, _spent, _wasted,
+        return new CampaignResult(level, Standing().Count, _destroyed, _landed, _spent, _missed, _wasted,
             _earth.Cannons.Values.Where(c => c.Status != CannonStatus.Lost).Sum(c => c.Rounds),
             _jams, _lost,
             _earth.Cannons.Values.Count(c => c.Status == CannonStatus.Firing));
@@ -258,6 +261,7 @@ public sealed class Campaign
         switch (@event)
         {
             case EarthShotFired: _spent++; break;
+            case EarthShotMissed: _spent++; _missed++; break;
             case EarthShotWasted: _spent++; _wasted++; break;
             case EarthCannonJammed: _jams++; break;
             case EarthShipDestroyed: _destroyed++; break;

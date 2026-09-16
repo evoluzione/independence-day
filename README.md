@@ -45,7 +45,7 @@ src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/
 Così com'è, la saga si avvia e non gestisce nessun evento: nessun cannone spara, ogni nave tocca
 terra, e le prime città cadono già alla prima ondata.
 
-Cinque città, **un cannone ciascuna**, 100 colpi a testa che non si ricaricano mai. Una nave che
+Cinque città, **un cannone ciascuna**, 110 colpi a testa che non si ricaricano mai. Una nave che
 tocca terra rade al suolo la città, quindi vanno fermate tutte. Tu chiedi di aprire il fuoco su una
 nave; quale cannone e quanti colpi lo decide la Terra. Poi devi fare le
 quattro cose che nessuno farà al posto tuo:

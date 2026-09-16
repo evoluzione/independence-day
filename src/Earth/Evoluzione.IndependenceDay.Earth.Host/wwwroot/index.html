@@ -3,28 +3,58 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Independence Day — Sala operativa</title>
+<title>Difesa Planetaria — Controllo</title>
 <style>
   :root {
     --bg: #070b10; --panel: #0c131c; --line: #1b2836; --ink: #d6e4f0; --dim: #6b8199;
     --ok: #35d07f; --warn: #f2b01e; --bad: #ff4d5e; --saga: #6aa9ff; --shield: #4cc9f0;
   }
   * { box-sizing: border-box; }
+
+  /* Le righe di scansione del monitor: appena percepibili. A piu' di cosi' il testo diventa
+     faticoso da leggere, e questa e' una pagina che si guarda per venti minuti di fila. */
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 100;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
+    mix-blend-mode: multiply;
+  }
   html, body { height: 100%; }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
     font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     padding: 12px 16px; display: flex; flex-direction: column; gap: 10px;
   }
-  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-  h1 { font-size: 14px; letter-spacing: .18em; text-transform: uppercase; margin: 0; }
-  .status { color: var(--dim); }
-  .status.live::before { content: "● "; color: var(--ok); }
-  .status.down::before { content: "● "; color: var(--bad); }
-  .strip { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
-  .chip { border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; color: var(--dim); white-space: nowrap; }
-  .chip b { color: var(--ink); }
-  .chip.bad b { color: var(--bad); } .chip.ok b { color: var(--ok); } .chip.lives b { color: var(--shield); }
+  /* la barra di stato: e' un pannello come gli altri, non un'intestazione di pagina */
+  .console { flex-direction: row; align-items: center; gap: 14px; padding: 7px 12px; }
+  .status { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); flex: none;
+            margin-left: 14px; box-shadow: 0 0 6px currentColor; color: var(--dim); }
+  .status.live { background: var(--ok); color: var(--ok); }
+  .status.down { background: var(--bad); color: var(--bad); animation: blink 1s steps(2) infinite; }
+
+  /* DEFCON: la prima cosa che si guarda, e cambia colore da sola */
+  .defcon { display: flex; flex-direction: column; gap: 3px; padding-right: 18px; flex: none;
+            border-right: 1px solid var(--line); }
+  .defcon .head { font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: .06em;
+                  font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .defcon .head .n { font-size: 34px; }
+  .defcon .word { font-size: 15px; font-weight: 700; letter-spacing: .22em; line-height: 1; }
+  .defcon .bars { display: flex; gap: 4px; margin-top: 3px; }
+  .defcon .bars i { width: 15px; height: 4px; background: #1b2836; border-radius: 1px; }
+
+  /* Il livello, grande, nell'angolo: e' il punteggio. */
+  .level { margin-left: auto; text-align: right; flex: none; line-height: 1; }
+  .level .k { display: block; color: var(--dim); font-size: 9px; letter-spacing: .22em; margin-bottom: 3px; }
+  .level b { font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+  .level .of { color: var(--dim); font-size: 17px; font-weight: 600; }
+  .defcon[data-level="5"] { --dc: var(--ok); }
+  .defcon[data-level="4"] { --dc: var(--shield); }
+  .defcon[data-level="3"] { --dc: var(--warn); }
+  .defcon[data-level="2"] { --dc: #ff8c42; }
+  .defcon[data-level="1"] { --dc: var(--bad); }
+  .defcon .head, .defcon .word { color: var(--dc, var(--ink)); }
+  .defcon .bars i.on { background: var(--dc); box-shadow: 0 0 5px var(--dc); }
+  .defcon[data-level="1"] .head, .defcon[data-level="1"] .word { animation: blink 1.1s ease-in-out infinite; }
+
 
   .layout { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; gap: 10px; flex: 1; min-height: 0; }
   .right { display: grid; grid-template-rows: 2fr 3fr; gap: 10px; min-height: 0; }
@@ -37,7 +67,18 @@
 
   section { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
             display: flex; flex-direction: column; min-height: 0; position: relative; }
-  h2 { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin: 0 0 8px; font-weight: 600; }
+  h2 { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin: 0 0 8px;
+       font-weight: 600; display: flex; align-items: center; gap: 7px; }
+  h2::before { content: ""; width: 5px; height: 5px; background: var(--shield); border-radius: 1px;
+               box-shadow: 0 0 5px var(--shield); flex: none; }
+
+  /* I quattro angoli dei pannelli: e' quello che li fa sembrare quadranti e non riquadri. */
+  section::before, section::after {
+    content: ""; position: absolute; width: 9px; height: 9px; pointer-events: none;
+    border: 1px solid var(--shield); opacity: .45;
+  }
+  section::before { top: 4px; left: 4px; border-right: 0; border-bottom: 0; }
+  section::after { bottom: 4px; right: 4px; border-left: 0; border-top: 0; }
   svg { width: 100%; height: 100%; flex: 1; min-height: 0; display: block; }
 
   /* diario */
@@ -183,11 +224,11 @@
 </head>
 <body>
 
-<header>
-  <h1>Independence Day — sala operativa</h1>
-  <span id="conn" class="status">in collegamento…</span>
-  <div class="strip" id="strip"></div>
-</header>
+<section class="console">
+  <div id="defcon" class="defcon"></div>
+  <div id="level" class="level"></div>
+  <span id="conn" class="status" title="collegamento"></span>
+</section>
 
 <div class="layout">
   <section>
@@ -248,13 +289,14 @@ const STEPS = {
   'detected':      ['🛸', 'avvistamento'],
   'fire':          ['🔫', 'fuoco aperto'],
   'shot':          ['💢', 'colpo'],
+  'missed':        ['🎯', 'bersaglio mancato'],
   'cease':         ['🛑', 'cessate il fuoco'],
   'no-cannon':     ['🚫', 'nessun cannone'],
   'order-lost':    ['📡', 'ordine perso'],
   'jammed':        ['🔩', 'inceppato'],
   'repaired':      ['🔧', 'riparato'],
   'empty':         ['🈳', 'a secco'],
-  'wasted':        ['🕳️', 'colpo nel vuoto'],
+  'wasted':        ['🕳️', 'colpo su un relitto'],
   'destroyed':     ['💥', 'abbattuta'],
   'landed':        ['👽', 'atterrata'],
   'city-fallen':   ['🏚️', 'citta perduta'],
@@ -273,19 +315,45 @@ const CANNON = {
 // Le tre stazze: piu' e' pesante, piu' colpi ci vogliono — ma quanti lo sa solo la Terra.
 const CLASS_EMOJI = { 'caccia': '🛸', 'incrociatore': '🛰️', 'corazzata': '🚀' };
 
-/* ---------- barra in alto ---------- */
-function renderStrip(s) {
-  const a = s.aliens, e = s.earth;
-  const chips = [
-    ['level', '📯 livello', s.invasion.level ? `${s.invasion.level}/${s.invasion.lastLevel}` : '—'],
-    ['lives', '🌍 citta in piedi', `${e.citiesStanding}/${e.citiesTotal}`],
-    ['bad', '🛸 navi in volo', a.shipsInFlight],
-    ['ok', '💥 abbattute', a.shipsDestroyed],
-    ['bad', '👽 atterrate', a.shipsLanded],
-    ['ok', '🔫 colpi rimasti', e.roundsLeft],
-    ['bad', '🕳️ nel vuoto', s.steps.wasted || 0],
-  ];
-  $('strip').innerHTML = chips.map(([t, k, v]) => `<span class="chip ${t}">${k} <b>${v}</b></span>`).join('');
+/* ---------- la console: stato di allerta e livello ----------
+   Due letture sole, grandi. Tutto il resto — citta', navi, colpi — sta nei quadranti sotto, dove ha
+   un contesto: metterlo anche qui sopra voleva dire leggerlo due volte e non guardarlo mai.
+   Il DEFCON e' la lettura d'insieme: uno sguardo e sai se stai perdendo. Scende — cioe' peggiora —
+   su quello che non si recupera, non su quello che e' rumore: una nave in volo e' normale, una citta'
+   persa no. */
+const DEFCON = {
+  5: ['FADE OUT', 'nessuna minaccia'],
+  4: ['DOUBLE TAKE', 'campagna in corso'],
+  3: ['ROUND HOUSE', 'navi in avvicinamento'],
+  2: ['FAST PACE', 'perdite a terra'],
+  1: ['COCKED PISTOL', 'difesa al collasso'],
+};
+
+function defconOf(s) {
+  const e = s.earth, a = s.aliens;
+  if (s.invasion.status === 'idle') return 5;
+  if (e.citiesStanding <= 1) return 1;
+  if (e.citiesStanding < e.citiesTotal) return 2;
+  if (a.shipsInFlight > 0) return 3;
+
+  return 4;
+}
+
+function renderConsole(s) {
+  const level = defconOf(s);
+  const [word, caption] = DEFCON[level];
+  const box = $('defcon');
+  box.dataset.level = level;
+  box.title = caption;
+  box.innerHTML = `<div class="head">DEFCON <span class="n">${level}</span></div>
+    <div class="word">${word}</div>
+    <div class="bars">${[5, 4, 3, 2, 1].map((n) => `<i class="${n >= level ? 'on' : ''}"></i>`).join('')}</div>`;
+
+  const i = s.invasion;
+
+  $('level').innerHTML = i.level
+    ? `<span class="k">LIVELLO</span><b>${i.level}</b><span class="of">/${i.lastLevel}</span>`
+    : `<span class="k">LIVELLO</span><b>—</b>`;
 }
 
 // I colpi che restano, citta' per citta'. Non si ricaricano mai: quello che si vede qui e' tutto
@@ -296,12 +364,13 @@ function renderArsenal(earth, steps) {
     return `<div class="u ${c.rounds ? '' : 'empty'}">${emoji} <b>${c.rounds}</b> <span>${esc(c.name)}</span></div>`;
   }).join('');
 
-  const sparati = (steps.shot || 0) + (steps.wasted || 0);
+  const sparati = (steps.shot || 0) + (steps.missed || 0) + (steps.wasted || 0);
   $('arsenal').innerHTML = `<h3>Arsenale</h3>${cannons}
     <div class="u"><b>${earth.roundsLeft}</b> <span>in tutto</span></div>
     <h3 style="margin-top:10px">Consumo</h3>
     <div class="u">💢 <b>${sparati}</b> <span>sparati</span></div>
-    <div class="u ${steps.wasted ? '' : 'empty'}">🕳️ <b>${steps.wasted || 0}</b> <span>nel vuoto</span></div>
+    <div class="u ${steps.missed ? '' : 'empty'}">🎯 <b>${steps.missed || 0}</b> <span>mancati</span></div>
+    <div class="u ${steps.wasted ? '' : 'empty'}">🕳️ <b>${steps.wasted || 0}</b> <span>su relitti</span></div>
     <div class="u ${steps.jammed ? '' : 'empty'}">🔩 <b>${steps.jammed || 0}</b> <span>inceppamenti</span></div>
     <div class="u ${steps['order-lost'] ? '' : 'empty'}">📡 <b>${steps['order-lost'] || 0}</b> <span>ordini persi</span></div>`;
 }
@@ -519,7 +588,8 @@ function renderReport(s) {
     </div>
     <div class="report-grid">
       ${metric('🔫 colpi sparati', s.roundsSpent)}
-      ${metric('🕳️ colpi nel vuoto', s.roundsWasted, s.roundsWasted ? 'bad' : 'ok')}
+      ${metric('🎯 bersagli mancati', s.steps.missed || 0)}
+      ${metric('🕳️ colpi su relitti', s.roundsWasted, s.roundsWasted ? 'bad' : 'ok')}
       ${metric('🔩 inceppamenti', s.steps.jammed || 0)}
       ${metric('📡 ordini persi', s.steps['order-lost'] || 0)}
       ${metric('🎯 colpi rimasti', s.roundsLeft, s.roundsLeft ? 'ok' : 'bad')}
@@ -620,7 +690,7 @@ function render(s) {
   shownWave = s.invasion.wave;
   last = s;
 
-  renderStrip(s);
+  renderConsole(s);
   renderArsenal(s.earth, s.steps);
   renderLog(s.log);
   renderMother(s.invasion);
@@ -631,8 +701,8 @@ function render(s) {
 
 // Il browser riapre da solo un EventSource caduto: qui si aggiorna solo l'indicatore.
 const source = new EventSource('/earth/stream');
-source.onopen = () => { $('conn').className = 'status live'; $('conn').textContent = 'collegato'; };
-source.onerror = () => { $('conn').className = 'status down'; $('conn').textContent = 'collegamento perso, riprovo…'; };
+source.onopen = () => { $('conn').className = 'status live'; $('conn').title = 'collegato'; };
+source.onerror = () => { $('conn').className = 'status down'; $('conn').title = 'collegamento perso, riprovo…'; };
 source.onmessage = (e) => { try { render(JSON.parse(e.data)); } catch { /* frame parziale: arriva il prossimo */ } };
 </script>
 

@@ -19,10 +19,24 @@ public static class Armory
     /// <summary>
     /// Colpi in dotazione a ogni citta' per <b>tutta</b> la campagna. Non si ricaricano mai.
     /// </summary>
-    public const int RoundsPerCity = 100;
+    public const int RoundsPerCity = 110;
 
     /// <summary>Quanto passa fra un colpo e il successivo dello stesso cannone.</summary>
-    public const int ReloadMs = 400;
+    public const int ReloadMs = 200;
+
+    /// <summary>
+    /// Ogni quanti colpi uno manca il bersaglio.
+    /// </summary>
+    /// <remarks>
+    /// Un cannone contraerea che centra sempre non e' un cannone contraerea. Il colpo parte, consuma
+    /// la munizione e non fa danno: si ricarica e si riprova, ed e' il cannone stesso a farlo, perche'
+    /// il fuoco resta aperto. Chi coordina non deve fare niente — ma il conto dei colpi che servono
+    /// a portare giu' una nave cresce, e cresce anche il tempo per cui quel cannone resta occupato.
+    /// </remarks>
+    public const int MissEveryShots = 3;
+
+    /// <summary>Se il colpo numero <paramref name="shot"/> di quel cannone manca il bersaglio.</summary>
+    public static bool Misses(int shot) => shot % MissEveryShots == 0;
 
     /// <summary>
     /// Ogni quanti colpi un cannone si inceppa.
@@ -32,7 +46,7 @@ public static class Armory
     /// mandare la riparazione e di riaprire il fuoco. Un cannone inceppato e dimenticato e' perso per
     /// il resto della campagna.
     /// </remarks>
-    public const int JamEveryShots = 9;
+    public const int JamEveryShots = 20;
 
     /// <summary>Quanto costa in munizioni rimettere in sesto un cannone inceppato.</summary>
     public const int RepairCost = 3;

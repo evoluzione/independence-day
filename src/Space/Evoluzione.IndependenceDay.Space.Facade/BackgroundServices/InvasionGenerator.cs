@@ -10,7 +10,7 @@ namespace Evoluzione.IndependenceDay.Space.Facade.BackgroundServices;
 public class InvasionSettings
 {
     /// <summary>Quanto passa fra una nave e l'altra dentro la stessa ondata.</summary>
-    public int LaunchIntervalMs { get; set; } = 1000;
+    public int LaunchIntervalMs { get; set; } = 1300;
 
     /// <summary>Ogni quanto il generatore si guarda intorno.</summary>
     public int TickMs { get; set; } = 500;
@@ -81,7 +81,7 @@ public class InvasionGenerator(
 
         if (launched < plan.Count)
         {
-            // Solo citta' ancora in piedi: una nave su macerie e' un colpo a vuoto.
+            // Solo citta' ancora in piedi: una nave su macerie e' un bersaglio mancato.
             var targets = await scope.ServiceProvider.GetRequiredService<ITargetCityService>().Standing(ct);
 
             // Niente piu' bersagli: le navi che restano non partiranno mai, quindi l'ondata finisce

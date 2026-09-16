@@ -12,9 +12,9 @@ namespace Evoluzione.IndependenceDay.Earth.Domain.Tests;
 /// Un cannone si inceppa ogni nove grilletti, e si porta dietro il bersaglio.
 /// </summary>
 /// <remarks>
-/// Il colpo non parte e non consuma niente, ma il cannone resta fermo e la nave che stava
-/// affrontando si ritrova senza nessuno addosso. Non si sblocca da solo: se nessuno lo ripara, e'
-/// perso per il resto della campagna.
+/// Il colpo non parte e non consuma niente, ma il cannone resta fermo. Il conto e' sui grilletti
+/// premuti, non sui colpi a segno: valgono anche quelli che hanno mancato il bersaglio e quelli sparati nel nulla.
+/// Non si sblocca da solo — se nessuno lo ripara e' perso per il resto della campagna.
 /// </remarks>
 public class PullTrigger_WhenTheNinthTriggerComes_JamsTheCannon : EarthCommandSpecification<PullTrigger>
 {
@@ -29,9 +29,12 @@ public class PullTrigger_WhenTheNinthTriggerComes_JamsTheCannon : EarthCommandSp
         yield return new EarthShipDetected(Earth, City, _shipId, ShipClass.Battleship, Guid.NewGuid());
         yield return new EarthFireOpened(Earth, City, _shipId, Armory.RoundsPerCity, Guid.NewGuid());
 
-        // Otto grilletti gia' premuti: il nono e' quello che si inceppa.
+        // La nave e' gia' caduta e il cannone spara ancora: e' il modo piu' pulito di accumulare
+        // otto grilletti senza che il bersaglio finisca prima.
+        yield return new EarthShipDestroyed(Earth, City, _shipId, Guid.NewGuid());
+
         for (var shot = 1; shot <= Armory.JamEveryShots - 1; shot++)
-            yield return new EarthShotFired(Earth, City, _shipId, shot, Armory.RoundsPerCity - shot,
+            yield return new EarthShotWasted(Earth, City, _shipId, Armory.RoundsPerCity - shot,
                 Guid.NewGuid());
     }
 

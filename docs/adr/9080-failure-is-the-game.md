@@ -21,13 +21,14 @@ che non arriva, che non produce nulla, e su cui non c'è niente da intercettare.
 
 ## Decision
 
-**Tre guasti, tutti deterministici, tutti scritti in chiaro in `Contracts/World/Armory.cs`:**
+**Quattro guasti, tutti deterministici, tutti scritti in chiaro in `Contracts/World/Armory.cs`:**
 
 | | |
 | --- | --- |
+| **Il bersaglio mancato** | uno su tre. Frequente e banale: il cannone riprova da solo, ma resta occupato |
 | **L'ordine perso** | uno su venticinque, e si ferma sul collegamento prima di arrivare |
-| **L'inceppamento** | ogni nove grilletti, e non si sblocca da solo |
-| **Il colpo nel vuoto** | conseguenza, non causa: un cannone acceso su una nave caduta |
+| **L'inceppamento** | ogni venti grilletti, e non si sblocca da solo |
+| **Il colpo su un relitto** | conseguenza, non causa: un cannone acceso su una nave caduta |
 
 Uno su venticinque e non uno su sette, perché una nave che tocca terra rade al suolo la città: una difesa
 condotta bene deve poterle fermare tutte, e con guasti più fitti la perfezione diventava

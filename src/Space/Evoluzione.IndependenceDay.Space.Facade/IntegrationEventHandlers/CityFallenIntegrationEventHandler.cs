@@ -8,7 +8,7 @@ namespace Evoluzione.IndependenceDay.Space.Facade.IntegrationEventHandlers;
 /// Una citta' e' caduta: lo Spazio smette di puntarla.
 /// </summary>
 /// <remarks>
-/// Senza questo, una buona fetta delle navi finiva su macerie — colpi a vuoto che allungavano la
+/// Senza questo, una buona fetta delle navi finiva su macerie — bersagli mancati che allungavano la
 /// coda della partita e rendevano piu' facili i livelli alti.
 /// </remarks>
 public class CityFallenIntegrationEventHandler(ITargetCityService cities, ILoggerFactory loggerFactory)

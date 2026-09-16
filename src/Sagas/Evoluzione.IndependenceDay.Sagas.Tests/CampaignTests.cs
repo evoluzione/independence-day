@@ -25,10 +25,10 @@ public class CampaignTests(ITestOutputHelper output)
         Assert.Equal(0, result.OpenCannons);
         Assert.True(result.RoundsLeft > 0, "vincere con zero colpi rimasti vuol dire margine nullo");
 
-        // Qualche colpo nel vuoto e' inevitabile: anche i cessate il fuoco si perdono, e fra l'ordine
+        // Qualche colpo su un relitto e' inevitabile: anche i cessate il fuoco si perdono, e fra l'ordine
         // perso e il battito che lo rivela passa un secondo di fuoco. Quello che conta e' che restino
         // pochi, cioe' che ci si accorga in fretta.
-        Assert.True(result.RoundsWasted < 20, $"troppi colpi nel vuoto: {result}");
+        Assert.True(result.RoundsWasted < 20, $"troppi colpi su relitti: {result}");
     }
 
     [Fact]

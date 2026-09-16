@@ -261,7 +261,8 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
                 state.StartedAt, state.UpdatedAt,
                 (int)Math.Max(0, (state.UpdatedAt - state.StartedAt).TotalSeconds),
                 ships.Count, destroyed.Count, landed.Count,
-                steps.GetValueOrDefault("shot") + steps.GetValueOrDefault("wasted"),
+                steps.GetValueOrDefault("shot") + steps.GetValueOrDefault("missed") +
+                steps.GetValueOrDefault("wasted"),
                 steps.GetValueOrDefault("wasted"),
                 roundsLeft,
                 standing, cityViews.Count, gameOver, campaignWon, steps, cityViews)

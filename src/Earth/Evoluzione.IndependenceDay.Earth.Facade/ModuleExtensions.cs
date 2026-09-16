@@ -80,6 +80,7 @@ public static class ModuleExtensions
         services.AddDomainEventHandler<EarthFireCeasedEventHandler>();
         services.AddDomainEventHandler<EarthNoCannonReadyEventHandler>();
         services.AddDomainEventHandler<EarthShotFiredEventHandler>();
+        services.AddDomainEventHandler<EarthShotMissedEventHandler>();
         services.AddDomainEventHandler<EarthShotWastedEventHandler>();
         services.AddDomainEventHandler<EarthCannonJammedEventHandler>();
         services.AddDomainEventHandler<EarthCannonRepairedEventHandler>();

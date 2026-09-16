@@ -44,22 +44,33 @@ che rimetta indietro qualcosa.
 
 - **Aliases / Acronyms**: CeaseFire
 - **Context**: Va **confermato**: anche lui può perdersi, e un processo che chiude senza aspettare la
-  conferma lascia un cannone a sparare nel vuoto per il resto della campagna.
-- **Related**: Cannone, Colpo nel vuoto, Compensazione
+  conferma lascia un cannone a sparare su relitti per il resto della campagna.
+- **Related**: Cannone, Colpo su un relitto, Compensazione
 - **Source**: `src/Shared/Evoluzione.IndependenceDay.Contracts/Commands/CeaseFire.cs`
 
 ## Colpo
 
-**L'unità di tutto: cento per città, cinquecento in tutto, e non si ricaricano mai.**
+**L'unità di tutto: centodieci per città, cinquecentocinquanta in tutto, e non si ricaricano mai.**
 Quello che si spreca al livello due non c'è al livello nove.
 
 - **Aliases / Acronyms**: Round
 - **Context**: È la risorsa che decide quanto si va avanti, ma non è quella che scarseggia per prima:
   quella è la disponibilità dei cannoni.
-- **Related**: Cannone, Colpo nel vuoto
+- **Related**: Cannone, Colpo su un relitto
 - **Source**: `src/Shared/Evoluzione.IndependenceDay.Contracts/World/Armory.cs`
 
-## Colpo nel vuoto
+## Bersaglio mancato
+
+**Un colpo su tre manca il bersaglio.** La munizione se ne va e la nave regge.
+
+- **Aliases / Acronyms**: ShotMissed
+- **Context**: Non è un guasto e non c'è niente da fare: il fuoco è aperto, quindi il cannone
+  ricarica e riprova da solo. Il prezzo non è la munizione, è il tempo in cui quel cannone resta
+  occupato — da non confondere con il **colpo su un relitto**, che è un cessate il fuoco dimenticato.
+- **Related**: Colpo, Colpo su un relitto
+- **Source**: `src/Shared/Evoluzione.IndependenceDay.Contracts/World/Armory.cs`
+
+## Colpo su un relitto
 
 **Un colpo sparato a una nave che non c'è più.** Non è un guasto della Terra: è un cessate il fuoco
 che non è arrivato.
@@ -72,8 +83,9 @@ che non è arrivato.
 
 ## Inceppamento
 
-**Ogni nove grilletti un cannone si blocca.** Il colpo non parte, non consuma munizioni, e il cannone
-si ferma lasciando la nave senza nessuno addosso.
+**Ogni venti grilletti un cannone si blocca.** Il colpo non parte, non consuma munizioni, e il
+cannone si ferma lasciando la nave senza nessuno addosso. Il conto è sui grilletti premuti, colpi a
+vuoto compresi.
 
 - **Aliases / Acronyms**: Jam
 - **Context**: Non si sblocca da solo. La riparazione costa tre colpi e **non** riapre il fuoco.
@@ -158,7 +170,8 @@ aggregato: non un errore, non un rifiuto, silenzio.
 
 ## Stazza
 
-**Quanto è dura una nave**: caccia, incrociatore, corazzata. Uno, tre o sei colpi per abbatterla.
+**Quanto è dura una nave**: caccia, incrociatore, corazzata. Uno, tre o sei colpi **a segno** per
+abbatterla — e un colpo su tre manca il bersaglio, quindi ne servono di più.
 Il danno se tocca terra è lo stesso per tutte: la città non c'è più.
 
 - **Aliases / Acronyms**: ShipClass
@@ -171,7 +184,7 @@ Il danno se tocca terra è lo stesso per tutte: la città non c'è più.
 **Quanto ha la difesa per abbattere una nave prima che tocchi terra.** Otto secondi, configurabili.
 
 - **Aliases / Acronyms**: ApproachSeconds
-- **Context**: Otto secondi sono venti colpi: il tempo non è mai la cosa che manca. Il cronometro sta
+- **Context**: Otto secondi sono trentadue grilletti: il tempo non è mai la cosa che manca. Il cronometro sta
   sulla Terra, perché è lei a sapere se la nave è ancora viva.
 - **Related**: Nave, Cannone
 - **Source**: `src/Earth/Evoluzione.IndependenceDay.Earth.Facade/BackgroundServices/ApproachDeadline.cs`

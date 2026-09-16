@@ -7,7 +7,7 @@ public class EarthShotWastedEventHandler(IBattleService battle, BattleFeed feed,
     protected override async Task Project(EarthShotWasted @event, CancellationToken ct)
     {
         await Battle.MarkShot(Id(@event.CityId), @event.RoundsLeft, @event.When(), ct);
-        await Battle.Log(Id(@event.ShipId), "wasted", "colpo sparato nel vuoto", Id(@event.CityId), "bad",
+        await Battle.Log(Id(@event.ShipId), "wasted", "colpo su un relitto", Id(@event.CityId), "bad",
             @event.When(), ct, 1);
     }
 }

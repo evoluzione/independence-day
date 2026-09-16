@@ -122,7 +122,7 @@ nella saga è **quali eventi attraversano il processo**, il perché sta altrove.
 | | |
 | --- | --- |
 | Un evento per l'ordine perso | non esiste. L'ordine non è mai arrivato: non c'è niente da raccontare |
-| `EarthShotFired` · `EarthShotWasted` | cronaca del tiro colpo per colpo: riguarda la pagina, non te |
+| `EarthShotFired` · `EarthShotMissed` · `EarthShotWasted` | cronaca del tiro colpo per colpo: riguarda la pagina, non te. Un bersaglio mancato non ti riguarda perché non c'è niente da fare — il cannone riprova da solo |
 | Quanti colpi serva una stazza | è un conto di dominio, e il dominio è la Terra |
 | Quanti colpi restano a un cannone | te lo dicono `FireOpened` e `FireCeased`, per quel cannone |
 | Cosa stanno facendo gli altri processi | niente. Un processo vive per una nave sola |

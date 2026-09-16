@@ -62,9 +62,10 @@ public sealed record Incoming(string CityId, ShipClass Class, int Hits);
 /// </para>
 /// <list type="number">
 /// <item>Un cannone spara a <b>una nave alla volta</b>, e quale cannone tocchi lo sceglie la Terra:
-/// e' lei a sapere chi e' libero, chi e' rotto e a chi restano colpi.</item>
+/// e' lei a sapere chi e' libero, chi e' rotto e a chi restano colpi. Un colpo su tre manca il bersaglio:
+/// la munizione se ne va e la nave regge.</item>
 /// <item>Il fuoco, una volta aperto, <b>non si ferma da solo</b>. Nemmeno quando la nave e' caduta:
-/// il cannone continua a sparare nel vuoto finche' non arriva un cessate il fuoco.</item>
+/// il cannone continua a sparare su relitti finche' non arriva un cessate il fuoco.</item>
 /// <item>Ogni tanto un cannone si inceppa. Non e' un errore del chiamante, e' un fatto della
 /// battaglia: si risponde con un evento e si va avanti.</item>
 /// <item>Quando il tempo scade la nave tocca terra, e se la citta' cade perde anche il cannone.</item>
@@ -222,6 +223,13 @@ public class EarthDefense : AggregateRoot
         {
             RaiseEvent(new EarthShotWasted((EarthId)Id, cityId, target, left, correlationId));
         }
+        else if (Armory.Misses(cannon.Attempts + 1))
+        {
+            // Il colpo e' partito e la munizione se n'e' andata: non c'e' niente da fare, il cannone
+            // ricarica e riprova da solo. Serve solo a far durare di piu' la nave, e quindi a tenere
+            // occupato piu' a lungo quel cannone.
+            RaiseEvent(new EarthShotMissed((EarthId)Id, cityId, target, left, correlationId));
+        }
         else
         {
             var hits = ship.Hits + 1;
@@ -341,6 +349,8 @@ public class EarthDefense : AggregateRoot
         if (Ships.TryGetValue(@event.ShipId.Value, out var ship))
             Ships[@event.ShipId.Value] = ship with { Hits = @event.Hits };
     }
+
+    public void Apply(EarthShotMissed @event) => Shot(@event.CityId.Value, @event.RoundsLeft);
 
     public void Apply(EarthShotWasted @event) => Shot(@event.CityId.Value, @event.RoundsLeft);
 

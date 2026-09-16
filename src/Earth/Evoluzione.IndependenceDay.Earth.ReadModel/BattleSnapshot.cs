@@ -56,7 +56,7 @@ public record WaveSummary(
     int ShipsLaunched,
     int ShipsDestroyed,
     int ShipsLanded,
-    /// <summary>Colpi sparati nell'ondata, e quanti sono andati nel vuoto.</summary>
+    /// <summary>Colpi sparati nell'ondata, e quanti sono andati su relitti.</summary>
     int RoundsSpent,
     int RoundsWasted,
     /// <summary>Colpi che restano in tutto: e' quello che si porta all'ondata dopo.</summary>
