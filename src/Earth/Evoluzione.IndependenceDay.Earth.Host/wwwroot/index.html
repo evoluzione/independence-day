@@ -113,11 +113,21 @@
   .mother text { fill: var(--dim); font-size: 10px; text-anchor: middle; }
 
   .fleet { transition: transform 1.2s linear; }
-  .fleet .saucer { fill: #ff4d5e; stroke: #ffe3e6; stroke-width: .9; transition: opacity .25s;
-                   filter: drop-shadow(0 0 4px rgba(255,77,94,.9)); }
+  .fleet .hull { fill: #ff4d5e; stroke: #ffe3e6; stroke-width: .9; transition: opacity .25s;
+                 filter: drop-shadow(0 0 4px rgba(255,77,94,.9)); }
+  .fleet .dome { fill: #ffb3ba; stroke: #fff; stroke-width: .6; }
+  .fleet .spur { stroke: #ffe3e6; stroke-width: 1.2; stroke-linecap: round; }
+  /* La corazzata non e' solo piu' grande: ha l'anello, e si riconosce da lontano. */
+  .fleet .ring { fill: none; stroke: #ff8c9a; stroke-width: .8; stroke-dasharray: 3 3; opacity: .8; }
   .fleet text { fill: var(--ink); font-size: 10px; text-anchor: middle; transition: opacity .3s; }
   .fleet text.target { fill: var(--dim); font-size: 9px; }
-  .fleet.resolved .saucer, .fleet.resolved text { opacity: 0; }
+  /* Stessa barra delle citta', stessi colori: cosi' si legge senza spiegazioni. */
+  .fleet .hp-bg { fill: #24161a; stroke: var(--line); stroke-width: .7; }
+  .fleet .hp { fill: var(--bad); transition: width .4s ease; }
+  .fleet.hurt .hp { fill: var(--warn); }
+  .fleet.dying .hp { fill: var(--ok); }
+  .fleet.resolved .hull, .fleet.resolved .dome, .fleet.resolved .spur, .fleet.resolved .ring,
+  .fleet.resolved .hp, .fleet.resolved .hp-bg, .fleet.resolved text { opacity: 0; }
   /* La discesa si anima sul gruppo interno, non sul gruppo posizionato: cosi' e' relativa al punto
      in cui la flotta si trova. Sul gruppo esterno servirebbe ripetere la sua posizione dentro il
      fotogramma, e quella e' scritta come attributo SVG — "translate(540, 62)", senza unita' — che
@@ -193,6 +203,7 @@
                 margin: 0 0 2px; font-weight: 600; }
   .arsenal .u { display: flex; align-items: baseline; gap: 7px; white-space: nowrap; }
   .arsenal .u b { font-size: 17px; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+  .arsenal .u.total b { font-size: 26px; }
   .arsenal .u.empty b, .arsenal .u.empty span { color: var(--dim); opacity: .5; }
   @media (max-width: 1000px) { .terra { grid-template-columns: 1fr; } .arsenal { border-right: 0; } }
 
@@ -312,8 +323,6 @@ const CANNON = {
   'lost':   ['🏚️', 'perduto'],
 };
 
-// Le tre stazze: piu' e' pesante, piu' colpi ci vogliono — ma quanti lo sa solo la Terra.
-const CLASS_EMOJI = { 'caccia': '🛸', 'incrociatore': '🛰️', 'corazzata': '🚀' };
 
 /* ---------- la console: stato di allerta e livello ----------
    Due letture sole, grandi. Tutto il resto — citta', navi, colpi — sta nei quadranti sotto, dove ha
@@ -356,18 +365,13 @@ function renderConsole(s) {
     : `<span class="k">LIVELLO</span><b>—</b>`;
 }
 
-// I colpi che restano, citta' per citta'. Non si ricaricano mai: quello che si vede qui e' tutto
-// quello che c'e' da qui alla fine della campagna.
+// Quanto resta e come se ne sta andando. Citta' per citta' lo dice gia' la mappa, sotto ogni
+// cannone: ripeterlo qui voleva dire leggere gli stessi cinque numeri due volte.
 function renderArsenal(earth, steps) {
-  const cannons = [...earth.cities].sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
-    const [emoji] = CANNON[c.cannon] || ['❔'];
-    return `<div class="u ${c.rounds ? '' : 'empty'}">${emoji} <b>${c.rounds}</b> <span>${esc(c.name)}</span></div>`;
-  }).join('');
-
   const sparati = (steps.shot || 0) + (steps.missed || 0) + (steps.wasted || 0);
-  $('arsenal').innerHTML = `<h3>Arsenale</h3>${cannons}
-    <div class="u"><b>${earth.roundsLeft}</b> <span>in tutto</span></div>
-    <h3 style="margin-top:10px">Consumo</h3>
+  $('arsenal').innerHTML = `<h3>Arsenale</h3>
+    <div class="u total ${earth.roundsLeft ? '' : 'empty'}">🔫 <b>${earth.roundsLeft}</b> <span>colpi</span></div>
+    <h3 style="margin-top:12px">Consumo</h3>
     <div class="u">💢 <b>${sparati}</b> <span>sparati</span></div>
     <div class="u ${steps.missed ? '' : 'empty'}">🎯 <b>${steps.missed || 0}</b> <span>mancati</span></div>
     <div class="u ${steps.wasted ? '' : 'empty'}">🕳️ <b>${steps.wasted || 0}</b> <span>su relitti</span></div>
@@ -434,7 +438,30 @@ const removed = new Set();    // navi gia' sparite: lo snapshot le porta ancora 
 const lastLane = new Map();   // ultima corsia nota, per chi e' uscito dal conteggio
 let lastThreats = [];
 let lastLanes = new Map();
-const SAUCER = 'M-7.5,0 a7.5,3 0 1,0 15,0 a7.5,3 0 1,0 -15,0 M-3.7,-1.5 a3.7,2.8 0 0,1 7.4,0';
+/* Tre sagome, non tre misure della stessa: a schermo la stazza si deve riconoscere senza leggere
+   l'etichetta, perche' e' quella che dice quanto a lungo terra' occupato un cannone.
+   `h` e' la mezza altezza dello scafo, e serve a non far finire la barra sopra il disegno. */
+const SHAPES = {
+  'caccia': { h: 6, bar: 26, draw: () => [
+    el('path', { class: 'hull', d: 'M0,-6 L7,5 L0,2 L-7,5 Z' }),
+    el('circle', { class: 'dome', cy: -1, r: 1.8 }),
+  ] },
+  'incrociatore': { h: 6, bar: 34, draw: () => [
+    el('ellipse', { class: 'hull', rx: 13, ry: 5 }),
+    el('ellipse', { class: 'hull', cx: -14, rx: 3.5, ry: 2.4 }),
+    el('ellipse', { class: 'hull', cx: 14, rx: 3.5, ry: 2.4 }),
+    el('ellipse', { class: 'dome', cy: -1.6, rx: 5, ry: 2.6 }),
+  ] },
+  'corazzata': { h: 10, bar: 46, draw: () => [
+    el('ellipse', { class: 'ring', rx: 26, ry: 10 }),
+    el('ellipse', { class: 'hull', rx: 20, ry: 7.5 }),
+    el('path', { class: 'spur', d: 'M-20,0 L-28,-5 M20,0 L28,-5' }),
+    el('ellipse', { class: 'dome', cy: -2.6, rx: 8.5, ry: 3.8 }),
+    el('circle', { class: 'dome', cx: -10, cy: 1.5, r: 1.4 }),
+    el('circle', { class: 'dome', cx: 10, cy: 1.5, r: 1.4 }),
+  ] },
+};
+const shapeOf = (cls) => SHAPES[cls] || SHAPES['caccia'];
 
 // Con piu' flotte in volo insieme, due che puntano la stessa citta' finirebbero sulla stessa
 // colonna e si sovrapporrebbero. Quindi la posizione orizzontale non e' quella della citta' ma una
@@ -470,25 +497,38 @@ function fleetTransform(t, lanes) {
   return `translate(${x}, ${SKY + progress * (GROUND - SKY)})`;
 }
 
-// Una nave e' una nave: la stazza si legge dalla dimensione del disco, non dal numero di dischi.
-const SCALE = { 'caccia': 1, 'incrociatore': 1.5, 'corazzata': 2.2 };
-
 function buildFleet(t) {
-  const g = el('g', { class: 'fleet', 'data-id': t.id });
+  const shape = shapeOf(t.class);
+  const g = el('g', { class: 'fleet', 'data-id': t.id, 'data-class': t.class });
   const body = el('g', { class: 'body' });
-  body.appendChild(el('path', { class: 'saucer', d: SAUCER, transform: `scale(${SCALE[t.class] || 1})` }));
-  // Due righe e non una: "corazzata 3/8 → Washington D.C." su una riga sola sfora il riquadro
+
+  for (const piece of shape.draw()) body.appendChild(piece);
+
+  const barY = shape.h + 6;
+  body.appendChild(el('rect', { class: 'hp-bg', x: -shape.bar / 2, y: barY, width: shape.bar, height: 3, rx: 1.5 }));
+  body.appendChild(el('rect', { class: 'hp', x: -shape.bar / 2, y: barY, width: shape.bar, height: 3, rx: 1.5 }));
+
+  // Due righe e non una: "corazzata 3/9 → Washington D.C." su una riga sola sfora il riquadro
   // quando la nave punta una citta' del bordo.
-  body.appendChild(el('text', { y: 20, class: 'count' }, hits(t)));
-  body.appendChild(el('text', { y: 32, class: 'target' }, `→ ${t.cityName}`));
+  body.appendChild(el('text', { y: barY + 13, class: 'count' }, hits(t)));
+  body.appendChild(el('text', { y: barY + 25, class: 'target' }, `→ ${t.cityName}`));
   g.appendChild(body);
+
   return g;
 }
 
-// Quanto ha incassato, e quanti cannoni le stanno sparando. Zero cannoni su una nave viva vuol dire
-// che un ordine si e' perso: e' la cosa da guardare mentre la partita gira.
-const hits = (t) =>
-  `${CLASS_EMOJI[t.class] || '🛸'} ${t.hits}/${t.hitsToDestroy}` + (t.cannonsFiring ? ` 🔫${t.cannonsFiring}` : ' ⚠');
+/// La stazza e quanti cannoni le stanno sparando. Zero cannoni su una nave viva vuol dire che un
+/// ordine si e' perso: e' la cosa da guardare mentre la partita gira.
+const hits = (t) => `${t.class}${t.cannonsFiring ? ` 🔫${t.cannonsFiring}` : ' ⚠'}`;
+
+/// Quanto le resta, come per le citta': piena quando arriva, vuota quando cade.
+function setHp(g, t) {
+  const shape = shapeOf(t.class);
+  const left = Math.max(0, 1 - t.hits / Math.max(1, t.hitsToDestroy));
+  g.querySelector('.hp').setAttribute('width', shape.bar * left);
+  g.classList.toggle('hurt', left <= .6 && left > .3);
+  g.classList.toggle('dying', left <= .3);
+}
 
 function explode(g) {
   const boom = el('g', { class: 'boom', transform: 'translate(0, 6)' });
@@ -508,6 +548,7 @@ function renderSpace(threats) {
     if (!g) { g = buildFleet(t); fleets.set(t.id, g); space.appendChild(g); }
     g.setAttribute('transform', fleetTransform(t, lastLanes));
     g.querySelector('.count').textContent = hits(t);
+    setHp(g, t);
     if (t.status !== 'incoming' && !g.classList.contains('resolved')) {
       const landed = t.status === 'landed';
       g.classList.add('resolved', landed ? 'bad' : 'ok');
