@@ -126,7 +126,11 @@ acceso su un relitto non è un colpo sprecato: è un posto vuoto in quella fila.
 ## I dieci gradini
 
 I dieci test di `Sagas.Tests` sono dieci gradini, e **ognuno è un livello**: con i primi N verdi la
-campagna arriva in fondo al livello N senza perdere una città, e si ferma al successivo.
+campagna arriva in fondo al livello N senza perdere una città.
+
+È una garanzia sul minimo, non sul massimo. Un gradino scritto bene può portarti anche un po' più in
+là — il settimo, per esempio, regge fino all'ottavo livello — ma nessuno dei dieci è superfluo, e
+saltarne uno ti ferma dove quel gradino serviva.
 
 | Livello | Test | Quello che serve | Perché lì |
 | ---: | --- | --- | --- |
@@ -140,6 +144,13 @@ campagna arriva in fondo al livello N senza perdere una città, e si ferma al su
 | 8 | non chiuderlo troppo presto | chiudere solo a conto saldato | chi chiude subito non può più rimediare |
 | 9 | non aspettare il battito | `CannonRepaired` → `OpenFire` | 700 ms non ci sono più |
 | 10 | restituire il cannone a secco | `CannonEmpty` → `CeaseFire` + `OpenFire` | i cannoni cominciano a finire |
+
+C'è un branch per gradino, `livello-01` … `livello-10`, ognuno con la soluzione fino a quel livello.
+Il diff fra due consecutivi è esattamente quello che aggiunge il gradino:
+
+```bash
+git diff livello-06 livello-07 -- src/Sagas/
+```
 
 ## Come si vince
 

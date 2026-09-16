@@ -18,8 +18,12 @@ namespace Evoluzione.IndependenceDay.Sagas.Tests;
 /// <remarks>
 /// <b>Dieci test, dieci livelli.</b> Ogni test e' il gradino che serve a superare il livello con lo
 /// stesso numero: con i primi tre verdi la campagna arriva in fondo al terzo livello senza perdere
-/// una citta', e si ferma al quarto. Vanno fatti diventare verdi <b>in ordine</b>: ognuno da' per
-/// scontato quello che c'e' nei precedenti, e nessuno serve prima del suo livello.
+/// una citta'. Vanno fatti diventare verdi <b>in ordine</b>: ognuno da' per scontato quello che c'e'
+/// nei precedenti, e nessuno serve prima del suo livello.
+/// <para>
+/// E' una garanzia sul minimo: un gradino scritto bene puo' portare anche un po' piu' in la'. Quello
+/// che non succede mai e' il contrario — saltarne uno ferma la campagna dove quel gradino serviva.
+/// </para>
 /// <para>
 /// Al posto dell'infrastruttura ci sono tre sostituti — un bus che raccoglie invece di spedire, un
 /// repository in memoria, nessuna ricerca per chiave di business. La saga e' quella vera, e gira in

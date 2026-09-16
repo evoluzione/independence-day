@@ -23,7 +23,7 @@ Dieci test rossi, uno per livello. **Sono la specifica**: il nome dice cosa serv
 perché serve, e l'asserzione dice esattamente cosa deve finire sul bus.
 
 Vanno fatti diventare verdi **in ordine**. Con i primi N verdi la campagna supera i primi N livelli
-senza perdere una città, e si ferma al successivo.
+senza perdere una città — garantito il minimo: qualche gradino porta anche un po' più in là.
 
 ## 3. Apri i due file
 
@@ -115,9 +115,19 @@ duri una ricarica: non lo sai e non devi saperlo. Tu chiedi, la Terra decide.
 
 ## Se ti blocchi
 
-Il branch `soluzione` ha la saga completa. Guardala solo dopo aver provato la tua: il diff con `main`
-è di due file, ed è esattamente l'esercizio.
+C'è un branch per ogni gradino — `livello-01` … `livello-10` — con la soluzione **fino a quel
+livello**. Se sei fermo al quinto test, guarda solo il quinto:
 
 ```bash
-git diff main soluzione -- src/Sagas/
+git diff livello-04 livello-05 -- src/Sagas/
 ```
+
+Il diff fra due branch consecutivi è esattamente quello che aggiunge quel gradino, e niente di più.
+Per vedere tutto quello che serve fino a un certo punto, confronta con `main`:
+
+```bash
+git diff main livello-05 -- src/Sagas/
+```
+
+`livello-10` è la saga completa, ed è la stessa cosa del branch `soluzione`. Guardala solo dopo aver
+provato la tua: il diff con `main` è di due file, ed è esattamente l'esercizio.
