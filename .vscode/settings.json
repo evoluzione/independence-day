@@ -1,0 +1,18 @@
+{
+  // bin/ e obj/ sono prodotti della build: stanno nel .gitignore e non devono
+  // comparire nemmeno nell'albero dei file, o ogni progetto ne ha due in cima.
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    //csproj
+    "**/*.csproj": true,
+    //user file
+    "**/*.user": true,
+    //vspscc
+    "**/*.vspscc": true,
+    // Build prop
+    "**/*.Build.props": true,
+  },
+  // Evita la domanda "quale solution?" a ogni apertura.
+  "dotnet.defaultSolution": "src/Evoluzione.IndependenceDay.slnx"
+}

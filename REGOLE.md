@@ -1,0 +1,138 @@
+# Le regole
+
+## I cannoni
+
+La Terra ha **cinque città, un cannone ciascuna**. Non c'è una riserva da distribuire: il cannone è
+lì, è di quella città, e cade con lei.
+
+| | |
+| --- | --- |
+| Colpi in dotazione | **100 per città**, 500 in tutto |
+| Ricarica | un colpo ogni **400 ms** |
+| Bersagli | **uno alla volta**: un cannone spara a una nave sola |
+| Raggio | tutte le città sparano a **tutte** le navi, non solo a quella sopra di loro |
+
+Le munizioni **non si ricaricano mai** — né fra un'ondata e l'altra, né durante. I 500 colpi sono
+tutti quelli che ci sono da qui alla fine della campagna.
+
+**Quale cannone spari non lo decidi tu.** Chiedi di aprire il fuoco su una nave, e la Terra sceglie:
+prende quello libero con più colpi. È lei a sapere chi è impegnato, chi è rotto e chi è a secco.
+
+## Il fuoco continuato
+
+Un ordine di apertura non è un colpo: **accende** un cannone. Da quel momento spara da solo, ogni
+400 ms, finché non gli si dice di smettere.
+
+**Non si ferma quando la nave cade.** Continua a sparare su un relitto, e ogni colpo è perso due
+volte: la munizione, e il cannone che non c'è quando arriva la nave dopo.
+
+Fermarlo è un ordine a parte — `CeaseFire` — e va **confermato**. Anche lui può perdersi.
+
+## Le navi
+
+Ogni attacco è **una nave sola**. Tre stazze, e quanti colpi servano ad abbatterle **non lo dice
+nessun evento**: lo sa solo la Terra. Lo si scopre perché la nave cade.
+
+| Stazza | Colpi per abbatterla |
+| --- | ---: |
+| 🛸 Caccia | 1 |
+| 🛰️ Incrociatore | 3 |
+| 🚀 Corazzata | 6 |
+
+**Una nave che tocca terra rade al suolo la città.** Qualunque stazza, anche un caccia al primo
+livello. Non c'è un'integrità da erodere: o la fermi, o quella città non c'è più — e con lei se ne
+vanno il cannone e i colpi che gli restavano, cioè **un quinto della potenza di fuoco** per tutto il
+resto della campagna.
+
+Non difendersi non è un'opzione con un costo: è la sconfitta alla prima ondata.
+
+## Il tempo
+
+Dalla presa in carico di una nave hai **8 secondi**. Poi tocca terra.
+
+Otto secondi sono venti colpi: **un cannone solo basta** anche per una corazzata, e non serve
+mandarne due. Quello che scarseggia non è il tempo, sono i cannoni — e un cannone impegnato su una
+nave già caduta è un cannone che non c'è.
+
+## I tre guasti
+
+Non sono errori: sono il gioco. Sono **deterministici** — nessun dado, nessuna probabilità nascosta —
+e stanno scritti in chiaro in `Contracts/World/Armory.cs`.
+
+### 1. L'ordine perso — uno su tredici
+
+Un ordine su tredici **non produce nessun evento**. Non un errore, non un rifiuto: silenzio. Vale per
+tutti e tre gli ordini, apertura, cessate il fuoco e riparazione.
+
+Non c'è niente da intercettare. L'unico modo di accorgersene è il **battito**.
+
+Due ordini di fila non si perdono mai: riprovare basta sempre, e non può avvitarsi.
+
+### 2. L'inceppamento — ogni nove colpi
+
+Al nono grilletto un cannone si inceppa. Il colpo non parte, non consuma munizioni, e il cannone si
+ferma — lasciando la nave che stava affrontando **senza nessuno addosso**.
+
+Non si sblocca da solo. Se nessuno manda `RepairCannon` è perso per il resto della campagna. La
+riparazione costa **3 colpi** e **non riapre il fuoco**: rimette il cannone disponibile, fermo.
+
+### 3. Il colpo nel vuoto
+
+Un cannone lasciato acceso su una nave che non c'è più spara comunque. Non è un guasto della Terra:
+è un cessate il fuoco che non è arrivato.
+
+## Il battito
+
+Ogni mezzo secondo la Terra racconta come stanno le cose, senza che nessuno lo chieda. Sono due righe, e
+servono a vedere le due cose che **nessun evento** può raccontare, perché sono assenze:
+
+| Battito | Dice | Vuol dire |
+| --- | --- | --- |
+| `ShipApproaching` | nave viva, quanto manca, **quanti cannoni le sparano** | zero cannoni = l'apertura si è persa |
+| `CannonStillFiring` | questo cannone spara a una nave che non c'è più | il cessate il fuoco si è perso |
+
+È l'unico orologio che hai.
+
+## I dieci livelli
+
+Una nave parte ogni **secondo** e punta le città **a turno**. Le più pesanti partono per prime: chi
+arriva dopo trova i cannoni già impegnati.
+
+| Livello | Navi | 🛸 | 🛰️ | 🚀 | Colpi necessari | Cumulato |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 5 | 5 | 0 | 0 | 5 | 5 |
+| 2 | 6 | 5 | 1 | 0 | 8 | 13 |
+| 3 | 7 | 5 | 2 | 0 | 11 | 24 |
+| 4 | 8 | 5 | 3 | 0 | 14 | 38 |
+| 5 | 9 | 5 | 4 | 0 | 17 | 55 |
+| 6 | 10 | 4 | 5 | 1 | 25 | 80 |
+| 7 | 11 | 3 | 6 | 2 | 33 | 113 |
+| 8 | 12 | 2 | 7 | 3 | 41 | 154 |
+| 9 | 13 | 1 | 8 | 4 | 49 | 203 |
+| 10 | 14 | 0 | 9 | 5 | 57 | **260** |
+
+260 colpi a bersaglio contro 500 in dotazione. Il margine sembra ampio, e non lo è: gli
+inceppamenti se ne mangiano un centinaio fra colpi mancati e riparazioni, e ogni colpo sparato nel
+vuoto è tolto da lì. **La soluzione di riferimento arriva al livello 10 con centocinquanta colpi e
+cinque città in piedi, senza lasciar passare nemmeno una nave.** Una che non chiude i cannoni muore
+al sesto, con quattro colpi su cinque sparati contro relitti.
+
+Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. Al decimo livello le corazzate
+partono insieme e se li prendono tutti, e chi arriva dopo aspetta. Un cannone lasciato acceso su un
+relitto non è un colpo sprecato: è un posto vuoto in quella fila.
+
+## Come si vince
+
+Superare il livello 10. La campagna è persa quando cade l'ultima città.
+
+A parità di vittoria contano, in quest'ordine: le **città rimaste in piedi**, le **navi atterrate** in
+tutta la campagna, i **colpi non spesi**. Sono tutti nel resoconto a fine ondata.
+
+## Cosa si può toccare
+
+**Sì** a tutto quello che sta sotto `src/Sagas/`: la saga, il suo stato, il processo, le registrazioni.
+
+**No** agli aggregati, ai guasti e alla curva di difficoltà: sono il campo di gioco, uguale per tutti.
+
+Un processo vive per **una nave**, non per la città. Non sa cosa stanno facendo gli altri, non sa
+quanti colpi restano, non sa quali cannoni sono liberi. Se ti serve saperlo, ricavalo dagli eventi.

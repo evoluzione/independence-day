@@ -1,0 +1,29 @@
+<Solution>
+  <Folder Name="/Earth/">
+    <Project Path="Earth/Evoluzione.IndependenceDay.Earth.Domain.Tests/Evoluzione.IndependenceDay.Earth.Domain.Tests.csproj" />
+    <Project Path="Earth/Evoluzione.IndependenceDay.Earth.Domain/Evoluzione.IndependenceDay.Earth.Domain.csproj" />
+    <Project Path="Earth/Evoluzione.IndependenceDay.Earth.Facade/Evoluzione.IndependenceDay.Earth.Facade.csproj" />
+    <Project Path="Earth/Evoluzione.IndependenceDay.Earth.Host/Evoluzione.IndependenceDay.Earth.Host.csproj" />
+    <Project Path="Earth/Evoluzione.IndependenceDay.Earth.Messages/Evoluzione.IndependenceDay.Earth.Messages.csproj" />
+    <Project Path="Earth/Evoluzione.IndependenceDay.Earth.ReadModel/Evoluzione.IndependenceDay.Earth.ReadModel.csproj" />
+  </Folder>
+  <Folder Name="/Sagas/">
+    <Project Path="Sagas/Evoluzione.IndependenceDay.Sagas.Facade/Evoluzione.IndependenceDay.Sagas.Facade.csproj" />
+    <Project Path="Sagas/Evoluzione.IndependenceDay.Sagas.Host/Evoluzione.IndependenceDay.Sagas.Host.csproj" />
+    <Project Path="Sagas/Evoluzione.IndependenceDay.Sagas.Infrastructure/Evoluzione.IndependenceDay.Sagas.Infrastructure.csproj" />
+    <Project Path="Sagas/Evoluzione.IndependenceDay.Sagas.Tests/Evoluzione.IndependenceDay.Sagas.Tests.csproj" />
+    <Project Path="Sagas/Evoluzione.IndependenceDay.Sagas/Evoluzione.IndependenceDay.Sagas.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="Shared/Evoluzione.IndependenceDay.Contracts/Evoluzione.IndependenceDay.Contracts.csproj" />
+    <Project Path="Shared/Evoluzione.IndependenceDay.Infrastructure/Evoluzione.IndependenceDay.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Space/">
+    <Project Path="Space/Evoluzione.IndependenceDay.Space.Domain.Tests/Evoluzione.IndependenceDay.Space.Domain.Tests.csproj" />
+    <Project Path="Space/Evoluzione.IndependenceDay.Space.Domain/Evoluzione.IndependenceDay.Space.Domain.csproj" />
+    <Project Path="Space/Evoluzione.IndependenceDay.Space.Facade/Evoluzione.IndependenceDay.Space.Facade.csproj" />
+    <Project Path="Space/Evoluzione.IndependenceDay.Space.Host/Evoluzione.IndependenceDay.Space.Host.csproj" />
+    <Project Path="Space/Evoluzione.IndependenceDay.Space.Messages/Evoluzione.IndependenceDay.Space.Messages.csproj" />
+    <Project Path="Space/Evoluzione.IndependenceDay.Space.ReadModel/Evoluzione.IndependenceDay.Space.ReadModel.csproj" />
+  </Folder>
+</Solution>

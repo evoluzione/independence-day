@@ -1,0 +1,522 @@
+{
+  "version": "0.8.5",
+  "config": {
+    "configVersion": 2,
+    "projectName": "independence-day",
+    "packageManager": "npm",
+    "mode": "guided",
+    "decisions": {
+      "architecture-style": "microservices",
+      "inter-component-comm": "async-messaging",
+      "api-style": "rest",
+      "component-structure": "domain-leaf",
+      "shared-code": "dedicated-component",
+      "ddd": "full",
+      "design-patterns": "yes",
+      "dependency-injection": "container",
+      "persistence": "mixed",
+      "data-ownership": "db-per-service",
+      "event-sourcing": "yes",
+      "cqrs": "full",
+      "distributed-transactions": "saga-orchestration",
+      "clean-code": "yes",
+      "solid": "yes",
+      "tdd": "pragmatic",
+      "structured-logging": "yes",
+      "commit-convention": "conventional",
+      "branching": "trunk-based",
+      "compliance": "none",
+      "slo": "no",
+      "mutation-testing": "no"
+    },
+    "provenance": {},
+    "revisions": {},
+    "dismissed": {
+      "ui-surface": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "rendering-strategy": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "ui-composition": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "design-system": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "client-state": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "styling": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "accessibility": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "i18n": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "ui-testing": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      },
+      "frontend-performance": {
+        "date": "2026-09-15",
+        "reason": "Non c'e' un'applicazione frontend: l'unica pagina e' la sala operativa, un file HTML statico servito dal servizio Terra."
+      }
+    },
+    "agentTargets": [
+      "claude"
+    ],
+    "initDate": "2026-09-15",
+    "localAdrs": [
+      {
+        "number": "9000",
+        "slug": "service-boundaries",
+        "title": "Tre servizi e non un monolite modulare",
+        "date": "2026-09-15"
+      },
+      {
+        "number": "9010",
+        "slug": "event-store-per-service",
+        "title": "Un event store per servizio",
+        "date": "2026-09-15"
+      },
+      {
+        "number": "9020",
+        "slug": "saga-owns-the-coordination",
+        "title": "La saga e' l'unico coordinatore della difesa",
+        "date": "2026-09-15"
+      },
+      {
+        "number": "9030",
+        "slug": "defense-escalation-ladder",
+        "title": "La scala di escalation delle difese",
+        "date": "2026-09-15"
+      },
+      {
+        "number": "9040",
+        "slug": "battle-outcome-outside-the-aggregate",
+        "title": "L'esito della battaglia deciso fuori dall'aggregato",
+        "date": "2026-09-15"
+      },
+      {
+        "number": "9050",
+        "slug": "everything-runs-in-containers",
+        "title": "Tutto gira in container, compose e' l'unico comando d'avvio",
+        "date": "2026-09-15"
+      },
+      {
+        "number": "9060",
+        "slug": "deterministic-combat",
+        "title": "Combattimento deterministico a forze contabili",
+        "date": "2026-09-15"
+      }
+    ]
+  },
+  "files": {
+    "AGENTS.md": {
+      "sha256": "2cc5a96c2b5dcf2643a105a87a7cb7e11e302f9260bbe1c45f6b37d0e14a4704",
+      "managed": false
+    },
+    "CLAUDE.md": {
+      "sha256": "c463dc05b73f769ba8b3f3661462846c6910095a498a946e7a70053dbcfc457e",
+      "managed": false
+    },
+    ".github/copilot-instructions.md": {
+      "sha256": "b45ec3acd8105f309c1f3a691fdb3d46555fb599673f4e08433d5fba48f2c907",
+      "managed": false
+    },
+    ".github/pull_request_template.md": {
+      "sha256": "136045b20f1ff713775f15f27747e1a97a90d160e5a27212f94c70a36d46627a",
+      "managed": false
+    },
+    "docs/README.md": {
+      "sha256": "83ec27ed19c08196adebe91096af89eb66d47a89afb103f452ca4311d8512317",
+      "managed": false
+    },
+    "docs/DECISIONS.md": {
+      "sha256": "fa0160cc4edda6c8149ddcead0ab7cba57e0f67c38e463d0e2874fa61c1a81d1",
+      "managed": false
+    },
+    "docs/INTEROP.md": {
+      "sha256": "3e05919d727c583aa7664049fa5692262995e7a7864e805edcc05fad242d9e9d",
+      "managed": false
+    },
+    "docs/adr/README.md": {
+      "sha256": "d0290a17004bb10103e7f2d83b002e86c5e71e929334611c4bf380f3df5db2d2",
+      "managed": false
+    },
+    "docs/adr/0000-template.md": {
+      "sha256": "16611e2ddb7cf63f9f7b6ffabb4352eb36582d9a7994b19ca3c97adc6fde0dab",
+      "managed": false
+    },
+    "docs/adr/0001-repository-decision-policy.md": {
+      "sha256": "030d9a0da9366ae05c4e8b07293848c99ca256aee9be2c7496b7058df952077a",
+      "managed": false
+    },
+    "docs/rules/README.md": {
+      "sha256": "10795ef632cc90688a8e0f58149300d70249fe7f7bf5dda2a7f6a7147e051129",
+      "managed": false,
+      "merged": true
+    },
+    "docs/rules/0000-template.md": {
+      "sha256": "4a87b54e354ea5f3ca926b86f5edeb1aa99f8793e9623b3bc59d3d0fb6eeb220",
+      "managed": false
+    },
+    "docs/guidelines/README.md": {
+      "sha256": "a0dfee550870c1309e409075f05dba2d0ddc34e034fd319a9ee13fa9f028a90c",
+      "managed": false,
+      "merged": true
+    },
+    "docs/guidelines/0000-template.md": {
+      "sha256": "19fefe4fd804cf6cc75d76cb6804f5599de9efeadb450e552b361b2775eeabd8",
+      "managed": false
+    },
+    "docs/runbook/README.md": {
+      "sha256": "89f925ffe6e2dc5bfa7d057431183e126d264b451cda7b5fbcf3afff04e434f7",
+      "managed": false
+    },
+    "docs/runbook/0000-template.md": {
+      "sha256": "4f9d36a62ab10b9c83a07fa64dc225a0d814f1c0eac56e62660a6587c401e0d1",
+      "managed": false
+    },
+    "docs/glossary/README.md": {
+      "sha256": "74623032ba7b7685355f701da3a9b618b7e2d59a41edaddda38f39d7e40aaf91",
+      "managed": false,
+      "merged": true
+    },
+    "docs/glossary/0000-template.md": {
+      "sha256": "247f356475875794d2967bbf03558f4be5eec4865adda2d6ad697641ddd70f7a",
+      "managed": false
+    },
+    "docs/adr/0100-architecture-style.md": {
+      "sha256": "dfc9abaad352c0435e619c7d6e3ee32ad33e8f0191733572f85c290a52b196a1",
+      "managed": false
+    },
+    "docs/adr/0110-inter-component-communication.md": {
+      "sha256": "34ed98d88de13278a95cffbaedabaa1bc97e889db8b761434a35a2f574c1b640",
+      "managed": false
+    },
+    "docs/adr/0120-api-style.md": {
+      "sha256": "7289d8cd4e3f322ffde4fd258cb31dd3d0922fe5a45132e1ea32dc5bb81fb677",
+      "managed": false
+    },
+    "docs/adr/0130-component-structure.md": {
+      "sha256": "6781fc6e55095881b1c98af826f43f896a988ad2a9b8a5e8556ccad5616a148b",
+      "managed": false
+    },
+    "docs/adr/0140-shared-code.md": {
+      "sha256": "e6b65b320636e5ebb7713aaa93637a02bf69d1841483348c58b3623abd9c98c1",
+      "managed": false
+    },
+    "docs/adr/0210-domain-driven-design.md": {
+      "sha256": "b358b03606711c1b45e82eeb315d4970a387263366a934095241b7dce5e93352",
+      "managed": false
+    },
+    "docs/adr/0220-design-patterns.md": {
+      "sha256": "d35df26c9ee6d29aeb345f24f712773f7c529caff8821ed25dbd504c2c9f4220",
+      "managed": false
+    },
+    "docs/adr/0230-dependency-injection.md": {
+      "sha256": "c194493ecd314a90fb8e350f0289e9a7b056cc3ad677cc786cc1ff26a32811f7",
+      "managed": false
+    },
+    "docs/adr/0300-persistence.md": {
+      "sha256": "9cc20cec33bad0002761a7fdbee3905bc08f89e8a1c047a00308e1df84edb4c7",
+      "managed": false
+    },
+    "docs/adr/0310-data-ownership.md": {
+      "sha256": "6f78e9b66a5e1868e5feaf37b7ba0d42e4ee02ae7bc1c5790ffc12733168d082",
+      "managed": false
+    },
+    "docs/adr/0320-event-sourcing.md": {
+      "sha256": "e33b754915661a64d63af6f05bf779521368738895d79f30222d485a92184a22",
+      "managed": false
+    },
+    "docs/adr/0330-cqrs.md": {
+      "sha256": "28be75230564f80365da78841b9c05458c5d40d742bac9bf44db900e14974555",
+      "managed": false
+    },
+    "docs/adr/0340-distributed-transactions.md": {
+      "sha256": "e946914fa4e51d61f8475e3371d86e7edde084845368c9cf8e4459d8116e975e",
+      "managed": false
+    },
+    "docs/adr/0400-clean-code.md": {
+      "sha256": "0f4b07635a6a1b8c6261619691746eaa5bb50d3ef5d5314618f577715947ef1b",
+      "managed": false
+    },
+    "docs/adr/0410-solid-principles.md": {
+      "sha256": "d54aabfe83c558157021522ea77ac4afa840a713aade86379b6b1c0d00f25edc",
+      "managed": false
+    },
+    "docs/adr/0500-test-driven-development.md": {
+      "sha256": "f05a656cb84bb5ef2355afecfb09b4ee65a942d3bd2476cad0d91a9a4c619dae",
+      "managed": false
+    },
+    "docs/adr/0540-mutation-testing.md": {
+      "sha256": "5a1ec2388e2b9629cda76566ffad1aba0320bae360c815a926bab972c5361f0d",
+      "managed": false
+    },
+    "docs/adr/0650-compliance-regime.md": {
+      "sha256": "943e6f7380c444e1d5d38d85f33a89dea62f8356d58de3d4b14d6a35f5a9a7d5",
+      "managed": false
+    },
+    "docs/adr/0700-structured-logging.md": {
+      "sha256": "3c5dff378578a86f6096fc77f525ebfa143bbb09fcf58be7fd0b0a2474f26c37",
+      "managed": false
+    },
+    "docs/adr/0730-service-level-objectives.md": {
+      "sha256": "c210a370a412c4e107d8ef20a685b74b213564e65b2a76d51dc12180061b7ecb",
+      "managed": false
+    },
+    "docs/adr/0800-branching-strategy.md": {
+      "sha256": "592e64609354fb487deba76e9086d399dff444b57d71930e58dd0d5e3d27a5d8",
+      "managed": false
+    },
+    "docs/adr/0810-commit-convention.md": {
+      "sha256": "673d497ea4cbc0356f5041d848ad47c5eedcd08fc1d5285562f1ff2106489e82",
+      "managed": false
+    },
+    "docs/rules/0070-regression-test-for-every-fix.md": {
+      "sha256": "1976944f211fbfc92a0bad8da44d3a22cf8a796d9bf77d87cb3a957a7d00f2e1",
+      "managed": false
+    },
+    "docs/rules/0080-timeouts-and-backoff.md": {
+      "sha256": "a3cebc59a216ee809ca4b81ccaf910f65c2188822362f5e7d07cc490788b10b0",
+      "managed": false
+    },
+    "docs/rules/0090-no-cross-service-db.md": {
+      "sha256": "c3548ea1fb75967845cbb633fc583ad8ec70697eb6a44d1b40518ed6fbedefbc",
+      "managed": false
+    },
+    "docs/rules/0100-service-owns-its-data.md": {
+      "sha256": "a2a55a83fee92fee4ee63c634db4b8394243069e63078714d79590575665d813",
+      "managed": false
+    },
+    "docs/rules/0130-events-are-immutable.md": {
+      "sha256": "089d0b6de761e1e8fdf6a6e86b4fb82691f654cbddfa2f289d35dbdb1692affe",
+      "managed": false
+    },
+    "docs/rules/0140-no-writes-through-read-models.md": {
+      "sha256": "995f608bdbb0b736a228db08a974e79736438acd3bc5d036f169be9dd31de4fb",
+      "managed": false
+    },
+    "docs/rules/0160-no-breaking-api-change-without-version.md": {
+      "sha256": "cc76ad81884edcc04e3eaac80a24bffa5cf3b3664e0f213703b6b97aad911540",
+      "managed": false
+    },
+    "docs/rules/0230-structured-logs-only.md": {
+      "sha256": "51b17ac5c1bd427f15655dcebfedfb039ea23236647777a58a39d12165a07a18",
+      "managed": false
+    },
+    "docs/rules/0250-conventional-commits.md": {
+      "sha256": "87e596c0ef68d46583291f585736510526f6ab2d821753a010e7a955d7f653fa",
+      "managed": false
+    },
+    "docs/rules/0290-no-direct-push-to-main.md": {
+      "sha256": "aa0ac300332b1f66bcf6b85ba03b60d36f8b3d3afd896edf0f49204937ca9991",
+      "managed": false
+    },
+    "docs/rules/0300-outbox-for-cross-service-writes.md": {
+      "sha256": "891d3c20f3761652ba189b2f8edd42833cf312af56c3bd1703325615f27330a2",
+      "managed": false
+    },
+    "docs/rules/0310-no-source-in-non-leaf-namespace.md": {
+      "sha256": "390c777a6efbf0ded7de0e6258688368150713c211c7e17b4171c35eab2f7f9e",
+      "managed": false
+    },
+    "docs/rules/0320-approved-domains-only.md": {
+      "sha256": "4cebb93645f27ad9f4097cc167f8e50761e44b3895f951de91ee738beb6c6622",
+      "managed": false
+    },
+    "docs/rules/0330-declared-component-dependencies.md": {
+      "sha256": "a2e8d0e71eae00f9ad6d4f33af3d2c8a52cc7e3675ee7c24932eee1b79704ecd",
+      "managed": false
+    },
+    "docs/rules/0340-namespace-matches-deployment-unit.md": {
+      "sha256": "c38d05d5c7285314b41142be393e4f37a33d3b3b286167aefe7a1a222497807a",
+      "managed": false
+    },
+    "docs/guidelines/0010-naming-conventions.md": {
+      "sha256": "4e114311566dad7d5082e13309f94cebb5e22f74434dfb9daaaf2996ddbfa8ac",
+      "managed": false
+    },
+    "docs/guidelines/0020-small-single-purpose-functions.md": {
+      "sha256": "5d5e03cab7b9a2ab4a927e7869eaa993dad000851d365e05c897256549922db6",
+      "managed": false
+    },
+    "docs/guidelines/0030-comments-explain-why.md": {
+      "sha256": "a19f2209e30dbf31fe80dfc445a0c77cff0e41bf6c5fcc4b726385e0679cbb5b",
+      "managed": false
+    },
+    "docs/guidelines/0040-reduce-nesting.md": {
+      "sha256": "40386714dc1710de366605df0da2eaecfa15dd9c174719128897a2e18964ccf3",
+      "managed": false
+    },
+    "docs/guidelines/0050-solid-principles.md": {
+      "sha256": "0f3277f5274a0dbe919ccfd58e59f60ce9d6d405b3e202c82800160e93c79d4f",
+      "managed": false
+    },
+    "docs/guidelines/0070-design-patterns-vocabulary.md": {
+      "sha256": "b1c3acd7d71031c1ebb2947f20d87024e3c6979405e76d7d1564f4ef4f888092",
+      "managed": false
+    },
+    "docs/guidelines/0090-logging.md": {
+      "sha256": "5068654ad30fc6bb8a4fc93430bf099e275174ccd9aed46f01272e70c03b81bb",
+      "managed": false
+    },
+    "docs/guidelines/0110-performance.md": {
+      "sha256": "2c6dd5c8d4d46dce351535b33148639db46875344306cdf7c86a133734bea7ea",
+      "managed": false
+    },
+    "docs/guidelines/0120-git-and-prs.md": {
+      "sha256": "bcc2d06cd2cd2b0ee0144b091602fd27774a398587baefda3b2f26b28c6fb54e",
+      "managed": false
+    },
+    "docs/guidelines/0130-ai-agent-changes.md": {
+      "sha256": "f56f2d4923ca34244b8750b575ecb8c9cb7cd01fa0d4fe8e0691a9a123adfe3b",
+      "managed": false
+    },
+    "docs/guidelines/0160-service-boundaries.md": {
+      "sha256": "11468fca3c655e610a79216f67fa0e4be2c97635d60d67c746a4b82c1efa4ca1",
+      "managed": false
+    },
+    "docs/guidelines/0170-api-design-rest.md": {
+      "sha256": "4980283f194df778afa3dfcf3e969427c1d4d8b7c8e0b96093a0eab406ba0688",
+      "managed": false
+    },
+    "docs/guidelines/0200-async-messaging.md": {
+      "sha256": "05395d8266c874faaf4d6e932bd9c82d01c8ffa0e612189d5d9a0075a2f33911",
+      "managed": false
+    },
+    "docs/guidelines/0210-ddd-tactical-patterns.md": {
+      "sha256": "7712b50743fc64fb9afd45f459cca31e686bf61ed034787423e3bec4086cf213",
+      "managed": false
+    },
+    "docs/guidelines/0220-ubiquitous-language.md": {
+      "sha256": "212c63ba9ede898764c282b1cb0ebebc85d1e559c93b58355f6c02b20ae35d87",
+      "managed": false
+    },
+    "docs/guidelines/0230-dependency-injection.md": {
+      "sha256": "4bf9418d221d6bcdb507f758781692bb581d9dff7e1bf2adea574afdb497c65e",
+      "managed": false
+    },
+    "docs/guidelines/0240-event-design-and-versioning.md": {
+      "sha256": "9be19d2b504d01835adc4df9fa3a2e1d34b9779d6e14533d6fa6821773f99f07",
+      "managed": false
+    },
+    "docs/guidelines/0250-projection-rebuilds.md": {
+      "sha256": "6cdfd0e6576ec8fe525fd0ab8a5d44073b5a2cc0f1208a2567cbed858c39e322",
+      "managed": false
+    },
+    "docs/guidelines/0260-command-query-separation.md": {
+      "sha256": "04fbd6c4b91794d4c30f5a710a1c034752ea18b0ef26c9e79b3e7d493608937a",
+      "managed": false
+    },
+    "docs/guidelines/0270-saga-design.md": {
+      "sha256": "5adc3be5394133fa73bd1f91adee34c2948f4990f6f9e6c554510e112e83073e",
+      "managed": false
+    },
+    "docs/guidelines/0290-tdd-loop.md": {
+      "sha256": "e1fb7b0ad505186593d30788cdd9b3bd85df4a3675028c192ccbb7c5cf1a8e96",
+      "managed": false
+    },
+    "docs/guidelines/0370-branching-workflow.md": {
+      "sha256": "cd77ef47306d3bb53ce0042f76bf0c9a1ea8188fc1432a4757376bf4078a79d3",
+      "managed": false
+    },
+    "docs/guidelines/0410-persistence-conventions.md": {
+      "sha256": "e79cd08ba843edc9edd58c4c256de1e20911a76cdb050adf1464a102a03d4754",
+      "managed": false
+    },
+    "docs/guidelines/0420-component-naming.md": {
+      "sha256": "643bf5b951026007aca1ea24dce8afa23d35431585d3066ebdfba4b05a8b83d7",
+      "managed": false
+    },
+    "docs/guidelines/0430-shared-code-placement.md": {
+      "sha256": "e084239f5a030fb8d348542c53ab28aef63bd16efb11a73bf1c0c69d886b44c0",
+      "managed": false
+    },
+    "docs/runbook/0030-service-degradation.md": {
+      "sha256": "5a2e549d36357a4bb93cd8e2caed68035ab0175d81aef43e470878ad92651b4f",
+      "managed": false
+    },
+    "docs/runbook/0040-rebuild-projections.md": {
+      "sha256": "7c5308442ea51b8025887ca1beebb8d951c97b9f5306c8c8ae91683e202b909c",
+      "managed": false
+    },
+    "docs/runbook/0050-replay-failed-messages.md": {
+      "sha256": "1952ba1b2afffe70e190a28a31c56bdb60991ea8a3593416bba57faa0ebd4346",
+      "managed": false
+    },
+    "docs/glossary/0010-architecture.md": {
+      "sha256": "4bb507b5c75c01160dbc53df105555c6d1ac60170362104ef8fb2107ee6602c0",
+      "managed": false
+    },
+    "docs/glossary/0020-data.md": {
+      "sha256": "c37c2295a1d3bce4b84e2c5237ea37fe66db944ce15e68cd21dbfc29a6902820",
+      "managed": false
+    },
+    "docs/glossary/0050-delivery.md": {
+      "sha256": "2f37b1f0d468a9c02c8ce490d92afb78b8c52570e9d8fd3699ed92be32f45f5b",
+      "managed": false
+    },
+    ".claude/agents/bootstrapper.md": {
+      "sha256": "1fafba9a4c9c211b146d20bb8dd3c4068a28e18514ed89ca3d6685cbf3f268ee",
+      "managed": true
+    },
+    ".claude/agents/doc-writer.md": {
+      "sha256": "44dc7f4cde1576e37e56c81d8a16000a81633e2c5f6e379961fdd7c780a16ec5",
+      "managed": true
+    },
+    ".claude/agents/conformance.md": {
+      "sha256": "59d9c895c0a8643cb7d2c5d20bdde2490797c330e3af0edbfd9ded328ff1a732",
+      "managed": true
+    },
+    ".claude/commands/specframe-decide.md": {
+      "sha256": "7e2d292926c373b63cfc2cc37055e5f574a19ab7745ea0f5e9cf3f315d6ca6fe",
+      "managed": true
+    },
+    ".claude/commands/specframe-conform.md": {
+      "sha256": "3c23adbf96070565b9134d12ba7d0eea9bcbe843f6346b497c49ea0e57754bad",
+      "managed": true
+    },
+    ".claude/commands/specframe-bootstrap.md": {
+      "sha256": "06edebaf2d5a5e2c37fb3ccba29835184100ac9cf8239dd40096f7865fb7ef3d",
+      "managed": true
+    },
+    ".claude/commands/specframe-audit.md": {
+      "sha256": "6e6e1856198aea6eef81749316f3339dcf33b7bfe2a3769cd111e879a2cb9c9c",
+      "managed": true
+    },
+    ".claude/skills/specframe-decide/SKILL.md": {
+      "sha256": "143724d175f5631f52dc8fcc8919450cc5620d19c9a4cae5022495a12f313e6a",
+      "managed": true
+    },
+    ".claude/skills/specframe-record/SKILL.md": {
+      "sha256": "dd45ccd0d334177cb34ec1a010e5ef59e12704710e077d49580557f131de12e5",
+      "managed": true
+    },
+    ".claude/skills/specframe-conform/SKILL.md": {
+      "sha256": "2fa44ef8d5ca711cc6f7c8b2d375fbf688bd3043ab1bede63e04457f49e0350e",
+      "managed": true
+    },
+    ".claude/skills/specframe-doc-sync/SKILL.md": {
+      "sha256": "0223228d2e33ba66bc145849388d9fd1cc89f8ef81befa435db5efadb3af811b",
+      "managed": true
+    },
+    ".claude/skills/specframe-audit/SKILL.md": {
+      "sha256": "5becb4c7ea35944be55b4a6b16a6e1e2e9c113d8c3a74cfaa7cdc49d5b4f171b",
+      "managed": true
+    }
+  }
+}

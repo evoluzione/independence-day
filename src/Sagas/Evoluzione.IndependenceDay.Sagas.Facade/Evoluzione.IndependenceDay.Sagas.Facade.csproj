@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Evoluzione.IndependenceDay.Sagas\Evoluzione.IndependenceDay.Sagas.csproj" />
+    <ProjectReference Include="..\Evoluzione.IndependenceDay.Sagas.Infrastructure\Evoluzione.IndependenceDay.Sagas.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

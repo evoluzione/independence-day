@@ -1,0 +1,200 @@
+# =================================================================================================
+# independence-day — tutto quello che serve, e nient'altro.
+#
+#   docker compose up --build
+#
+# Non c'e' niente da installare: i tre servizi .NET vengono compilati dentro l'immagine SDK, quindi
+# sulla macchina bastano Docker e il repository.
+# La dashboard e' su http://localhost:8080
+#
+# Le porte pubblicate stanno fuori dagli standard (2114/2115, 5673/15673, 27018) di proposito: e' normale
+# avere gia' un Postgres, un Rabbit o un Mongo in ascolto sulla macchina, e un conflitto di porta si
+# presenta come un servizio che non parte.
+# =================================================================================================
+
+services:
+
+  # -----------------------------------------------------------------------------------------------
+  # KURRENTDB (ex EventStoreDB) — il libro mastro, uno per servizio
+  # Ci finisce ogni evento di dominio: e' la verita', i read model sono copie.
+  #
+  # Due istanze e non una condivisa. Ogni servizio sottoscrive lo stream globale della propria, e su
+  # un'istanza condivisa si ritroverebbe a rileggere anche gli eventi dell'altro — tipi che non
+  # conosce, che non sa deserializzare, e che ripubblicherebbe sul bus se per caso li conoscesse.
+  # Il difetto non si presenterebbe come un errore ma come eventi doppi: meglio due stream separati.
+  #
+  # Sui tag stabili KurrentDB pubblica solo immagini x64: su Mac Apple Silicon il container gira in
+  # emulazione. Dichiarare la piattaforma qui zittisce l'avviso e tiene per tutti lo stesso binario.
+  # Per girare nativo, in docker-compose.override.yml (non versionato) oppure nell'ambiente:
+  #   EVENTSTORE_IMAGE=kurrentplatform/kurrentdb:26.1.2-experimental-arm64-10.0-noble
+  #   EVENTSTORE_PLATFORM=linux/arm64
+  # A monte i tag arm64 sono marcati experimental: valgono solo per lo sviluppo locale.
+  # -----------------------------------------------------------------------------------------------
+  eventstore-space:
+    image: ${EVENTSTORE_IMAGE:-kurrentplatform/kurrentdb:latest}
+    platform: ${EVENTSTORE_PLATFORM:-linux/amd64}
+    container_name: id4-eventstore-space
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+      - EVENTSTORE_NODE_PORT=2113
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+    ports:
+      - "2114:2113"   # interfaccia web di amministrazione
+    volumes:
+      - eventstore-space-data:/var/lib/eventstore
+    networks: [ id4 ]
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:2113/health/live || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  eventstore-earth:
+    image: ${EVENTSTORE_IMAGE:-kurrentplatform/kurrentdb:latest}
+    platform: ${EVENTSTORE_PLATFORM:-linux/amd64}
+    container_name: id4-eventstore-earth
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+      - EVENTSTORE_NODE_PORT=2113
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+    ports:
+      - "2115:2113"   # interfaccia web di amministrazione
+    volumes:
+      - eventstore-earth-data:/var/lib/eventstore
+    networks: [ id4 ]
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:2113/health/live || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  # -----------------------------------------------------------------------------------------------
+  # RABBITMQ — il bus
+  # L'unica strada per cui Spazio, Terra e saga si parlano. Management su http://localhost:15672
+  # -----------------------------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: id4-rabbitmq
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    networks: [ id4 ]
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 15s
+
+  # -----------------------------------------------------------------------------------------------
+  # MONGODB — read model e stato delle saghe
+  # Un database per servizio: space-readmodel, earth-readmodel, sagas. Stesso cluster, confini distinti.
+  # -----------------------------------------------------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: id4-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks: [ id4 ]
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 15s
+
+  # -----------------------------------------------------------------------------------------------
+  # SPACE — da qui arrivano gli attacchi
+  # -----------------------------------------------------------------------------------------------
+  space-api:
+    build:
+      context: ./src
+      dockerfile: Space/Evoluzione.IndependenceDay.Space.Host/Dockerfile
+    container_name: id4-space
+    ports:
+      - "8090:8080"
+    environment:
+      Space__MongoDbSettings__ConnectionString: mongodb://admin:admin@mongodb:27017
+      Space__EventStore__ConnectionString: esdb://eventstore-space:2113?tls=false
+      Space__RabbitMQ__Host: rabbitmq
+    depends_on:
+      eventstore-space: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      mongodb: { condition: service_healthy }
+    networks: [ id4 ]
+
+  # -----------------------------------------------------------------------------------------------
+  # EARTH — le difese, e la sala operativa da cui si guarda tutto
+  # -----------------------------------------------------------------------------------------------
+  earth-api:
+    build:
+      context: ./src
+      dockerfile: Earth/Evoluzione.IndependenceDay.Earth.Host/Dockerfile
+    container_name: id4-earth
+    ports:
+      - "8080:8080"
+    environment:
+      Earth__MongoDbSettings__ConnectionString: mongodb://admin:admin@mongodb:27017
+      Earth__EventStore__ConnectionString: esdb://eventstore-earth:2113?tls=false
+      Earth__RabbitMQ__Host: rabbitmq
+    depends_on:
+      eventstore-earth: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      mongodb: { condition: service_healthy }
+    networks: [ id4 ]
+
+  # -----------------------------------------------------------------------------------------------
+  # DEFENSE SAGA — il coordinamento
+  # Non espone niente: ascolta il bus e manda comandi. E' un processo a se' proprio perche' non e'
+  # ne' lo Spazio ne' la Terra.
+  # -----------------------------------------------------------------------------------------------
+  saga:
+    build:
+      context: ./src
+      dockerfile: Sagas/Evoluzione.IndependenceDay.Sagas.Host/Dockerfile
+    container_name: id4-saga
+    environment:
+      Sagas__MongoDbSettings__ConnectionString: mongodb://admin:admin@mongodb:27017
+      Sagas__RabbitMQ__Host: rabbitmq
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      mongodb: { condition: service_healthy }
+    networks: [ id4 ]
+
+  # -----------------------------------------------------------------------------------------------
+  # TEST — sotto profilo, quindi non parte con `up`
+  #   docker compose --profile test run --rm tests
+  # Gira nell'immagine SDK con il sorgente montato: i test restano eseguibili anche senza .NET sulla
+  # macchina, che e' il punto di tutto questo repository.
+  # -----------------------------------------------------------------------------------------------
+  tests:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    profiles: [ test ]
+    working_dir: /src
+    volumes:
+      - ./src:/src
+      - nuget-cache:/root/.nuget/packages
+    command: dotnet test Evoluzione.IndependenceDay.slnx
+
+volumes:
+  nuget-cache:
+  eventstore-space-data:
+  eventstore-earth-data:
+  mongodb-data:
+
+networks:
+  id4:
+    driver: bridge

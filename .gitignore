@@ -1,0 +1,26 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+TestResults/
+*.trx
+
+# IDE
+.vs/
+.idea/
+# Di .vscode si esclude il contenuto e non la cartella: git non rientra in una
+# cartella gia' esclusa, quindi con ".vscode/" la riga qui sotto non varrebbe niente.
+.vscode/*
+# Le impostazioni del workspace invece servono a tutti: nascondono bin/ e obj/
+# dall'albero dei file e dicono all'estensione C# quale solution aprire.
+!.vscode/settings.json
+
+# OS
+.DS_Store
+
+# Docker: sovrascritture locali non versionate (es. immagine arm64 di KurrentDB)
+docker-compose.override.yml

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\Evoluzione.IndependenceDay.Sagas.Facade\Evoluzione.IndependenceDay.Sagas.Facade.csproj" />
+  </ItemGroup>
+</Project>

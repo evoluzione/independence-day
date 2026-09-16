@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1" />
+    <ProjectReference Include="..\Evoluzione.IndependenceDay.Sagas\Evoluzione.IndependenceDay.Sagas.csproj" />
+    <!-- La simulazione gioca la campagna con l'aggregato vero della Terra e la curva vera dello
+         Spazio: senza, taratura e prova del contrario sarebbero su una copia che puo' divergere. -->
+    <ProjectReference Include="..\..\Earth\Evoluzione.IndependenceDay.Earth.Domain\Evoluzione.IndependenceDay.Earth.Domain.csproj" />
+    <ProjectReference Include="..\..\Space\Evoluzione.IndependenceDay.Space.Domain\Evoluzione.IndependenceDay.Space.Domain.csproj" />
+  </ItemGroup>
+</Project>

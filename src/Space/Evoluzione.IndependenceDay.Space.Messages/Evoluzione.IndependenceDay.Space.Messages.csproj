@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Muflone" Version="10.2.2" />
+    <ProjectReference Include="..\..\Shared\Evoluzione.IndependenceDay.Contracts\Evoluzione.IndependenceDay.Contracts.csproj" />
+  </ItemGroup>
+</Project>

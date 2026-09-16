@@ -1,0 +1,21 @@
+<Project>
+
+    <!--
+        Configurazione condivisa da tutti i progetti della solution.
+        Gli avvisi sono errori: in un repo dimostrativo un warning ignorato e' un
+        difetto che nessuno andra' mai a leggere.
+    -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <!--
+            Gli aggregati event-sourced hanno un costruttore protetto senza parametri per la
+            reidratazione: le proprieta' risultano non inizializzate al compilatore e CS8618 &amp; co.
+            si risolverebbero solo annotando tutto come nullable, che e' falso.
+        -->
+        <WarningsNotAsErrors>$(WarningsNotAsErrors);CS8618;CS8603;CS8604;CS8602</WarningsNotAsErrors>
+    </PropertyGroup>
+
+</Project>

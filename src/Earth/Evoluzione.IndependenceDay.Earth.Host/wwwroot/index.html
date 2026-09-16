@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Independence Day — Sala operativa</title>
+<style>
+  :root {
+    --bg: #070b10; --panel: #0c131c; --line: #1b2836; --ink: #d6e4f0; --dim: #6b8199;
+    --ok: #35d07f; --warn: #f2b01e; --bad: #ff4d5e; --saga: #6aa9ff; --shield: #4cc9f0;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    padding: 12px 16px; display: flex; flex-direction: column; gap: 10px;
+  }
+  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 14px; letter-spacing: .18em; text-transform: uppercase; margin: 0; }
+  .status { color: var(--dim); }
+  .status.live::before { content: "● "; color: var(--ok); }
+  .status.down::before { content: "● "; color: var(--bad); }
+  .strip { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; color: var(--dim); white-space: nowrap; }
+  .chip b { color: var(--ink); }
+  .chip.bad b { color: var(--bad); } .chip.ok b { color: var(--ok); } .chip.lives b { color: var(--shield); }
+
+  .layout { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; gap: 10px; flex: 1; min-height: 0; }
+  .right { display: grid; grid-template-rows: 2fr 3fr; gap: 10px; min-height: 0; }
+  @media (max-width: 1000px) {
+    body { height: auto; }
+    .layout { grid-template-columns: 1fr; }
+    .right { grid-template-rows: 260px 360px; }
+    #log { max-height: 60vh; }
+  }
+
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
+            display: flex; flex-direction: column; min-height: 0; position: relative; }
+  h2 { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin: 0 0 8px; font-weight: 600; }
+  svg { width: 100%; height: 100%; flex: 1; min-height: 0; display: block; }
+
+  /* diario */
+  #log { overflow-y: auto; flex: 1; }
+  .row { display: grid; grid-template-columns: 62px 22px 1fr; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
+  .row:first-child { border-top: 0; }
+  .row.new { animation: flash 1.2s ease-out; }
+  @keyframes flash { from { background: #17324a; } to { background: transparent; } }
+  .row time, .row .where { color: var(--dim); }
+  .row .emoji { text-align: center; }
+  .row.ok .what { color: var(--ok); } .row.warn .what { color: var(--warn); }
+  .row.bad .what { color: var(--bad); } .row.saga .what { color: var(--saga); }
+  .empty { color: var(--dim); }
+
+  /* spazio */
+  .star { fill: #9fb3c8; }
+  /* Lo scafo va riempito di un colore che si stacchi davvero dal pannello: a #1c1f2b su fondo
+     #0c131c restavano sedici punti per canale, e la nave madre si leggeva come un contorno vuoto. */
+  .mother { filter: drop-shadow(0 4px 10px rgba(0,0,0,.65)); }
+  .mother .hull { fill: #3b4760; stroke: #a8bbd8; stroke-width: 1.5; }
+  .mother .dome { fill: #55658a; stroke: #c6d5ee; stroke-width: 1.2; }
+  .mother .light { fill: #ff4d5e; filter: drop-shadow(0 0 4px rgba(255,77,94,.95));
+                   animation: blink 2s ease-in-out infinite; }
+  .mother .light:nth-child(odd) { animation-delay: 1s; }
+  /* Il fondo del lampeggio non scende sotto la meta': a 0.2 le luci sparivano del tutto. */
+  @keyframes blink { 50% { opacity: .55; } }
+  .mother .bar-bg { fill: #24161a; stroke: var(--line); stroke-width: .8; }
+  .mother .bar { fill: var(--ok); transition: width 1s ease; }
+  .mother.critical .bar { fill: var(--warn); }
+  .mother.dead .hull, .mother.dead .dome { stroke: #3a3f4d; fill: #12141b; }
+  .mother.dead .light { display: none; }
+  .mother text { fill: var(--dim); font-size: 10px; text-anchor: middle; }
+
+  .fleet { transition: transform 1.2s linear; }
+  .fleet .saucer { fill: #ff4d5e; stroke: #ffe3e6; stroke-width: .9; transition: opacity .25s;
+                   filter: drop-shadow(0 0 4px rgba(255,77,94,.9)); }
+  .fleet text { fill: var(--ink); font-size: 10px; text-anchor: middle; transition: opacity .3s; }
+  .fleet text.target { fill: var(--dim); font-size: 9px; }
+  .fleet.resolved .saucer, .fleet.resolved text { opacity: 0; }
+  /* La discesa si anima sul gruppo interno, non sul gruppo posizionato: cosi' e' relativa al punto
+     in cui la flotta si trova. Sul gruppo esterno servirebbe ripetere la sua posizione dentro il
+     fotogramma, e quella e' scritta come attributo SVG — "translate(540, 62)", senza unita' — che
+     come proprieta' CSS non e' valida: la trasformazione veniva scartata e le navicelle ripartivano
+     dall'origine, cioe' volavano verso l'angolo in alto a sinistra. */
+  .fleet .body { transform-box: fill-box; transform-origin: center; }
+  .fleet.resolved.bad .body { animation: dive 1.6s ease-in forwards; }
+  .fleet.resolved.bad .saucer { opacity: 1; fill: var(--bad); }
+  @keyframes dive { to { opacity: 0; transform: translate(0px, 90px) scale(.5); } }
+  .boom .ring { fill: none; stroke: #ffd166; stroke-width: 2.5; animation: ring 1.1s ease-out forwards; }
+  .boom .core { fill: #fff3b0; animation: core .9s ease-out forwards; }
+  .boom .ray { stroke: #ff9f1c; stroke-width: 2; stroke-linecap: round; animation: rays 1s ease-out forwards; }
+  @keyframes ring { from { r: 3; opacity: 1; } to { r: 34; opacity: 0; stroke-width: .5; } }
+  @keyframes core { from { r: 10; opacity: 1; } to { r: 1; opacity: 0; } }
+  @keyframes rays { to { transform: scale(3.2); opacity: 0; } }
+
+  /* Senza questa riga l'overlay resta davanti al pannello anche con l'attributo hidden: la regola
+     [hidden]{display:none} del browser perde contro un display:flex dichiarato su una classe. */
+  .overlay[hidden], .verdict[hidden] { display: none; }
+
+  button {
+    font: inherit; cursor: pointer; border-radius: 5px; padding: 9px 20px;
+    background: var(--ok); color: #05130b; border: 0; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  button:hover { filter: brightness(1.12); }
+  button:disabled { opacity: .5; cursor: progress; }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 600; }
+  button.ghost:hover { border-color: var(--shield); }
+
+  .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+             flex-direction: column; gap: 14px; background: rgba(7,11,16,.86); border-radius: 6px;
+             text-align: center; padding: 20px; z-index: 2; }
+  .overlay p { margin: 0; color: var(--dim); max-width: 44ch; }
+  .overlay .title { font-size: 17px; letter-spacing: .12em; }
+
+  /* resoconto */
+  /* Il resoconto e' una pagina, non un riquadro: dentro il pannello Spazio stava stretto e la
+     tabella delle citta' finiva sotto lo scorrimento. */
+  #report { position: fixed; inset: 12px 16px; background: var(--panel); border: 1px solid var(--line);
+            border-radius: 6px; padding: 18px 22px; overflow-y: auto; z-index: 10;
+            display: flex; flex-direction: column; gap: 14px; }
+  #report[hidden] { display: none; }
+  .report-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .report-head b { font-size: 18px; letter-spacing: .1em; }
+  .report-head.win b { color: var(--ok); } .report-head.lose b { color: var(--bad); }
+  .report-head .sub { color: var(--dim); }
+  .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; }
+  .metric { border: 1px solid var(--line); border-radius: 5px; padding: 8px 10px; }
+  .metric .n { font-size: 22px; font-weight: 700; }
+  .metric .k { color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: .09em; }
+  .metric.ok .n { color: var(--ok); } .metric.bad .n { color: var(--bad); }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 4px 8px; border-top: 1px solid var(--line); }
+  th { color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  /* Anche le intestazioni, non solo i valori: con il solo td.num la colonna restava sfalsata. */
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.fallen td { color: var(--bad); }
+  .report-actions { display: flex; gap: 10px; margin-top: auto; padding-top: 6px; }
+
+  .verdict { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+             flex-direction: column; gap: 6px; background: rgba(7,11,16,.72); border-radius: 6px;
+             font-size: 15px; letter-spacing: .1em; text-align: center; padding: 20px; }
+  .verdict b { font-size: 22px; }
+  .verdict .actions { display: flex; gap: 10px; }
+  .verdict.win b { color: var(--ok); } .verdict.lose b { color: var(--bad); }
+
+  /* l'arsenale, accanto alla griglia */
+  .terra { display: grid; grid-template-columns: auto 1fr; gap: 14px; flex: 1; min-height: 0; }
+  .arsenal { display: flex; flex-direction: column; gap: 6px; justify-content: center;
+             border-right: 1px solid var(--line); padding-right: 14px; }
+  .arsenal h3 { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim);
+                margin: 0 0 2px; font-weight: 600; }
+  .arsenal .u { display: flex; align-items: baseline; gap: 7px; white-space: nowrap; }
+  .arsenal .u b { font-size: 17px; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+  .arsenal .u.empty b, .arsenal .u.empty span { color: var(--dim); opacity: .5; }
+  @media (max-width: 1000px) { .terra { grid-template-columns: 1fr; } .arsenal { border-right: 0; } }
+
+  /* mappa */
+  .gridline { stroke: #132030; stroke-width: 1; }
+  .city .core { fill: #16304a; stroke: var(--shield); stroke-width: 1.5; }
+  .city .shield { fill: none; stroke: var(--shield); stroke-width: 1.5; opacity: 0; stroke-dasharray: 4 3; }
+  .city.shields-up .shield { opacity: .9; animation: spin 6s linear infinite; }
+  @keyframes spin { to { stroke-dashoffset: -70; } }
+  .city .threat { fill: none; stroke: var(--bad); stroke-width: 1.5; opacity: 0; }
+  .city.under-attack .threat { opacity: 1; animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { r: 30; opacity: .3; } }
+  .city .vector { stroke: var(--bad); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0; }
+  .city.under-attack .vector { opacity: .7; animation: flow 1s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -14; } }
+  .city .name { fill: var(--ink); font-size: 11px; font-weight: 600; text-anchor: middle; }
+  .city .stat { fill: var(--ink); font-size: 10px; text-anchor: middle; }
+  .city .incoming { fill: var(--bad); font-size: 10px; text-anchor: middle; }
+  /* In marcia: uscite dalla riserva, non ancora in difesa. */
+  .city .life-bg { fill: #24161a; stroke: var(--line); stroke-width: .8; }
+  .city .life { fill: var(--ok); transition: width .8s ease; }
+  .city.hurt .life { fill: var(--warn); }
+  .city.critical .life { fill: var(--bad); }
+  .city.fallen .core { fill: #1a1a1a; stroke: #444; }
+  .city.fallen .name { fill: #666; text-decoration: line-through; }
+  .city.fallen .shield, .city.fallen .threat, .city.fallen .vector { display: none; }
+  .city.fallen .life { fill: var(--bad); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Independence Day — sala operativa</h1>
+  <span id="conn" class="status">in collegamento…</span>
+  <div class="strip" id="strip"></div>
+</header>
+
+<div class="layout">
+  <section>
+    <h2>Eventi</h2>
+    <div id="log" class="empty">in attesa del primo avvistamento…</div>
+  </section>
+  <div class="right">
+    <section>
+      <h2>Spazio</h2>
+      <svg id="space" viewBox="0 0 600 240" preserveAspectRatio="xMidYMid meet"></svg>
+      <div id="idle" class="overlay" hidden>
+        <div class="title">🛸 Nessuna campagna in corso</div>
+        <p>Cinque citta', cinque cannoni, e un numero di colpi che non si ricarica mai. Ogni ondata e'
+           piu' dura della precedente: si resiste con quello che non e' stato sprecato.</p>
+        <button id="start-btn">Inizia la campagna</button>
+      </div>
+      <div id="verdict" class="verdict" hidden></div>
+    </section>
+    <section>
+      <h2>Terra</h2>
+      <div class="terra">
+        <div id="arsenal" class="arsenal"></div>
+        <svg id="map" viewBox="0 0 600 320" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="report" hidden></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, text) => {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (text !== undefined) n.textContent = text;
+  return n;
+};
+
+// Le citta' stanno dove starebbero su una mappa: le stesse x servono allo Spazio, cosi' una flotta
+// compare sopra la citta' che punta. Gli id sono quelli fissi di Contracts/World/Cities.cs.
+const CITY_POS = {
+  // Due file sfalsate invece della geografia vera: un nome lungo come "Washington D.C." occupa
+  // centodieci pixel, e con le posizioni reali le etichette della costa est si coprivano a vicenda.
+  // L'ordine da ovest a est e' rispettato, la distanza no.
+  '11111111-0000-0000-0000-000000000002': [70, 110],    // Los Angeles
+  '11111111-0000-0000-0000-000000000005': [200, 228],   // Area 51
+  '11111111-0000-0000-0000-000000000004': [330, 110],   // Houston
+  '11111111-0000-0000-0000-000000000003': [440, 228],   // Washington D.C.
+  '11111111-0000-0000-0000-000000000001': [540, 105],   // New York
+};
+const posOf = (cityId) => CITY_POS[cityId] || [300, 160];
+
+// Ogni passo del diario ha un'icona e un'etichetta. Quello che non e' qui si mostra com'e'.
+const STEPS = {
+  'detected':      ['🛸', 'avvistamento'],
+  'fire':          ['🔫', 'fuoco aperto'],
+  'shot':          ['💢', 'colpo'],
+  'cease':         ['🛑', 'cessate il fuoco'],
+  'no-cannon':     ['🚫', 'nessun cannone'],
+  'order-lost':    ['📡', 'ordine perso'],
+  'jammed':        ['🔩', 'inceppato'],
+  'repaired':      ['🔧', 'riparato'],
+  'empty':         ['🈳', 'a secco'],
+  'wasted':        ['🕳️', 'colpo nel vuoto'],
+  'destroyed':     ['💥', 'abbattuta'],
+  'landed':        ['👽', 'atterrata'],
+  'city-fallen':   ['🏚️', 'citta perduta'],
+  'wave-start':    ['📯', 'ondata'],
+};
+
+// Lo stato di un cannone, come si legge ovunque: a schermo, nella mappa, nel resoconto.
+const CANNON = {
+  'ready':  ['🟢', 'pronto'],
+  'firing': ['🔫', 'in azione'],
+  'jammed': ['🔩', 'inceppato'],
+  'empty':  ['🈳', 'a secco'],
+  'lost':   ['🏚️', 'perduto'],
+};
+
+// Le tre stazze: piu' e' pesante, piu' colpi ci vogliono — ma quanti lo sa solo la Terra.
+const CLASS_EMOJI = { 'caccia': '🛸', 'incrociatore': '🛰️', 'corazzata': '🚀' };
+
+/* ---------- barra in alto ---------- */
+function renderStrip(s) {
+  const a = s.aliens, e = s.earth;
+  const chips = [
+    ['level', '📯 livello', s.invasion.level ? `${s.invasion.level}/${s.invasion.lastLevel}` : '—'],
+    ['lives', '🌍 citta in piedi', `${e.citiesStanding}/${e.citiesTotal}`],
+    ['bad', '🛸 navi in volo', a.shipsInFlight],
+    ['ok', '💥 abbattute', a.shipsDestroyed],
+    ['bad', '👽 atterrate', a.shipsLanded],
+    ['ok', '🔫 colpi rimasti', e.roundsLeft],
+    ['bad', '🕳️ nel vuoto', s.steps.wasted || 0],
+  ];
+  $('strip').innerHTML = chips.map(([t, k, v]) => `<span class="chip ${t}">${k} <b>${v}</b></span>`).join('');
+}
+
+// I colpi che restano, citta' per citta'. Non si ricaricano mai: quello che si vede qui e' tutto
+// quello che c'e' da qui alla fine della campagna.
+function renderArsenal(earth, steps) {
+  const cannons = [...earth.cities].sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
+    const [emoji] = CANNON[c.cannon] || ['❔'];
+    return `<div class="u ${c.rounds ? '' : 'empty'}">${emoji} <b>${c.rounds}</b> <span>${esc(c.name)}</span></div>`;
+  }).join('');
+
+  const sparati = (steps.shot || 0) + (steps.wasted || 0);
+  $('arsenal').innerHTML = `<h3>Arsenale</h3>${cannons}
+    <div class="u"><b>${earth.roundsLeft}</b> <span>in tutto</span></div>
+    <h3 style="margin-top:10px">Consumo</h3>
+    <div class="u">💢 <b>${sparati}</b> <span>sparati</span></div>
+    <div class="u ${steps.wasted ? '' : 'empty'}">🕳️ <b>${steps.wasted || 0}</b> <span>nel vuoto</span></div>
+    <div class="u ${steps.jammed ? '' : 'empty'}">🔩 <b>${steps.jammed || 0}</b> <span>inceppamenti</span></div>
+    <div class="u ${steps['order-lost'] ? '' : 'empty'}">📡 <b>${steps['order-lost'] || 0}</b> <span>ordini persi</span></div>`;
+}
+
+/* ---------- diario: si accumula per id, mai riscritto ---------- */
+const seen = new Set();
+function resetLog() {
+  seen.clear();
+  $('log').className = 'empty';
+  $('log').textContent = "in attesa del primo avvistamento…";
+}
+function renderLog(log) {
+  const box = $('log');
+  const fresh = [...log].filter((e) => !seen.has(e.id)).sort((a, b) => new Date(a.at) - new Date(b.at));
+  if (!fresh.length) return;
+  if (box.classList.contains('empty')) { box.className = ''; box.innerHTML = ''; }
+  const first = seen.size === 0;
+  for (const e of fresh) {
+    seen.add(e.id);
+    const [emoji, label] = STEPS[e.step] || ['•', e.step];
+    const t = new Date(e.at).toLocaleTimeString('it-IT', { hour12: false });
+    const row = document.createElement('div');
+    row.className = `row ${esc(e.tone)} ${first ? '' : 'new'}`;
+    row.innerHTML = `<time>${t}</time><span class="emoji">${emoji}</span><span>
+      <span class="what">${esc(e.detail)}</span>
+      <span class="where">${e.cityName ? `— ${esc(e.cityName)} ` : ''}· ${esc(label)}</span></span>`;
+    box.prepend(row);
+  }
+}
+
+/* ---------- spazio: la nave madre in alto, le flotte che ne escono e scendono ---------- */
+const space = $('space');
+for (let i = 0; i < 90; i++)
+  space.appendChild(el('circle', { class: 'star', cx: Math.random() * 600, cy: 40 + Math.random() * 200,
+    r: Math.random() * 1.1 + .2, opacity: Math.random() * .7 + .2 }));
+
+const mother = el('g', { class: 'mother', transform: 'translate(300, 24)' });
+mother.appendChild(el('ellipse', { class: 'hull', rx: 190, ry: 15 }));
+mother.appendChild(el('ellipse', { class: 'dome', cx: 0, cy: -9, rx: 70, ry: 11 }));
+for (let x = -160; x <= 160; x += 40) mother.appendChild(el('circle', { class: 'light', cx: x, cy: 4, r: 2 }));
+const BAR_W = 340;
+mother.appendChild(el('rect', { class: 'bar-bg', x: -BAR_W / 2, y: 24, width: BAR_W, height: 6, rx: 3 }));
+const motherBar = el('rect', { class: 'bar', x: -BAR_W / 2, y: 24, width: BAR_W, height: 6, rx: 3 });
+mother.appendChild(motherBar);
+const motherText = el('text', { y: 42 }, 'nave madre');
+mother.appendChild(motherText);
+space.appendChild(mother);
+
+function renderMother(inv) {
+  const ratio = inv.totalShips ? inv.shipsRemaining / inv.totalShips : 0;
+  motherBar.setAttribute('width', Math.max(0, BAR_W * ratio));
+  motherText.textContent = inv.level
+    ? `livello ${inv.level} · ${inv.shipsRemaining}/${inv.totalShips} navi ancora da fermare`
+    : 'nave madre in posizione';
+  mother.classList.toggle('critical', ratio > 0 && ratio < .25);
+  mother.classList.toggle('dead', inv.shipsRemaining === 0);
+}
+
+const fleets = new Map();     // id -> nodo
+const removed = new Set();    // navi gia' sparite: lo snapshot le porta ancora per un po'
+const lastLane = new Map();   // ultima corsia nota, per chi e' uscito dal conteggio
+let lastThreats = [];
+let lastLanes = new Map();
+const SAUCER = 'M-7.5,0 a7.5,3 0 1,0 15,0 a7.5,3 0 1,0 -15,0 M-3.7,-1.5 a3.7,2.8 0 0,1 7.4,0';
+
+// Con piu' flotte in volo insieme, due che puntano la stessa citta' finirebbero sulla stessa
+// colonna e si sovrapporrebbero. Quindi la posizione orizzontale non e' quella della citta' ma una
+// corsia: tante corsie quante sono le flotte in volo, assegnate nell'ordine da ovest a est delle
+// citta' che puntano. Con una flotta sola la corsia e' esattamente sopra la sua citta'.
+const LANE_FROM = 75, LANE_TO = 525;
+
+// Da dove escono e fin dove scendono: SKY sta sotto la nave madre e la sua etichetta.
+const SKY = 96, GROUND = 214;
+
+function lanesFor(threats) {
+  const flying = threats.filter((t) => t.status === 'incoming');
+  const ordered = [...flying].sort((a, b) => posOf(a.cityId)[0] - posOf(b.cityId)[0] ||
+    new Date(a.detectedAt) - new Date(b.detectedAt));
+  const lanes = new Map();
+  ordered.forEach((t, i) => {
+    lanes.set(t.id, ordered.length === 1
+      ? posOf(t.cityId)[0]
+      : LANE_FROM + i * (LANE_TO - LANE_FROM) / (ordered.length - 1));
+  });
+
+  return lanes;
+}
+
+function fleetTransform(t, lanes) {
+  // Una flotta gia' risolta resta dov'e': ha perso la corsia, non deve saltare altrove mentre esplode.
+  const x = lanes.get(t.id) ?? lastLane.get(t.id) ?? posOf(t.cityId)[0];
+  lastLane.set(t.id, x);
+  const age = Date.now() - new Date(t.detectedAt).getTime();
+  const progress = Math.min(1, age / 25000);            // in 25s attraversa lo spazio
+  // Si parte sotto la nave madre, etichetta compresa: piu' in alto le navi appena uscite le
+  // finivano sopra, e a scafo e scritta sovrapposti non si capiva piu' quante fossero.
+  return `translate(${x}, ${SKY + progress * (GROUND - SKY)})`;
+}
+
+// Una nave e' una nave: la stazza si legge dalla dimensione del disco, non dal numero di dischi.
+const SCALE = { 'caccia': 1, 'incrociatore': 1.5, 'corazzata': 2.2 };
+
+function buildFleet(t) {
+  const g = el('g', { class: 'fleet', 'data-id': t.id });
+  const body = el('g', { class: 'body' });
+  body.appendChild(el('path', { class: 'saucer', d: SAUCER, transform: `scale(${SCALE[t.class] || 1})` }));
+  // Due righe e non una: "corazzata 3/8 → Washington D.C." su una riga sola sfora il riquadro
+  // quando la nave punta una citta' del bordo.
+  body.appendChild(el('text', { y: 20, class: 'count' }, hits(t)));
+  body.appendChild(el('text', { y: 32, class: 'target' }, `→ ${t.cityName}`));
+  g.appendChild(body);
+  return g;
+}
+
+// Quanto ha incassato, e quanti cannoni le stanno sparando. Zero cannoni su una nave viva vuol dire
+// che un ordine si e' perso: e' la cosa da guardare mentre la partita gira.
+const hits = (t) =>
+  `${CLASS_EMOJI[t.class] || '🛸'} ${t.hits}/${t.hitsToDestroy}` + (t.cannonsFiring ? ` 🔫${t.cannonsFiring}` : ' ⚠');
+
+function explode(g) {
+  const boom = el('g', { class: 'boom', transform: 'translate(0, 6)' });
+  boom.appendChild(el('circle', { class: 'core', r: 10 }));
+  boom.appendChild(el('circle', { class: 'ring', r: 3 }));
+  for (let i = 0; i < 8; i++)
+    boom.appendChild(el('line', { class: 'ray', x1: 0, y1: -4, x2: 0, y2: -12, transform: `rotate(${i * 45})` }));
+  g.appendChild(boom);
+}
+
+function renderSpace(threats) {
+  lastThreats = threats;
+  lastLanes = lanesFor(threats);
+  for (const t of threats) {
+    if (removed.has(t.id)) continue;
+    let g = fleets.get(t.id);
+    if (!g) { g = buildFleet(t); fleets.set(t.id, g); space.appendChild(g); }
+    g.setAttribute('transform', fleetTransform(t, lastLanes));
+    g.querySelector('.count').textContent = hits(t);
+    if (t.status !== 'incoming' && !g.classList.contains('resolved')) {
+      const landed = t.status === 'landed';
+      g.classList.add('resolved', landed ? 'bad' : 'ok');
+      if (!landed) explode(g);
+      removed.add(t.id);
+      setTimeout(() => { g.remove(); fleets.delete(t.id); }, 1500);
+    }
+  }
+}
+// La discesa e' continua anche fra un evento e l'altro.
+setInterval(() => {
+  for (const t of lastThreats) {
+    const g = fleets.get(t.id);
+    if (g && !g.classList.contains('resolved')) g.setAttribute('transform', fleetTransform(t, lastLanes));
+  }
+}, 1000);
+
+let reportOpen = false;
+
+function renderInvasion(inv) {
+  $('idle').hidden = inv.status !== 'idle';
+
+  const over = inv.status === 'over';
+  const box = $('verdict');
+  box.hidden = !over || reportOpen;
+  if (over && !reportOpen) {
+    const finita = inv.gameOver || inv.campaignWon;
+    box.className = `verdict ${inv.gameOver ? 'lose' : 'win'}`;
+    box.innerHTML = `<b>${titolo(inv)}</b><span>${esc(inv.verdict)}</span>`;
+    // Il pulsante veloce: chi sta provando una saga vuole ripartire, non leggere.
+    if (!finita) box.appendChild(button('Ondata successiva', '', nextWave));
+    if (finita) box.appendChild(button('Nuova campagna', '', startCampaign));
+    box.appendChild(button('Vedi il resoconto', 'ghost', () => { reportOpen = true; render(last); }));
+  }
+
+  $('report').hidden = !(over && reportOpen);
+  if (over && reportOpen) renderReport(inv.summary);
+  if (!over) reportOpen = false;
+}
+
+function titolo(inv) {
+  if (inv.gameOver) return `👽 TERRA CADUTA — livello ${inv.level}`;
+  if (inv.campaignWon) return '🏆 INVASIONE RESPINTA';
+
+  return `🌍 LIVELLO ${inv.level} DI ${inv.lastLevel} SUPERATO`;
+}
+
+function button(label, cls, onClick) {
+  const b = document.createElement('button');
+  b.className = cls;
+  b.textContent = label;
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+function metric(label, value, tone = '') {
+  return `<div class="metric ${tone}"><div class="n">${value}</div><div class="k">${label}</div></div>`;
+}
+
+function renderReport(s) {
+  if (!s) return;
+  const mm = String(Math.floor(s.durationSeconds / 60)).padStart(2, '0');
+  const ss = String(s.durationSeconds % 60).padStart(2, '0');
+  const box = $('report');
+  box.innerHTML = `
+    <div class="report-head ${s.gameOver ? 'lose' : 'win'}">
+      <b>${s.gameOver ? '👽 TERRA CADUTA' : s.campaignWon ? '🏆 INVASIONE RESPINTA'
+        : `🌍 LIVELLO ${s.level} SUPERATO`}</b>
+      <span class="sub">${s.gameOver ? `hai resistito ${s.level} ondate`
+        : s.campaignWon ? `tutti i ${s.level} livelli superati` : `ondata ${s.wave}`} · durata ${mm}:${ss}</span>
+    </div>
+    <p style="margin:0;color:var(--dim)">${esc(s.verdict)}</p>
+    <div class="report-grid">
+      ${metric('citta in piedi', `${s.citiesStanding}/${s.citiesTotal}`, s.citiesStanding === s.citiesTotal ? 'ok' : 'bad')}
+      ${metric('navi lanciate', s.shipsLaunched)}
+      ${metric('navi abbattute', s.shipsDestroyed, 'ok')}
+      ${metric('navi atterrate', s.shipsLanded, s.shipsLanded ? 'bad' : '')}
+    </div>
+    <div class="report-grid">
+      ${metric('🔫 colpi sparati', s.roundsSpent)}
+      ${metric('🕳️ colpi nel vuoto', s.roundsWasted, s.roundsWasted ? 'bad' : 'ok')}
+      ${metric('🔩 inceppamenti', s.steps.jammed || 0)}
+      ${metric('📡 ordini persi', s.steps['order-lost'] || 0)}
+      ${metric('🎯 colpi rimasti', s.roundsLeft, s.roundsLeft ? 'ok' : 'bad')}
+    </div>
+    <table>
+      <thead><tr><th>Citta'</th><th class="num">Integrita'</th><th class="num">Colpi</th>
+        <th>Cannone</th></tr></thead>
+      <tbody>${s.cities.map((c) => `<tr class="${c.fallen ? 'fallen' : ''}">
+        <td>${esc(c.name)}${c.fallen ? ' — perduta' : ''}</td>
+        <td class="num">${c.integrity}%</td>
+        <td class="num">${c.rounds}</td>
+        <td>${(CANNON[c.cannon] || ['❔', c.cannon]).join(' ')}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="report-actions"></div>`;
+  const actions = box.querySelector('.report-actions');
+  const finita = s.gameOver || s.campaignWon;
+  if (!finita) actions.appendChild(button('Ondata successiva', '', nextWave));
+  actions.appendChild(button(finita ? 'Nuova campagna' : 'Ricomincia da capo', finita ? '' : 'ghost',
+    startCampaign));
+  actions.appendChild(button('Chiudi', 'ghost', () => { reportOpen = false; render(last); }));
+}
+
+async function post(url, e) {
+  const btn = e?.currentTarget;
+  if (btn) btn.disabled = true;
+  try {
+    await fetch(url, { method: 'POST' });
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Due endpoint e non uno: la campagna riporta le difese a nuovo, l'ondata successiva no.
+const startCampaign = (e) => post('/earth/campaign/start', e);
+const nextWave = (e) => { reportOpen = false; return post('/earth/campaign/next-wave', e); };
+
+$('start-btn').addEventListener('click', startCampaign);
+
+/* ---------- terra: la mappa ---------- */
+const map = $('map');
+for (let x = 0; x <= 600; x += 50) map.appendChild(el('line', { class: 'gridline', x1: x, y1: 0, x2: x, y2: 320 }));
+for (let y = 0; y <= 320; y += 50) map.appendChild(el('line', { class: 'gridline', x1: 0, y1: y, x2: 600, y2: y }));
+const cities = new Map();
+const LIFE_W = 60;
+
+function buildCity(c) {
+  const [x, y] = posOf(c.id);
+  const g = el('g', { class: 'city', 'data-id': c.id, transform: `translate(${x}, ${y})` });
+  g.appendChild(el('line', { class: 'vector', x1: 0, y1: -y, x2: 0, y2: -22 }));
+  g.appendChild(el('circle', { class: 'threat', r: 24 }));
+  g.appendChild(el('circle', { class: 'shield', r: 17 }));
+  g.appendChild(el('circle', { class: 'core', r: 9 }));
+  g.appendChild(el('text', { class: 'name', y: -26 }, c.name));
+  g.appendChild(el('rect', { class: 'life-bg', x: -LIFE_W / 2, y: 24, width: LIFE_W, height: 5, rx: 2 }));
+  g.appendChild(el('rect', { class: 'life', x: -LIFE_W / 2, y: 24, width: LIFE_W, height: 5, rx: 2 }));
+  // Stato del cannone e colpi rimasti: e' quello che si guarda per capire come sta andando.
+  g.appendChild(el('text', { class: 'stat', y: 42 }));
+  g.appendChild(el('text', { class: 'stat', y: 54 }));
+  g.appendChild(el('text', { class: 'incoming', y: 68 }));
+  return g;
+}
+
+function renderMap(earth, threats) {
+  const attacked = new Map();
+  for (const t of threats)
+    if (t.status === 'incoming') attacked.set(t.cityId, (attacked.get(t.cityId) || 0) + 1);
+  for (const c of earth.cities) {
+    let g = cities.get(c.id);
+    if (!g) { g = buildCity(c); cities.set(c.id, g); map.appendChild(g); }
+    g.classList.toggle('shields-up', c.cannon === 'firing' && !c.fallen);
+    g.classList.toggle('under-attack', attacked.has(c.id) && !c.fallen);
+    g.classList.toggle('hurt', c.integrity < 67 && !c.fallen);
+    g.classList.toggle('critical', c.integrity < 34 && !c.fallen);
+    g.classList.toggle('fallen', c.fallen);
+    g.querySelector('.life').setAttribute('width', Math.max(0, LIFE_W * c.integrity / 100));
+    const [riga1, riga2] = g.querySelectorAll('.stat');
+    const [emoji, stato] = CANNON[c.cannon] || ['❔', c.cannon];
+    riga1.textContent = c.fallen ? 'rasa al suolo' : `${emoji} ${stato}`;
+    riga2.textContent = c.fallen ? '' : `🔫 ${c.rounds} colpi`;
+    const incoming = attacked.get(c.id);
+    g.querySelector('.incoming').textContent = incoming && !c.fallen
+      ? `🛸 ${incoming} ${incoming === 1 ? 'nave' : 'navi'} in arrivo` : '';
+  }
+}
+
+let last = null;
+let shownWave = null;
+
+function render(s) {
+  // Ondata nuova: la battaglia precedente sparisce dallo schermo. I suoi eventi restano su Mongo,
+  // e' solo questa pagina a guardare un capitolo alla volta.
+  if (shownWave !== null && s.invasion.wave !== shownWave) {
+    resetLog();
+    for (const [, g] of fleets) g.remove();
+    fleets.clear();
+    removed.clear();
+  }
+  shownWave = s.invasion.wave;
+  last = s;
+
+  renderStrip(s);
+  renderArsenal(s.earth, s.steps);
+  renderLog(s.log);
+  renderMother(s.invasion);
+  renderSpace(s.ships);
+  renderInvasion(s.invasion);
+  renderMap(s.earth, s.ships);
+}
+
+// Il browser riapre da solo un EventSource caduto: qui si aggiorna solo l'indicatore.
+const source = new EventSource('/earth/stream');
+source.onopen = () => { $('conn').className = 'status live'; $('conn').textContent = 'collegato'; };
+source.onerror = () => { $('conn').className = 'status down'; $('conn').textContent = 'collegamento perso, riprovo…'; };
+source.onmessage = (e) => { try { render(JSON.parse(e.data)); } catch { /* frame parziale: arriva il prossimo */ } };
+</script>
+
+</body>
+</html>
