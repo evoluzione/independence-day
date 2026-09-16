@@ -66,7 +66,7 @@ Terra non accetta ordini su quella nave.
 | `ShipLanded(shipId, cityId, damage, integrityLeft)` | ha toccato terra |
 | `CityFallen(cityId, shipId)` | integrità a zero: città e cannone perduti |
 
-### Il battito — ogni 700 ms
+### Il battito — ogni mezzo secondo
 
 | Evento | Cosa dice |
 | --- | --- |
@@ -83,7 +83,7 @@ Un cannone a secco è ancora assegnato, quindi vale uno — e finché è lì que
 un cannone che non spara.
 
 Il battito però è una rete, non il meccanismo. Quando un evento dice già tutto quello che serve — un
-cannone riparato, un cannone a secco — aspettare il battito costa 700 ms su 8 secondi di finestra.
+cannone riparato, un cannone a secco — aspettare il battito costa mezzo secondo su otto di finestra.
 
 ## Il giro completo, quando tutto va bene
 

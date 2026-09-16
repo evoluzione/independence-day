@@ -9,14 +9,14 @@ casuale: **i guasti sono deterministici**, nessun dado, nessuna probabilità.
 | | |
 | --- | --- |
 | Città | **5**, un cannone ciascuna |
-| Colpi | **195 per città**, 975 in tutto. Non si ricaricano **mai**, né fra un'ondata e l'altra |
+| Colpi | **50 per città**, 250 in tutto. Non si ricaricano **mai**, né fra un'ondata e l'altra |
 | Cadenza | un colpo ogni **350 ms** |
 | Bersagli | **uno alla volta**: un cannone spara a una nave sola |
 | Raggio | tutte le città sparano a tutte le navi, non solo a quella sopra di loro |
 
 **Quale cannone spari non lo decidi tu.** Chiedi di aprire il fuoco su una nave, e la Terra sceglie:
 prende il più **scarico** fra quelli liberi. Consuma prima le riserve piccole e tiene indietro quelle
-piene — con il prezzo che ne segue, e che è la regola del decimo livello.
+piene — con il prezzo che ne segue, e che è la regola del quinto livello.
 
 **Un colpo su tre manca il bersaglio.** La munizione se ne va e la nave regge. Non c'è niente da fare
 e non te lo dice nessuno: il fuoco è aperto, quindi il cannone ricarica e riprova da solo.
@@ -73,7 +73,7 @@ non falliscono mai.
 Un cannone che finisce i colpi **resta assegnato alla sua nave** finché non lo si restituisce. Non
 spara più, ma per il battito quella nave risulta coperta.
 
-## Il battito — ogni 700 ms
+## Il battito — ogni mezzo secondo
 
 La Terra racconta come stanno le cose senza che nessuno lo chieda. Serve a vedere le tre cose che
 **nessun evento** può raccontare, perché sono assenze:
@@ -85,11 +85,11 @@ La Terra racconta come stanno le cose senza che nessuno lo chieda. Serve a veder
 | `CannonStillJammed` | la riparazione si è persa, o non ha preso |
 
 È l'unico orologio che hai — ed è una rete, non il meccanismo: quando un evento dice già tutto,
-aspettare il battito costa 700 ms su 8 secondi di finestra.
+aspettare il battito costa mezzo secondo su otto di finestra.
 
 ## La sala operativa
 
-**46 linee.** Un processo aperto ne occupa una, e la libera **solo chiudendosi**.
+**30 linee.** Un processo aperto ne occupa una, e la libera **solo chiudendosi**.
 
 Sono molte più delle navi che possono essere in volo insieme, quindi non è una risorsa da dosare: è
 la ragione per cui chiudere un processo è una mossa. Un processo che non si chiude mai non fa male
@@ -97,7 +97,7 @@ subito — tiene la sua linea, e basta. Ma le navi passano a decine e le linee n
 a un certo punto una nave viene avvistata e nessuno la prende in carico. Nessun ordine, nessun
 cannone, nessun errore.
 
-## I dieci livelli
+## I cinque livelli
 
 Una nave parte ogni **secondo** e punta le città **a turno**. Le più pesanti partono per prime: chi
 arriva dopo trova i cannoni già impegnati.
@@ -107,54 +107,44 @@ arriva dopo trova i cannoni già impegnati.
 | 1 | 5 | 5 | 0 | 0 | 5 | 5 |
 | 2 | 6 | 5 | 1 | 0 | 9 | 14 |
 | 3 | 7 | 5 | 2 | 0 | 13 | 27 |
-| 4 | 8 | 5 | 3 | 0 | 17 | 44 |
-| 5 | 9 | 5 | 4 | 0 | 21 | 65 |
-| 6 | 10 | 4 | 5 | 1 | 33 | 98 |
-| 7 | 11 | 3 | 6 | 2 | 45 | 143 |
-| 8 | 12 | 2 | 7 | 3 | 57 | 200 |
-| 9 | 13 | 1 | 8 | 4 | 69 | 269 |
-| 10 | 14 | 0 | 9 | 5 | 81 | **350** |
+| 4 | 8 | 4 | 3 | 1 | 25 | 52 |
+| 5 | 9 | 3 | 4 | 2 | 37 | **89** |
 
-Con un colpo su tre a vuoto, i 350 colpi a segno sono circa **525 grilletti** su 975 in dotazione,
-meno quelli spesi nelle riparazioni. Il margine c'è: la soluzione di riferimento chiude il decimo
-livello con cinque città in piedi, nessuna nave a terra e circa **240 colpi** avanzati.
+Trentacinque navi in tutto. Con un colpo su tre a vuoto, gli 89 colpi a segno sono circa **134
+grilletti** su 250 in dotazione, meno quelli spesi nelle riparazioni. Il margine c'è: la soluzione di
+riferimento chiude il quinto livello con cinque città in piedi, nessuna nave a terra e circa **88
+colpi** avanzati.
 
-Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. Agli ultimi livelli le corazzate
-partono per prime e se ne prendono cinque su cinque, e chi arriva dopo aspetta. Un cannone lasciato
-acceso su un relitto non è un colpo sprecato: è un posto vuoto in quella fila.
+Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. All'ultimo livello le corazzate
+partono per prime, e chi arriva dopo aspetta. Un cannone lasciato acceso su un relitto non è un colpo
+sprecato: è un posto vuoto in quella fila.
 
-## I dieci gradini
+## I cinque gradini
 
-I dieci test di `Sagas.Tests` sono dieci gradini, e **ognuno è un livello**: con i primi N verdi la
-campagna arriva in fondo al livello N senza perdere una città.
+I test di `Sagas.Tests` sono cinque gradini, e **ognuno è un livello**: con i gradini fino a N verdi
+la campagna arriva in fondo al livello N senza perdere una città.
 
 È una garanzia sul minimo, non sul massimo. Un gradino scritto bene può portarti anche un po' più in
-là — il settimo, per esempio, regge fino all'ottavo livello — ma nessuno dei dieci è superfluo, e
-saltarne uno ti ferma dove quel gradino serviva.
+là, ma nessuno dei cinque è superfluo, e saltarne uno ti ferma dove quel gradino serviva.
 
-| Livello | Test | Quello che serve | Perché lì |
+| Livello | Gradino | Quello che serve | Perché lì |
 | ---: | --- | --- | --- |
 | 1 | aprire il fuoco | `StartedBy` → `OpenFire` | senza, non spara nessuno |
-| 2 | restituire il cannone | `ShipDestroyed` → `CeaseFire` | le navi diventano più dei cannoni |
-| 3 | insistere al battito | `ShipApproaching` con zero cannoni → `OpenFire` | si perde il primo ordine |
-| 4 | richiudere | `CannonStillFiring` → `CeaseFire` | si perde il primo cessate il fuoco |
-| 5 | riparare | `CannonJammed` → `RepairCannon` | arriva il primo inceppamento |
-| 6 | insistere sulla riparazione | `CannonStillJammed` → `RepairCannon` | la prima riparazione non prende |
-| 7 | chiudere il processo | `CompleteSaga` / `FailSaga` | finiscono le linee della sala operativa |
-| 8 | non chiuderlo troppo presto | chiudere solo a conto saldato | chi chiude subito non può più rimediare |
-| 9 | non aspettare il battito | `CannonRepaired` → `OpenFire` | 700 ms non ci sono più |
-| 10 | restituire il cannone a secco | `CannonEmpty` → `CeaseFire` + `OpenFire` | i cannoni cominciano a finire |
+| 2 | restituire il cannone | `ShipDestroyed` → `CeaseFire`, e il conto di quello che hai aperto | le navi diventano più dei cannoni |
+| 3 | insistere quando c'è silenzio | `ShipApproaching` con zero cannoni → `OpenFire`; `CannonStillFiring` → `CeaseFire` | si perdono i primi ordini |
+| 4 | riparare, e rimettere in azione | `CannonJammed` e `CannonStillJammed` → `RepairCannon`; `CannonRepaired` → `OpenFire` | arrivano i primi inceppamenti |
+| 5 | chiudere il conto | `CompleteSaga` solo a conto saldato; `CannonEmpty` → `CeaseFire` + `OpenFire` | finiscono le linee e i cannoni |
 
-C'è un branch per gradino, `livello-01` … `livello-10`, ognuno con la soluzione fino a quel livello.
+C'è un branch per gradino, `livello-01` … `livello-05`, ognuno con la soluzione fino a quel livello.
 Il diff fra due consecutivi è esattamente quello che aggiunge il gradino:
 
 ```bash
-git diff livello-06 livello-07 -- src/Sagas/
+git diff livello-03 livello-04 -- src/Sagas/
 ```
 
 ## Come si vince
 
-Superare il livello 10. La campagna è persa quando cade l'ultima città.
+Superare il livello 5. La campagna è persa quando cade l'ultima città.
 
 A parità di vittoria contano, in quest'ordine: le **città in piedi**, le **navi atterrate**, i
 **colpi non spesi**.

@@ -22,8 +22,8 @@ SDK, quindi sulla macchina bastano Docker e questo repository.
 docker compose --profile test run --rm tests
 ```
 
-Dieci test rossi, uno per livello. Falli diventare verdi in ordine: con i primi N verdi la campagna
-supera i primi N livelli.
+Test rossi, raggruppati in cinque gradini, uno per livello. Falli diventare verdi in ordine: con i
+gradini fino a N verdi la campagna supera i primi N livelli.
 
 Poi apri i due file da scrivere, che sono tutto l'esercizio:
 
@@ -48,7 +48,7 @@ Le porte pubblicate stanno fuori dagli standard di proposito: è normale avere g
 in ascolto, e un conflitto di porta si presenta come un servizio che non parte.
 
 - **[La guida](GUIDA.md)** — come si comincia, in sette passi
-- **[Le regole](REGOLE.md)** — cannoni, navi, guasti, i dieci livelli
+- **[Le regole](REGOLE.md)** — cannoni, navi, guasti, i cinque livelli
 - **[Comandi ed eventi](EVENTI.md)** — cosa puoi mandare, cosa ti arriva, come si aggancia
 - **[L&#39;architettura](ARCHITETTURA.md)** — i tre servizi e dove sta cosa
 
@@ -65,17 +65,17 @@ services:
 
 ## La soluzione
 
-C'è un branch per ogni gradino, `livello-01` … `livello-10`, con la saga scritta **fino a quel
+C'è un branch per ogni gradino, `livello-01` … `livello-05`, con la saga scritta **fino a quel
 livello**. Guardali solo dopo aver provato la tua: il diff fra due consecutivi è esattamente quello
 che aggiunge quel gradino, e niente di più.
 
 ```bash
-git diff livello-04 livello-05 -- src/Sagas/
+git diff livello-03 livello-04 -- src/Sagas/
 ```
 
-`livello-10` è la saga completa, che supera tutti e dieci i livelli con cinque città in piedi e
+`livello-05` è la saga completa, che supera tutti e cinque i livelli con cinque città in piedi e
 nessuna nave a terra. Il diff con `main` è di **due file**, ed è esattamente l'esercizio.
 
 ```bash
-git diff main livello-10 -- src/Sagas/
+git diff main livello-05 -- src/Sagas/
 ```
