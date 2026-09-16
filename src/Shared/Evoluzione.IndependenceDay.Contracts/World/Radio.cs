@@ -38,9 +38,9 @@ public static class Radio
     /// Se l'ordine numero <paramref name="order"/> arriva a destinazione.
     /// </summary>
     /// <remarks>
-    /// Il resto e' tre e non zero per una ragione pratica: il primo ordine di una partita deve
-    /// arrivare. Vedere sparire il primo comando in assoluto sembra un guasto del gioco, non una
-    /// regola del gioco.
+    /// Il resto e' dieci e non zero per una ragione di percorso: i primi ordini di una partita devono
+    /// arrivare tutti. Vedere sparire il primo comando in assoluto sembra un guasto del gioco, non una
+    /// regola del gioco — e il primo livello si supera senza sapere che gli ordini si perdono.
     /// </remarks>
-    public static bool Delivers(int order) => order % LostEveryOrders != 3;
+    public static bool Delivers(int order) => order % LostEveryOrders != 10;
 }

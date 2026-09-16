@@ -37,6 +37,16 @@ public sealed class InterceptionState : SagaStateBase
     /// </remarks>
     public HashSet<Guid> Firing { get; set; } = [];
 
+    /// <summary>
+    /// I cannoni che questo processo ha lasciato inceppati e non ha ancora fatto riparare.
+    /// </summary>
+    /// <remarks>
+    /// E' l'altra meta' del conto con la Terra. Un cannone inceppato non spara e non e' un debito di
+    /// fuoco, ma e' rotto per colpa di questo processo, e nessun altro sa che esiste: se questo
+    /// processo si chiude senza averlo rimesso in sesto, resta fermo per il resto della campagna.
+    /// </remarks>
+    public HashSet<Guid> Jammed { get; set; } = [];
+
     /// <summary>Com'e' finita la nave. Finita la nave, resta da chiudere quello che si e' aperto.</summary>
     public ShipFate Fate { get; set; }
 }

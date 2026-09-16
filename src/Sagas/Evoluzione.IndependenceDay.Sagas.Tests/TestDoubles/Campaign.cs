@@ -29,7 +29,11 @@ public sealed record CampaignResult(
     int RoundsLeft,
     int Jams,
     int OrdersLost,
-    int OpenCannons)
+    int OpenCannons,
+    int OpenLines,
+    int Unattended,
+    int Empties,
+    int FailedRepairs)
 {
     public bool Won => LevelReached >= Invasion.LastLevel && CitiesStanding > 0;
 
@@ -37,7 +41,9 @@ public sealed record CampaignResult(
         $"livello {LevelReached}, {CitiesStanding} citta' in piedi, {ShipsDestroyed} abbattute, " +
         $"{ShipsLanded} atterrate, {RoundsSpent} colpi ({RoundsMissed} mancati, {RoundsWasted} su relitti), " +
         $"{RoundsLeft} rimasti, " +
-        $"{Jams} inceppamenti, {OrdersLost} ordini persi, {OpenCannons} cannoni lasciati accesi";
+        $"{Jams} inceppamenti, {OrdersLost} ordini persi, {OpenCannons} cannoni lasciati accesi, " +
+        $"{OpenLines} linee occupate, {Unattended} navi senza nessuno che le seguisse, " +
+        $"{Empties} cannoni a secco, {FailedRepairs} riparazioni non prese";
 }
 
 /// <summary>
@@ -58,14 +64,15 @@ public sealed record CampaignResult(
 public sealed class Campaign
 {
     private const int TickMs = 100;
-    private const int HeartbeatMs = 500;
+    private const int HeartbeatMs = 700;
+
     private const int LaunchIntervalMs = 1000;
 
     private static readonly Account Who = new("test", "Campaign");
     private static readonly EarthId Earth = new(Cities.DefenseId);
     private static readonly Contracts.Ids.EarthId ContractsEarth = new(Cities.DefenseId);
 
-    private readonly WaveDifficulty _difficulty = new();
+
     private readonly RecordingServiceBus _bus = new();
     private readonly InMemorySagaRepository _sagas = new();
     private readonly HashSet<Guid> _started = [];
@@ -83,9 +90,20 @@ public sealed class Campaign
     private int _lost;
     private int _destroyed;
     private int _landed;
+    private int _unattended;
+    private int _failedRepairs;
+    private int _empties;
 
     /// <summary>Se falso, il processo non restituisce mai un cannone: e' la prova del contrario.</summary>
     public bool Compensates { get; init; } = true;
+
+    private readonly WaveDifficulty _difficulty = new();
+
+    /// <summary>Com'e' andato ogni livello: e' cosi' che si vede <b>dove</b> si e' rotto qualcosa.</summary>
+    public readonly List<(int Level, int Landed, int Standing, int RoundsLeft)> PerLevel = [];
+
+    /// <summary>Fino a che livello non e' atterrata nessuna nave.</summary>
+    public int CleanThrough => PerLevel.TakeWhile(level => level.Landed == 0).Count();
 
     public CampaignResult Play()
     {
@@ -96,8 +114,11 @@ public sealed class Campaign
         for (var l = 1; l <= Invasion.LastLevel; l++)
         {
             level = l;
+            var before = _landed;
             Wave(_difficulty.For(l));
             Settle();
+            PerLevel.Add((l, _landed - before, Standing().Count,
+                _earth.Cannons.Values.Where(c => c.Status != CannonStatus.Lost).Sum(c => c.Rounds)));
 
             if (Standing().Count == 0)
                 break;
@@ -106,7 +127,8 @@ public sealed class Campaign
         return new CampaignResult(level, Standing().Count, _destroyed, _landed, _spent, _missed, _wasted,
             _earth.Cannons.Values.Where(c => c.Status != CannonStatus.Lost).Sum(c => c.Rounds),
             _jams, _lost,
-            _earth.Cannons.Values.Count(c => c.Status == CannonStatus.Firing));
+            _earth.Cannons.Values.Count(c => c.Status == CannonStatus.Firing),
+            _sagas.Open, _unattended, _empties, _failedRepairs);
     }
 
     private void Wave(WavePlan plan)
@@ -175,6 +197,14 @@ public sealed class Campaign
         _earth.DetectShip(new EarthCityId(cityId), new EarthShipId(shipId), shipClass, Guid.NewGuid());
         Drain();
 
+        // La sala operativa ha un numero finito di linee: se sono tutte occupate da processi che non
+        // si sono mai chiusi, questa nave non viene presa in carico da nessuno.
+        if (_sagas.Open >= OperationsRoom.Lines)
+        {
+            _unattended++;
+            return;
+        }
+
         // L'avvistamento accende la saga, come fa l'handler di integrazione nel gioco vero.
         _started.Add(shipId);
         Saga().StartedByAsync(new StartShipInterception(new Contracts.Ids.ShipId(shipId),
@@ -232,12 +262,15 @@ public sealed class Campaign
 
         foreach (var (cityId, cannon) in _earth.Cannons.ToList())
         {
-            if (cannon.Target is null || _earth.Ships.ContainsKey(cannon.Target))
-                continue;
+            if (cannon.Target is not null && !_earth.Ships.ContainsKey(cannon.Target))
+                Deliver(Guid.Parse(cannon.Target), new C.CannonStillFiring(ContractsEarth,
+                    new Contracts.Ids.CityId(Guid.Parse(cityId)),
+                    new Contracts.Ids.ShipId(Guid.Parse(cannon.Target)), Guid.Parse(cannon.Target)));
 
-            Deliver(Guid.Parse(cannon.Target), new C.CannonStillFiring(ContractsEarth,
-                new Contracts.Ids.CityId(Guid.Parse(cityId)),
-                new Contracts.Ids.ShipId(Guid.Parse(cannon.Target)), Guid.Parse(cannon.Target)));
+            if (cannon.Status == CannonStatus.Jammed && cannon.JammedOn is not null)
+                Deliver(Guid.Parse(cannon.JammedOn), new C.CannonStillJammed(ContractsEarth,
+                    new Contracts.Ids.CityId(Guid.Parse(cityId)),
+                    new Contracts.Ids.ShipId(Guid.Parse(cannon.JammedOn)), Guid.Parse(cannon.JammedOn)));
         }
     }
 
@@ -265,6 +298,8 @@ public sealed class Campaign
             case EarthShotMissed: _spent++; _missed++; break;
             case EarthShotWasted: _spent++; _wasted++; break;
             case EarthCannonJammed: _jams++; break;
+            case EarthCannonEmpty: _empties++; break;
+            case EarthCannonStillJammed: _failedRepairs++; break;
             case EarthShipDestroyed: _destroyed++; break;
             case EarthShipLanded: _landed++; break;
         }
@@ -277,6 +312,7 @@ public sealed class Campaign
         EarthNoCannonReady e => Guid.Parse(e.ShipId.Value),
         EarthCannonJammed e => Guid.Parse(e.ShipId.Value),
         EarthCannonRepaired e => Guid.Parse(e.ShipId.Value),
+        EarthCannonStillJammed e => Guid.Parse(e.ShipId.Value),
         EarthCannonEmpty e => Guid.Parse(e.ShipId.Value),
         EarthShipDestroyed e => Guid.Parse(e.ShipId.Value),
         EarthShipLanded e => Guid.Parse(e.ShipId.Value),
@@ -300,6 +336,8 @@ public sealed class Campaign
                 Guid.Parse(e.ShipId.Value)),
             EarthCannonRepaired e => new C.CannonRepaired(ContractsEarth, city(e.CityId), ship(e.ShipId),
                 e.RoundsLeft, Guid.Parse(e.ShipId.Value)),
+            EarthCannonStillJammed e => new C.CannonStillJammed(ContractsEarth, city(e.CityId), ship(e.ShipId),
+                Guid.Parse(e.ShipId.Value)),
             EarthCannonEmpty e => new C.CannonEmpty(ContractsEarth, city(e.CityId), ship(e.ShipId),
                 Guid.Parse(e.ShipId.Value)),
             EarthShipDestroyed e => new C.ShipDestroyed(ContractsEarth, ship(e.ShipId), city(e.CityId),
@@ -332,6 +370,7 @@ public sealed class Campaign
             case C.CannonRepaired e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.CannonEmpty e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.CannonStillFiring e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.CannonStillJammed e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.ShipDestroyed e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.ShipLanded e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
         }

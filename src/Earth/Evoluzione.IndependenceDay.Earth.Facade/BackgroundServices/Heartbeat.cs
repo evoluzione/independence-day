@@ -15,12 +15,12 @@ public class HeartbeatSettings
     /// Ogni quanto la Terra racconta come stanno le cose.
     /// </summary>
     /// <remarks>
-    /// Mezzo secondo su otto di finestra. A un secondo il gioco era ingiocabile agli ultimi livelli:
-    /// il battito e' l'unico orologio di chi coordina, quindi e' anche il tempo che passa fra un
-    /// ordine perso e il momento in cui si puo' rimediare. Un sedicesimo della finestra e' un
-    /// ritardo; un ottavo e' una nave a terra.
+    /// Sette decimi su otto secondi di finestra. Il battito e' l'unico orologio di chi coordina,
+    /// quindi e' anche il tempo che passa fra un ordine perso e il momento in cui si puo' rimediare:
+    /// abbastanza stretto da poter rimediare, abbastanza largo da rendere conveniente <b>non</b>
+    /// aspettarlo quando un evento dice gia' tutto quello che serve sapere.
     /// </remarks>
-    public int TickMs { get; set; } = 500;
+    public int TickMs { get; set; } = 700;
 }
 
 /// <summary>
@@ -31,7 +31,8 @@ public class HeartbeatSettings
 /// perche' sono <b>assenze</b>:
 /// <list type="bullet">
 /// <item>una nave in volo a cui non spara nessuno — l'ordine di aprire il fuoco si e' perso;</item>
-/// <item>un cannone che spara a una nave che non c'e' piu' — il cessate il fuoco si e' perso.</item>
+/// <item>un cannone che spara a una nave che non c'e' piu' — il cessate il fuoco si e' perso;</item>
+/// <item>un cannone ancora inceppato — la riparazione non e' arrivata, o non ha preso.</item>
 /// </list>
 /// <para>
 /// Non passa dagli aggregati: non e' un fatto di dominio, e' un resoconto. Lo si legge dal read
@@ -60,7 +61,7 @@ public class Heartbeat(
                 var bus = scope.ServiceProvider.GetRequiredService<IEventBus>();
 
                 var now = DateTime.UtcNow;
-                var cannons = await battle.FiringCannons(stoppingToken);
+                var cannons = await battle.EngagedCannons(stoppingToken);
                 var inFlight = await battle.OpenShips(stoppingToken);
                 var alive = inFlight.Select(s => s.Id).ToHashSet();
 
@@ -81,6 +82,23 @@ public class Heartbeat(
 
                     await bus.PublishAsync(
                         new CannonStillFiring(Earth, new CityId(cannon.Id), new ShipId(cannon.Target),
+                            ship.CorrelationId),
+                        stoppingToken);
+                }
+
+                // Cannoni ancora fermi: la riparazione non e' arrivata, o non ha preso. Non c'e' modo
+                // di distinguere i due casi, e non serve: la risposta e' la stessa.
+                foreach (var cannon in await battle.JammedCannons(stoppingToken))
+                {
+                    if (cannon.JammedOn == Guid.Empty)
+                        continue;
+
+                    var ship = await battle.Ship(cannon.JammedOn, stoppingToken);
+                    if (ship is null)
+                        continue;
+
+                    await bus.PublishAsync(
+                        new CannonStillJammed(Earth, new CityId(cannon.Id), new ShipId(cannon.JammedOn),
                             ship.CorrelationId),
                         stoppingToken);
                 }

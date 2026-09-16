@@ -21,7 +21,15 @@ public interface IBattleService
     Task MarkShot(Guid cityId, int rounds, DateTime at, CancellationToken ct = default);
 
     /// <summary>I cannoni che stanno sparando: e' cosi' che la centrale di tiro sa a chi premere il grilletto.</summary>
+    Task SetCannonStatus(Guid cityId, string status, DateTime at, CancellationToken ct = default);
+
+    Task SetJammedOn(Guid cityId, Guid shipId, DateTime at, CancellationToken ct = default);
+
     Task<IReadOnlyList<City>> FiringCannons(CancellationToken ct = default);
+
+    Task<IReadOnlyList<City>> EngagedCannons(CancellationToken ct = default);
+
+    Task<IReadOnlyList<City>> JammedCannons(CancellationToken ct = default);
 
     Task DetectShip(Guid shipId, Guid cityId, ShipClass shipClass, int wave, Guid correlationId, DateTime at,
         long revision, CancellationToken ct = default);

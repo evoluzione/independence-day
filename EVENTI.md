@@ -10,7 +10,7 @@ vocabolario che hai.
 | --- | --- | --- |
 | `OpenFire(shipId)` | accende un cannone su quella nave, e lo lascia acceso | `FireOpened(cityId)` oppure `NoCannonReady` |
 | `CeaseFire(cityId, shipId)` | lo spegne e lo restituisce | `FireCeased` |
-| `RepairCannon(cityId, shipId)` | rimette in sesto un cannone inceppato | `CannonRepaired` |
+| `RepairCannon(cityId, shipId)` | prova a rimettere in sesto un cannone inceppato | `CannonRepaired` oppure `CannonStillJammed` |
 
 Tre ordini, e nessuno dice *quale* cannone o *quanti* colpi: quelle sono decisioni della Terra.
 
@@ -49,13 +49,14 @@ Terra non accetta ordini su quella nave.
 | `NoCannonReady(shipId)` | tutti impegnati, rotti o a secco. Temporaneo: riprova |
 | `FireCeased(cityId, shipId, roundsLeft)` | il cannone è tornato. **È la conferma della compensazione** |
 | `CannonRepaired(cityId, shipId, roundsLeft)` | disponibile, non in azione: riparare non riapre il fuoco |
+| `CannonStillJammed(cityId, shipId)` | la riparazione **non ha preso**: i colpi sono spesi, il cannone è fermo com'era |
 
 ### I guasti
 
 | Evento | Cosa dice |
 | --- | --- |
 | `CannonJammed(cityId, shipId)` | il cannone si è fermato. Non si ripara da solo |
-| `CannonEmpty(cityId, shipId)` | ha finito i colpi. Per sempre |
+| `CannonEmpty(cityId, shipId)` | ha finito i colpi. Per sempre — e **resta assegnato a quella nave** finché non lo restituisci |
 
 ### Gli esiti della nave
 
@@ -65,23 +66,31 @@ Terra non accetta ordini su quella nave.
 | `ShipLanded(shipId, cityId, damage, integrityLeft)` | ha toccato terra |
 | `CityFallen(cityId, shipId)` | integrità a zero: città e cannone perduti |
 
-### Il battito — ogni mezzo secondo
+### Il battito — ogni 700 ms
 
 | Evento | Cosa dice |
 | --- | --- |
-| `ShipApproaching(shipId, cityId, msToImpact, cannonsFiring)` | la nave è ancora viva, e quanti le stanno sparando |
+| `ShipApproaching(shipId, cityId, msToImpact, cannonsFiring)` | la nave è ancora viva, e quanti cannoni le sono addosso |
 | `CannonStillFiring(cityId, shipId)` | questo cannone spara a una nave che non c'è più |
+| `CannonStillJammed(cityId, shipId)` | questo cannone è ancora inceppato |
 
-Sono gli unici due eventi che **arrivano senza che tu abbia chiesto niente**, e gli unici che possano
-rivelare un ordine perso. Un processo che non li ascolta funziona finché non si perde il primo
-ordine, e poi smette di funzionare in silenzio.
+Sono i tre eventi che **arrivano senza che tu abbia chiesto niente**, e gli unici che possano rivelare
+un ordine perso. Un processo che non li ascolta funziona finché non si perde il primo ordine, e poi
+smette di funzionare in silenzio.
+
+Attenzione a `cannonsFiring`: conta i cannoni **assegnati**, non quelli che stanno davvero sparando.
+Un cannone a secco è ancora assegnato, quindi vale uno — e finché è lì quella nave risulta coperta da
+un cannone che non spara.
+
+Il battito però è una rete, non il meccanismo. Quando un evento dice già tutto quello che serve — un
+cannone riparato, un cannone a secco — aspettare il battito costa 700 ms su 8 secondi di finestra.
 
 ## Il giro completo, quando tutto va bene
 
 ```
 AlienShipDetected      (Spazio → Terra)
   ShipDetected         (Terra → tu)          ──►  OpenFire
-  FireOpened                                      … il cannone spara da solo, ogni 400 ms
+  FireOpened                                      … il cannone spara da solo, ogni 350 ms
   ShipApproaching × n  (battito)
   ShipDestroyed                              ──►  CeaseFire
   FireCeased                                      processo chiuso
@@ -94,8 +103,8 @@ OpenFire            ──►  ✗ perso sul collegamento, non arriva mai
   ShipApproaching   cannonsFiring: 0         ──►  OpenFire          ← si insiste
   FireOpened
   CannonJammed                               ──►  RepairCannon      ← si ripara
-  CannonRepaired
-  ShipApproaching   cannonsFiring: 0         ──►  OpenFire
+  CannonStillJammed ✗ non ha preso           ──►  RepairCannon      ← si insiste
+  CannonRepaired                             ──►  OpenFire          ← si rimette in azione, subito
   ShipDestroyed                              ──►  CeaseFire
                     ──►  ✗ perso anche questo
   CannonStillFiring                          ──►  CeaseFire         ← si richiude
@@ -120,6 +129,7 @@ Gli ultimi due sono trasporto, e sono quelli che si dimenticano.
 | | |
 | --- | --- |
 | Un evento per l'ordine perso | non esiste. L'ordine non è mai arrivato: non c'è niente da raccontare |
+| La differenza fra riparazione persa e riparazione non presa | `CannonStillJammed` arriva in tutti e due i casi, e non dice quale. Non serve: la risposta è la stessa |
 | `EarthShotFired` · `EarthShotMissed` · `EarthShotWasted` | cronaca del tiro colpo per colpo: riguarda la pagina, non te. Un bersaglio mancato non ti riguarda perché non c'è niente da fare — il cannone riprova da solo |
 | Quanti colpi serva una stazza | è un conto di dominio, e il dominio è la Terra |
 | Quanti colpi restano a un cannone | te lo dicono `FireOpened` e `FireCeased`, per quel cannone |

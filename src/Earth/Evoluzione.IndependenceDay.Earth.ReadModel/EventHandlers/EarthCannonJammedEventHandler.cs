@@ -6,6 +6,7 @@ public class EarthCannonJammedEventHandler(IBattleService battle, BattleFeed fee
     protected override async Task Project(EarthCannonJammed @event, CancellationToken ct)
     {
         await Battle.SetCannon(Id(@event.CityId), "jammed", Guid.Empty, @event.When(), ct);
+        await Battle.SetJammedOn(Id(@event.CityId), Id(@event.ShipId), @event.When(), ct);
         await Battle.Log(Id(@event.ShipId), "jammed", "cannone inceppato", Id(@event.CityId), "bad",
             @event.When(), ct);
     }

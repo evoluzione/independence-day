@@ -28,6 +28,7 @@ public static class ExtensionsHelper
 
         services.AddScoped<ISagaRepository, MongoSagaRepository>();
         services.AddScoped<ISagaStateLocator, MongoSagaStateLocator>();
+        services.AddScoped<IOperationsRoom, MongoOperationsRoom>();
 
         return services;
     }

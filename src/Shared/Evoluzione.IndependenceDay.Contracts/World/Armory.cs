@@ -19,7 +19,7 @@ public static class Armory
     /// <summary>
     /// Colpi in dotazione a ogni citta' per <b>tutta</b> la campagna. Non si ricaricano mai.
     /// </summary>
-    public const int RoundsPerCity = 140;
+    public const int RoundsPerCity = 195;
 
     /// <summary>Quanto passa fra un colpo e il successivo dello stesso cannone.</summary>
     public const int ReloadMs = 350;
@@ -46,8 +46,29 @@ public static class Armory
     /// mandare la riparazione e di riaprire il fuoco. Un cannone inceppato e dimenticato e' perso per
     /// il resto della campagna.
     /// </remarks>
-    public const int JamEveryShots = 20;
+    public const int JamEveryShots = 14;
 
-    /// <summary>Quanto costa in munizioni rimettere in sesto un cannone inceppato.</summary>
+    /// <summary>Quanto costa in munizioni <b>ogni tentativo</b> di rimettere in sesto un cannone.</summary>
     public const int RepairCost = 3;
+
+    /// <summary>
+    /// Ogni quante riparazioni una non prende.
+    /// </summary>
+    /// <remarks>
+    /// Un guasto vero non si aggiusta sempre al primo colpo. Il tentativo consuma i suoi colpi e il
+    /// cannone resta inceppato — e la Terra lo racconta, con <c>CannonStillJammed</c>: e' un evento,
+    /// non un silenzio, e va ripetuto.
+    /// <para>
+    /// Il conto e' sulle riparazioni di <b>quel</b> cannone, riuscite e fallite insieme: la prima
+    /// prende, la seconda no, e si ricomincia. Cosi' il primo inceppamento della campagna si risolve
+    /// al primo tentativo, e insistere diventa necessario un livello piu' in la'. Due tentativi di
+    /// fila non falliscono mai: riprovare basta sempre.
+    /// </para>
+    /// </remarks>
+    public const int RepairFailsEvery = 2;
+
+    /// <summary>
+    /// Se il tentativo numero <paramref name="repair"/> su quel cannone rimette a posto il guasto.
+    /// </summary>
+    public static bool Repaired(int repair) => repair % RepairFailsEvery != 0;
 }

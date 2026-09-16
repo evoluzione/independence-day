@@ -61,7 +61,8 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
                 .SetOnInsert(x => x.Integrity, integrity)
                 .SetOnInsert(x => x.Rounds, rounds)
                 .SetOnInsert(x => x.Cannon, "ready")
-                .SetOnInsert(x => x.Target, Guid.Empty),
+                .SetOnInsert(x => x.Target, Guid.Empty)
+                .SetOnInsert(x => x.JammedOn, Guid.Empty),
             upsert: true, at, ct);
 
     public Task ResetCities(int integrity, int rounds, DateTime at, CancellationToken ct = default) =>
@@ -71,6 +72,7 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
                 .Set(x => x.Rounds, rounds)
                 .Set(x => x.Cannon, "ready")
                 .Set(x => x.Target, Guid.Empty)
+                .Set(x => x.JammedOn, Guid.Empty)
                 .Set(x => x.UpdatedAt, at),
             cancellationToken: ct);
 
@@ -101,8 +103,34 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
                 .Set(x => x.Rounds, rounds).Set(x => x.LastShotAt, at).Set(x => x.UpdatedAt, at),
             cancellationToken: ct);
 
+    /// <remarks>Cambia lo stato e basta: il bersaglio resta dov'e'. Serve al cannone a secco, che
+    /// resta assegnato alla sua nave finche' non lo si restituisce.</remarks>
+    public Task SetCannonStatus(Guid cityId, string status, DateTime at, CancellationToken ct = default) =>
+        Collection.UpdateOneAsync(
+            Builders<City>.Filter.Eq(x => x.Id, cityId),
+            Builders<City>.Update.Set(x => x.Cannon, status).Set(x => x.UpdatedAt, at),
+            cancellationToken: ct);
+
+    public Task SetJammedOn(Guid cityId, Guid shipId, DateTime at, CancellationToken ct = default) =>
+        Collection.UpdateOneAsync(
+            Builders<City>.Filter.Eq(x => x.Id, cityId),
+            Builders<City>.Update.Set(x => x.JammedOn, shipId).Set(x => x.UpdatedAt, at),
+            cancellationToken: ct);
+
     public async Task<IReadOnlyList<City>> FiringCannons(CancellationToken ct = default) =>
         await Collection.Find(c => c.Cannon == "firing").ToListAsync(ct);
+
+    /// <remarks>
+    /// Impegnati, non "che sparano": un cannone a secco ha ancora il suo bersaglio e conta come
+    /// presente su quella nave, anche se non parte piu' un colpo. E' quello che il battito deve
+    /// raccontare, altrimenti direbbe che una nave e' coperta da un cannone che non spara.
+    /// </remarks>
+    public async Task<IReadOnlyList<City>> EngagedCannons(CancellationToken ct = default) =>
+        await Collection.Find(c => (c.Cannon == "firing" || c.Cannon == "empty") && c.Target != Guid.Empty)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<City>> JammedCannons(CancellationToken ct = default) =>
+        await Collection.Find(c => c.Cannon == "jammed").ToListAsync(ct);
 
     // --- le navi ----------------------------------------------------------------------------------
 

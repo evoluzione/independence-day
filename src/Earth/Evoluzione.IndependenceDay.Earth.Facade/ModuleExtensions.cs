@@ -84,6 +84,7 @@ public static class ModuleExtensions
         services.AddDomainEventHandler<EarthShotWastedEventHandler>();
         services.AddDomainEventHandler<EarthCannonJammedEventHandler>();
         services.AddDomainEventHandler<EarthCannonRepairedEventHandler>();
+        services.AddDomainEventHandler<EarthCannonStillJammedEventHandler>();
         services.AddDomainEventHandler<EarthCannonEmptyEventHandler>();
         services.AddDomainEventHandler<EarthShipDestroyedEventHandler>();
         services.AddDomainEventHandler<EarthShipLandedEventHandler>();
@@ -97,6 +98,7 @@ public static class ModuleExtensions
         services.AddDomainEventHandler<NoCannonReadyPublisher>();
         services.AddDomainEventHandler<CannonJammedPublisher>();
         services.AddDomainEventHandler<CannonRepairedPublisher>();
+        services.AddDomainEventHandler<CannonStillJammedPublisher>();
         services.AddDomainEventHandler<CannonEmptyPublisher>();
         services.AddDomainEventHandler<ShipDestroyedPublisher>();
         services.AddDomainEventHandler<ShipLandedPublisher>();

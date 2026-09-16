@@ -48,6 +48,7 @@ public static class ExtensionsHelper
         //   services.AddIntegrationEventHandler<SagaIntegrationEventHandler<ShipApproaching>>();
         //   services.AddSagaEventHandler<ShipApproaching, ShipInterceptionSaga>();
         //
-        // L'elenco completo di quello che la Terra manda sta in EVENTI.md.
+        // L'elenco completo di quello che la Terra manda sta in EVENTI.md, e quali servono a che
+        // livello sta in REGOLE.md.
     }
 }

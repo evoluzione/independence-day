@@ -42,6 +42,18 @@ public sealed class Cannon
     /// </remarks>
     public int Attempts { get; set; }
 
+    /// <summary>Quante volte si e' provato a ripararlo, riuscite e fallite insieme.</summary>
+    public int Repairs { get; set; }
+
+    /// <summary>
+    /// La nave su cui si e' inceppato, se e' inceppato.
+    /// </summary>
+    /// <remarks>
+    /// Non e' <see cref="Target"/>: un cannone inceppato non spara a nessuno. Serve a sapere a chi
+    /// raccontare che e' ancora fermo — al processo che quel cannone lo ha in mano.
+    /// </remarks>
+    public string? JammedOn { get; set; }
+
     public bool Fallen => Integrity <= 0;
 
     /// <summary>Puo' ricevere un ordine di fuoco: fermo, intero e con qualcosa da sparare.</summary>
@@ -64,6 +76,8 @@ public sealed record Incoming(string CityId, ShipClass Class, int Hits);
 /// <item>Un cannone spara a <b>una nave alla volta</b>, e quale cannone tocchi lo sceglie la Terra:
 /// e' lei a sapere chi e' libero, chi e' rotto e a chi restano colpi. Un colpo su tre manca il bersaglio:
 /// la munizione se ne va e la nave regge.</item>
+/// <item>Un cannone a secco resta <b>assegnato</b> alla sua nave finche' non lo si restituisce, e un
+/// cannone inceppato resta inceppato finche' non lo si ripara — e la riparazione non sempre prende.</item>
 /// <item>Il fuoco, una volta aperto, <b>non si ferma da solo</b>. Nemmeno quando la nave e' caduta:
 /// il cannone continua a sparare su relitti finche' non arriva un cessate il fuoco.</item>
 /// <item>Ogni tanto un cannone si inceppa. Non e' un errore del chiamante, e' un fatto della
@@ -127,12 +141,17 @@ public class EarthDefense : AggregateRoot
     }
 
     /// <summary>
-    /// Apre il fuoco su una nave con il cannone che ha piu' colpi fra quelli liberi.
+    /// Apre il fuoco su una nave con il cannone che ha meno colpi fra quelli liberi.
     /// </summary>
     /// <remarks>
     /// La scelta del cannone e' della Terra e non di chi ordina, perche' e' la Terra a saperne lo
-    /// stato. Prendere sempre il piu' carico distribuisce il consumo: con cinque citta' che sparano a
-    /// turno nessuna resta a secco molto prima delle altre.
+    /// stato. Prende il piu' <b>scarico</b> fra quelli liberi: si consumano prima le riserve piccole
+    /// e si tengono indietro quelle piene, cosi' la potenza di fuoco che resta e' concentrata invece
+    /// che spalmata su cinque cannoni tutti quasi a secco.
+    /// <para>
+    /// Ha un prezzo, ed e' voluto: un cannone quasi finito puo' esaurirsi <b>in mezzo</b> a una nave.
+    /// Non e' un caso limite di fine partita, e' un fatto normale da meta' campagna in poi.
+    /// </para>
     /// </remarks>
     public void OpenFire(ShipId shipId, Guid correlationId)
     {
@@ -140,11 +159,11 @@ public class EarthDefense : AggregateRoot
         if (!Ships.ContainsKey(shipId.Value))
             return;
 
-        // Il piu' carico fra i liberi, a parita' il primo in ordine di identificativo: nessun
+        // Il piu' scarico fra i liberi, a parita' il primo in ordine di identificativo: nessun
         // sorteggio, cosi' due partite con le stesse mosse fanno le stesse scelte.
         var chosen = Cannons
             .Where(entry => entry.Value.Available)
-            .OrderByDescending(entry => entry.Value.Rounds)
+            .OrderBy(entry => entry.Value.Rounds)
             .ThenBy(entry => entry.Key, StringComparer.Ordinal)
             .Select(entry => (Id: entry.Key, Cannon: entry.Value))
             .FirstOrDefault();
@@ -167,15 +186,24 @@ public class EarthDefense : AggregateRoot
     /// </remarks>
     public void CeaseFire(CityId cityId, ShipId shipId, Guid correlationId)
     {
+        // Vale anche per un cannone a secco: finche' ha un bersaglio risulta impegnato su quella nave,
+        // e restituirlo e' l'unico modo di liberarlo.
         if (!Cannons.TryGetValue(cityId.Value, out var cannon) ||
-            cannon.Status != CannonStatus.Firing ||
+            cannon.Status is not (CannonStatus.Firing or CannonStatus.Empty) ||
             cannon.Target != shipId.Value)
             return;
 
         RaiseEvent(new EarthFireCeased((EarthId)Id, cityId, shipId, cannon.Rounds, correlationId));
     }
 
-    /// <summary>Rimette in sesto un cannone inceppato. Costa qualche colpo e non riapre il fuoco.</summary>
+    /// <summary>
+    /// Prova a rimettere in sesto un cannone inceppato. Costa qualche colpo e non riapre il fuoco.
+    /// </summary>
+    /// <remarks>
+    /// Il tentativo puo' <b>non prendere</b>. Non e' un rifiuto e non e' un errore: i colpi se ne
+    /// vanno lo stesso, il cannone resta inceppato, e la Terra lo racconta. Chi ha ordinato la
+    /// riparazione lo scopre da li', e insiste.
+    /// </remarks>
     public void RepairCannon(CityId cityId, ShipId shipId, Guid correlationId)
     {
         if (!Cannons.TryGetValue(cityId.Value, out var cannon) || cannon.Status != CannonStatus.Jammed)
@@ -183,7 +211,10 @@ public class EarthDefense : AggregateRoot
 
         var left = Math.Max(0, cannon.Rounds - Armory.RepairCost);
 
-        RaiseEvent(new EarthCannonRepaired((EarthId)Id, cityId, shipId, left, correlationId));
+        if (Armory.Repaired(cannon.Repairs + 1))
+            RaiseEvent(new EarthCannonRepaired((EarthId)Id, cityId, shipId, left, correlationId));
+        else
+            RaiseEvent(new EarthCannonStillJammed((EarthId)Id, cityId, shipId, left, correlationId));
 
         if (left <= 0)
             RaiseEvent(new EarthCannonEmpty((EarthId)Id, cityId, shipId, correlationId));
@@ -288,7 +319,9 @@ public class EarthDefense : AggregateRoot
             cannon.Rounds = @event.Rounds;
             cannon.Status = CannonStatus.Ready;
             cannon.Target = null;
+            cannon.JammedOn = null;
             cannon.Attempts = 0;
+            cannon.Repairs = 0;
         }
     }
 
@@ -318,21 +351,37 @@ public class EarthDefense : AggregateRoot
         var cannon = Cannons[@event.CityId.Value];
         cannon.Attempts++;
         cannon.Target = null;
+        cannon.JammedOn = @event.ShipId.Value;
         cannon.Status = CannonStatus.Jammed;
     }
 
     public void Apply(EarthCannonRepaired @event)
     {
         var cannon = Cannons[@event.CityId.Value];
+        cannon.Repairs++;
         cannon.Rounds = @event.RoundsLeft;
+        cannon.JammedOn = null;
         cannon.Status = CannonStatus.Ready;
     }
 
+    /// <remarks>Resta inceppato e resta di chi ce l'ha: i colpi del tentativo pero' sono spesi.</remarks>
+    public void Apply(EarthCannonStillJammed @event)
+    {
+        var cannon = Cannons[@event.CityId.Value];
+        cannon.Repairs++;
+        cannon.Rounds = @event.RoundsLeft;
+    }
+
+    /// <remarks>
+    /// Il bersaglio <b>resta</b>. Un cannone a secco non e' un cannone libero: e' un cannone ancora
+    /// assegnato a quella nave, che non le spara piu'. Finche' e' li', il battito la conta come
+    /// coperta. Lo libera solo un cessate il fuoco.
+    /// </remarks>
     public void Apply(EarthCannonEmpty @event)
     {
         var cannon = Cannons[@event.CityId.Value];
         cannon.Rounds = 0;
-        cannon.Target = null;
+        cannon.JammedOn = null;
         cannon.Status = CannonStatus.Empty;
     }
 
@@ -375,6 +424,7 @@ public class EarthDefense : AggregateRoot
         var cannon = Cannons[@event.CityId.Value];
         cannon.Integrity = 0;
         cannon.Target = null;
+        cannon.JammedOn = null;
         cannon.Status = CannonStatus.Lost;
     }
 }

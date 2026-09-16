@@ -12,22 +12,35 @@ namespace Evoluzione.IndependenceDay.Sagas.Tests;
 /// secondo dice che <b>non</b> si vince senza restituire i cannoni. Se il secondo diventa verde
 /// significa che la compensazione e' diventata decorativa, e i numeri di <c>Armory</c> o della curva
 /// di difficolta' vanno ristretti.
+/// <para>
+/// Il primo e' anche il contatore dei gradini: <c>CleanThrough</c> dice fin dove si e' arrivati senza
+/// perdere una citta', e con la scala dei dieci test quel numero e' quanti test sono verdi. Finche'
+/// non lo sono tutti, il messaggio di fallimento dice a che livello ci si e' fermati — cioe' quale
+/// test guardare.
+/// </para>
 /// </remarks>
 public class CampaignTests(ITestOutputHelper output)
 {
     [Fact]
-    public void Chi_apre_ripara_e_chiude_vince_la_campagna()
+    public void Chi_arriva_in_fondo_alla_scala_vince_la_campagna()
     {
-        var result = new Campaign().Play();
-        output.WriteLine(result.ToString());
+        var campaign = new Campaign();
+        var result = campaign.Play();
 
+        output.WriteLine(result.ToString());
+        foreach (var (level, landed, standing, rounds) in campaign.PerLevel)
+            output.WriteLine($"  livello {level,2}: {landed} atterrate, {standing} citta', {rounds} colpi");
+
+        Assert.Equal(10, campaign.CleanThrough);
         Assert.True(result.Won, $"la campagna doveva essere vinta: {result}");
         Assert.Equal(0, result.OpenCannons);
+        Assert.Equal(0, result.OpenLines);
+        Assert.Equal(0, result.Unattended);
         Assert.True(result.RoundsLeft > 0, "vincere con zero colpi rimasti vuol dire margine nullo");
 
-        // Qualche colpo su un relitto e' inevitabile: anche i cessate il fuoco si perdono, e fra l'ordine
-        // perso e il battito che lo rivela passa un secondo di fuoco. Quello che conta e' che restino
-        // pochi, cioe' che ci si accorga in fretta.
+        // Qualche colpo su un relitto e' inevitabile: anche i cessate il fuoco si perdono, e fra
+        // l'ordine perso e il battito che lo rivela passa un po' di fuoco. Quello che conta e' che
+        // restino pochi, cioe' che ci si accorga in fretta.
         Assert.True(result.RoundsWasted < 20, $"troppi colpi su relitti: {result}");
     }
 

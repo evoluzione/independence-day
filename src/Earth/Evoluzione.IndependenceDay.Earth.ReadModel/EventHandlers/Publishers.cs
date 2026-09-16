@@ -8,8 +8,8 @@ namespace Evoluzione.IndependenceDay.Earth.ReadModel.EventHandlers;
 /// Il montaggio comune di chi porta un fatto della Terra fuori, sul bus.
 /// </summary>
 /// <remarks>
-/// Un publisher non proietta niente: traduce e spedisce. Sono nove e stanno in un file solo perche'
-/// nove file da otto righe l'uno nascondono la cosa che conta, cioe' <b>quali</b> fatti escono e
+/// Un publisher non proietta niente: traduce e spedisce. Sono dieci e stanno in un file solo perche'
+/// dieci file da otto righe l'uno nascondono la cosa che conta, cioe' <b>quali</b> fatti escono e
 /// quali no.
 /// </remarks>
 public abstract class EarthPublisher<TEvent>(IEventBus bus, ILoggerFactory loggerFactory)
@@ -68,6 +68,13 @@ public class CannonRepairedPublisher(IEventBus bus, ILoggerFactory loggers)
     protected override IntegrationEvent Translated(EarthCannonRepaired e) =>
         new C.CannonRepaired(Earth(e), Translate.City(e.CityId), Translate.Ship(e.ShipId), e.RoundsLeft,
             e.CorrelationId());
+}
+
+public class CannonStillJammedPublisher(IEventBus bus, ILoggerFactory loggers)
+    : EarthPublisher<EarthCannonStillJammed>(bus, loggers)
+{
+    protected override IntegrationEvent Translated(EarthCannonStillJammed e) =>
+        new C.CannonStillJammed(Earth(e), Translate.City(e.CityId), Translate.Ship(e.ShipId), e.CorrelationId());
 }
 
 public class CannonEmptyPublisher(IEventBus bus, ILoggerFactory loggers)

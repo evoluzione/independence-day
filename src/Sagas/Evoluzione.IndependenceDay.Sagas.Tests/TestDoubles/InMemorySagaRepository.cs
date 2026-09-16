@@ -14,6 +14,9 @@ public sealed class InMemorySagaRepository : ISagaRepository
 
     public bool Contains(Guid correlationId) => _states.ContainsKey(correlationId);
 
+    /// <summary>Quante intercettazioni sono aperte adesso: e' quello che occupa la sala operativa.</summary>
+    public int Open => _states.Count;
+
     public TSagaState? Peek<TSagaState>(Guid correlationId) where TSagaState : class, new() =>
         _states.TryGetValue(correlationId, out var state) ? state as TSagaState : null;
 

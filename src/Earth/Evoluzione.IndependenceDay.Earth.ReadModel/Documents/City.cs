@@ -17,8 +17,11 @@ public class City : IProjectionDocument
     /// <summary>ready | firing | jammed | empty | lost</summary>
     public string Cannon { get; set; } = "ready";
 
-    /// <summary>La nave a cui sta sparando, se sta sparando.</summary>
+    /// <summary>La nave a cui sta sparando, se sta sparando — o a cui resta assegnato, se e' a secco.</summary>
     public Guid Target { get; set; }
+
+    /// <summary>La nave su cui si e' inceppato, se e' inceppato: e' a chi va raccontato che e' fermo.</summary>
+    public Guid JammedOn { get; set; }
 
     /// <summary>Quando ha sparato l'ultima volta: e' da qui che la centrale di tiro conta la ricarica.</summary>
     public DateTime LastShotAt { get; set; }
