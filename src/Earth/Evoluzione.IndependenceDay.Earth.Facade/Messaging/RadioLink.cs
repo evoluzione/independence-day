@@ -9,8 +9,8 @@ namespace Evoluzione.IndependenceDay.Earth.Facade.Messaging;
 /// </summary>
 /// <remarks>
 /// Sta qui, sul bordo, e non dentro il dominio: un aggregato che ricevesse un comando valido e
-/// decidesse di ignorarlo sarebbe una rete che finge. Un comando che arriva a un aggregato produce
-/// <b>sempre</b> un evento — quelli che si perdono non ci arrivano proprio.
+/// decidesse di ignorarlo sarebbe una rete che finge. Un aggregato non scarta mai un ordine che ha
+/// ancora senso — quelli che si perdono non ci arrivano proprio.
 /// <para>
 /// Vale solo per i tre ordini che vengono da chi coordina. Quello che la Terra manda a se stessa —
 /// il grilletto, la scadenza, l'avvistamento — non passa da nessuna radio.

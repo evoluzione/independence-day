@@ -70,9 +70,10 @@ public sealed record Incoming(string CityId, ShipClass Class, int Hits);
 /// <item>Quando il tempo scade la nave tocca terra, e se la citta' cade perde anche il cannone.</item>
 /// </list>
 /// <para>
-/// Nessuna regola solleva un'eccezione, e nessun comando che arriva qui resta senza risposta: un
-/// ordine impossibile e' un evento, non un errore. Gli ordini che si perdono non arrivano mai fin
-/// qui — si fermano sul collegamento, e questo aggregato non sa nemmeno che esistano.
+/// Nessuna regola solleva un'eccezione: un ordine impossibile e' un evento, non un errore. E nessun
+/// ordine che abbia ancora senso resta senza risposta — si esce in silenzio solo davanti a una
+/// riconsegna o a un ordine diventato inutile, che e' idempotenza. Gli ordini che si <b>perdono</b>
+/// non arrivano mai fin qui: si fermano sul collegamento, e questo aggregato non sa che esistano.
 /// </para>
 /// </remarks>
 public class EarthDefense : AggregateRoot

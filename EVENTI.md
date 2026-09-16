@@ -8,18 +8,27 @@ vocabolario che hai.
 
 | Comando | Cosa fa | Cosa torna indietro |
 | --- | --- | --- |
-| `OpenFire(shipId)` | accende un cannone su quella nave, e lo lascia acceso | `FireOpened(cityId)` · `NoCannonReady` · **silenzio** |
-| `CeaseFire(cityId, shipId)` | lo spegne e lo restituisce | `FireCeased` · **silenzio** |
-| `RepairCannon(cityId, shipId)` | rimette in sesto un cannone inceppato | `CannonRepaired` · **silenzio** |
+| `OpenFire(shipId)` | accende un cannone su quella nave, e lo lascia acceso | `FireOpened(cityId)` oppure `NoCannonReady` |
+| `CeaseFire(cityId, shipId)` | lo spegne e lo restituisce | `FireCeased` |
+| `RepairCannon(cityId, shipId)` | rimette in sesto un cannone inceppato | `CannonRepaired` |
 
 Tre ordini, e nessuno dice *quale* cannone o *quanti* colpi: quelle sono decisioni della Terra.
 
 Ogni ordine va all'aggregato `EarthDefense`, con `Cities.DefenseId` come aggregato e il
 `CorrelationId` del tuo processo — è quello il filo che riporta l'esito a te e non a un altro.
 
-**Il silenzio è un esito.** Non c'è un evento "ordine perso", e non è una dimenticanza: se l'ordine
-si perde sul collegamento non raggiunge nessun aggregato, quindi sulla Terra non succede niente e non
-c'è niente da raccontare. Un comando che *arriva* invece produce sempre un evento.
+**Un ordine che arriva ed è ancora sensato produce sempre uno di questi eventi.** Non esiste un
+quarto esito che sia "niente".
+
+Esistono però due modi di non ricevere nessuna risposta, e sono cose diverse:
+
+| | |
+| --- | --- |
+| **L'ordine non è arrivato** | uno su venticinque si perde sul collegamento. Sulla Terra non succede niente, quindi non c'è niente da raccontare: nessun evento, nemmeno un rifiuto. **Non è un esito dell'ordine, è la sua assenza** — e l'unico modo di accorgersene è il battito |
+| **L'ordine non aveva più senso** | un cessate il fuoco su un cannone che nel frattempo è stato messo su un'altra nave, o la riconsegna di un ordine già eseguito. L'aggregato esce in silenzio perché non c'è niente da fare, ed è la stessa cosa che avrebbe fatto la seconda volta |
+
+Quello che un aggregato **non** fa mai è scartare un ordine che ha ancora senso. Se lo facesse
+sarebbe una rete che finge, e non sapresti più distinguere i due casi qui sopra.
 
 ## Quello che ti arriva
 
@@ -81,14 +90,14 @@ AlienShipDetected      (Spazio → Terra)
 E quando qualcosa va storto:
 
 ```
-OpenFire            ──►  (silenzio)
+OpenFire            ──►  ✗ perso sul collegamento, non arriva mai
   ShipApproaching   cannonsFiring: 0         ──►  OpenFire          ← si insiste
   FireOpened
   CannonJammed                               ──►  RepairCannon      ← si ripara
   CannonRepaired
   ShipApproaching   cannonsFiring: 0         ──►  OpenFire
   ShipDestroyed                              ──►  CeaseFire
-                    ──►  (silenzio)
+                    ──►  ✗ perso anche questo
   CannonStillFiring                          ──►  CeaseFire         ← si richiude
   FireCeased                                      processo chiuso
 ```

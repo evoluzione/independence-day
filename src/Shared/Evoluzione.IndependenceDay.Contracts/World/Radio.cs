@@ -11,8 +11,8 @@ namespace Evoluzione.IndependenceDay.Contracts.World;
 /// E' importante che sia cosi' e non un evento di errore. Un errore che torna indietro si gestisce
 /// guardandolo, ed e' il caso facile; il caso che rompe i processi distribuiti e' l'altro, la
 /// risposta che non arriva mai. Un aggregato che ricevesse il comando e decidesse di ignorarlo
-/// sarebbe una rete che finge, e insegnerebbe la cosa sbagliata: un comando che arriva a un
-/// aggregato produce <b>sempre</b> un evento.
+/// sarebbe una rete che finge: un aggregato non scarta mai un ordine che ha ancora senso, e quando
+/// esce in silenzio — una riconsegna, un ordine diventato inutile — e' idempotenza, non un guasto.
 /// </para>
 /// <para>
 /// La perdita e' deterministica — nessun dado, nessuna probabilita' nascosta — e il contatore avanza

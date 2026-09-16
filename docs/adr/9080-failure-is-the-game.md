@@ -41,8 +41,10 @@ Il pattern sta nella documentazione e nel codice condiviso: la sfida è gestirlo
 
 **L'ordine perso si perde sul collegamento, non dentro il dominio.** La prima stesura lo metteva
 nell'aggregato, che riceveva un comando valido e decideva di ignorarlo: era una rete che finge, e
-insegnava la cosa sbagliata. Un comando che arriva a un aggregato produce *sempre* un evento; quelli
-che si perdono non ci arrivano. La perdita vive quindi al bordo del servizio, in `RadioLink`, e il
+insegnava la cosa sbagliata. Un aggregato non scarta mai un ordine che ha ancora senso: quelli che si
+perdono non gli arrivano proprio. Resta vero che esce in silenzio davanti a un ordine diventato moot
+— una riconsegna, un cessate il fuoco su un cannone riassegnato — ma quella è idempotenza, non una
+rete che finge, e le due cose vanno distinte perché chi coordina le vive uguali. La perdita vive quindi al bordo del servizio, in `RadioLink`, e il
 contatore sta in memoria e non nell'event store — quanti messaggi ha perso un collegamento non è un
 fatto di dominio.
 
