@@ -17,5 +17,5 @@ namespace Evoluzione.IndependenceDay.Contracts.World;
 public static class OperationsRoom
 {
     /// <summary>Quante intercettazioni possono essere aperte nello stesso momento.</summary>
-    public const int Lines = 46;
+    public const int Lines = 30;
 }

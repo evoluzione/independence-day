@@ -14,9 +14,9 @@ namespace Evoluzione.IndependenceDay.Sagas.Tests;
 /// di difficolta' vanno ristretti.
 /// <para>
 /// Il primo e' anche il contatore dei gradini: <c>CleanThrough</c> dice fin dove si e' arrivati senza
-/// perdere una citta', e con la scala dei dieci test quel numero e' quanti test sono verdi. Finche'
-/// non lo sono tutti, il messaggio di fallimento dice a che livello ci si e' fermati — cioe' quale
-/// test guardare.
+/// perdere una citta', ed e' il livello dell'ultimo gradino diventato verde. Finche' non lo sono
+/// tutti, il messaggio di fallimento dice a che livello ci si e' fermati — cioe' quali test
+/// guardare.
 /// </para>
 /// </remarks>
 public class CampaignTests(ITestOutputHelper output)
@@ -31,7 +31,7 @@ public class CampaignTests(ITestOutputHelper output)
         foreach (var (level, landed, standing, rounds) in campaign.PerLevel)
             output.WriteLine($"  livello {level,2}: {landed} atterrate, {standing} citta', {rounds} colpi");
 
-        Assert.Equal(10, campaign.CleanThrough);
+        Assert.Equal(5, campaign.CleanThrough);
         Assert.True(result.Won, $"la campagna doveva essere vinta: {result}");
         Assert.Equal(0, result.OpenCannons);
         Assert.Equal(0, result.OpenLines);

@@ -15,12 +15,12 @@ public class HeartbeatSettings
     /// Ogni quanto la Terra racconta come stanno le cose.
     /// </summary>
     /// <remarks>
-    /// Sette decimi su otto secondi di finestra. Il battito e' l'unico orologio di chi coordina,
-    /// quindi e' anche il tempo che passa fra un ordine perso e il momento in cui si puo' rimediare:
+    /// Mezzo secondo su otto di finestra. Il battito e' l'unico orologio di chi coordina, quindi e'
+    /// anche il tempo che passa fra un ordine perso e il momento in cui si puo' rimediare:
     /// abbastanza stretto da poter rimediare, abbastanza largo da rendere conveniente <b>non</b>
     /// aspettarlo quando un evento dice gia' tutto quello che serve sapere.
     /// </remarks>
-    public int TickMs { get; set; } = 700;
+    public int TickMs { get; set; } = 500;
 }
 
 /// <summary>

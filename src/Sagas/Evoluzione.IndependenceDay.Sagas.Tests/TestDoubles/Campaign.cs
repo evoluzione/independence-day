@@ -64,7 +64,7 @@ public sealed record CampaignResult(
 public sealed class Campaign
 {
     private const int TickMs = 100;
-    private const int HeartbeatMs = 700;
+    private const int HeartbeatMs = 500;
 
     private const int LaunchIntervalMs = 1000;
 

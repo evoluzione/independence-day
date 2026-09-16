@@ -19,7 +19,7 @@ public static class Armory
     /// <summary>
     /// Colpi in dotazione a ogni citta' per <b>tutta</b> la campagna. Non si ricaricano mai.
     /// </summary>
-    public const int RoundsPerCity = 195;
+    public const int RoundsPerCity = 50;
 
     /// <summary>Quanto passa fra un colpo e il successivo dello stesso cannone.</summary>
     public const int ReloadMs = 350;
