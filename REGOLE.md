@@ -9,14 +9,14 @@ casuale: **i guasti sono deterministici**, nessun dado, nessuna probabilità.
 | | |
 | --- | --- |
 | Città | **5**, un cannone ciascuna |
-| Colpi | **50 per città**, 250 in tutto. Non si ricaricano **mai**, né fra un'ondata e l'altra |
+| Colpi | **40 per città**, 200 in tutto. Non si ricaricano **mai**, né fra un'ondata e l'altra |
 | Cadenza | un colpo ogni **350 ms** |
 | Bersagli | **uno alla volta**: un cannone spara a una nave sola |
 | Raggio | tutte le città sparano a tutte le navi, non solo a quella sopra di loro |
 
 **Quale cannone spari non lo decidi tu.** Chiedi di aprire il fuoco su una nave, e la Terra sceglie:
 prende il più **scarico** fra quelli liberi. Consuma prima le riserve piccole e tiene indietro quelle
-piene — con il prezzo che ne segue, e che è la regola del quinto livello.
+piene — con il prezzo che ne segue, e che è la regola del terzo livello.
 
 **Un colpo su tre manca il bersaglio.** La munizione se ne va e la nave regge. Non c'è niente da fare
 e non te lo dice nessuno: il fuoco è aperto, quindi il cannone ricarica e riprova da solo.
@@ -53,7 +53,7 @@ rifiuto. Vale per tutti e tre gli ordini. L'unico modo di accorgersene è il bat
 
 Due ordini di fila non si perdono mai: riprovare basta sempre.
 
-### 2. L'inceppamento — ogni quattordici grilletti
+### 2. L'inceppamento — ogni dieci grilletti
 
 Il colpo non parte, non consuma munizioni, e il cannone si ferma. Il conto è sui **grilletti
 premuti**, colpi mancati e colpi su relitti compresi.
@@ -89,7 +89,7 @@ aspettare il battito costa mezzo secondo su otto di finestra.
 
 ## La sala operativa
 
-**30 linee.** Un processo aperto ne occupa una, e la libera **solo chiudendosi**.
+**16 linee.** Un processo aperto ne occupa una, e la libera **solo chiudendosi**.
 
 Le linee tornano tutte libere quando comincia una campagna **nuova**, come le città. Dentro la stessa
 campagna non torna indietro niente.
@@ -100,7 +100,7 @@ subito — tiene la sua linea, e basta. Ma le navi passano a decine e le linee n
 a un certo punto una nave viene avvistata e nessuno la prende in carico. Nessun ordine, nessun
 cannone, nessun errore.
 
-## I cinque livelli
+## I tre livelli
 
 Una nave parte ogni **secondo** e punta le città **a turno**. Le più pesanti partono per prime: chi
 arriva dopo trova i cannoni già impegnati.
@@ -108,46 +108,43 @@ arriva dopo trova i cannoni già impegnati.
 | Livello | Navi | 🛸 | 🛰️ | 🚀 | Colpi a segno | Cumulato |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 | 5 | 5 | 0 | 0 | 5 | 5 |
-| 2 | 6 | 5 | 1 | 0 | 9 | 14 |
-| 3 | 7 | 5 | 2 | 0 | 13 | 27 |
-| 4 | 8 | 4 | 3 | 1 | 25 | 52 |
-| 5 | 9 | 3 | 4 | 2 | 37 | **89** |
+| 2 | 10 | 8 | 1 | 1 | 21 | 26 |
+| 3 | 15 | 11 | 2 | 2 | 37 | **63** |
 
-Trentacinque navi in tutto. Con un colpo su tre a vuoto, gli 89 colpi a segno sono circa **134
-grilletti** su 250 in dotazione, meno quelli spesi nelle riparazioni. Il margine c'è: la soluzione di
-riferimento chiude il quinto livello con cinque città in piedi, nessuna nave a terra e circa **88
-colpi** avanzati.
+Trenta navi in tutto. Con un colpo su tre a vuoto, i 63 colpi a segno sono circa **95 grilletti** su
+200 in dotazione, meno quelli spesi nelle riparazioni. La soluzione di riferimento chiude il terzo
+livello con cinque città in piedi, nessuna nave a terra e una sessantina di colpi avanzati.
 
 Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. All'ultimo livello le corazzate
 partono per prime, e chi arriva dopo aspetta. Un cannone lasciato acceso su un relitto non è un colpo
 sprecato: è un posto vuoto in quella fila.
 
-## I cinque gradini
+## I tre gradini
 
-I test di `Sagas.Tests` sono cinque gradini, e **ognuno è un livello**: con i gradini fino a N verdi
-la campagna arriva in fondo al livello N senza perdere una città.
+I test di `Sagas.Tests` sono raggruppati in **tre gradini**, e ognuno è un livello: con i gradini
+fino a N verdi la campagna arriva in fondo al livello N senza perdere una città, e si ferma al
+successivo.
 
-È una garanzia sul minimo, non sul massimo. Un gradino scritto bene può portarti anche un po' più in
-là, ma nessuno dei cinque è superfluo, e saltarne uno ti ferma dove quel gradino serviva.
+**Non è un margine, è netto.** Chi arriva al livello N+1 senza il gradino N non perde una città: le
+perde tutte e cinque. I gradini sono tre proprio perché ognuno sia così — con gradini più fitti il
+confine si decideva per una nave sola, e lì non conta la saga, conta quale ordine si è perso.
 
-| Livello | Gradino | Quello che serve | Perché lì |
-| ---: | --- | --- | --- |
-| 1 | aprire il fuoco | `StartedBy` → `OpenFire` | senza, non spara nessuno |
-| 2 | restituire il cannone | `ShipDestroyed` → `CeaseFire`, e il conto di quello che hai aperto | le navi diventano più dei cannoni |
-| 3 | insistere quando c'è silenzio | `ShipApproaching` con zero cannoni → `OpenFire`; `CannonStillFiring` → `CeaseFire` | si perdono i primi ordini |
-| 4 | riparare, e rimettere in azione | `CannonJammed` e `CannonStillJammed` → `RepairCannon`; `CannonRepaired` → `OpenFire` | arrivano i primi inceppamenti |
-| 5 | chiudere il conto | `CompleteSaga` solo a conto saldato; `CannonEmpty` → `CeaseFire` + `OpenFire` | finiscono le linee e i cannoni |
+| Livello | Navi | Gradino | Cosa succede senza |
+| ---: | ---: | --- | --- |
+| 1 | 5 | **aprire il fuoco** — `StartedBy` → `OpenFire` | non spara nessuno, e cadono cinque città |
+| 2 | 10 | **restituire e reagire ai guasti** — `ShipDestroyed` → `CeaseFire`, il battito, `CannonJammed` → `RepairCannon` | i cinque cannoni restano puntati sui relitti: zero cannoni liberi, cadono cinque città |
+| 3 | 15 | **chiudere il conto** — `CompleteSaga` a conto saldato, `CannonEmpty` → `CeaseFire` + `OpenFire` | le linee occupate al livello 2 non tornano: quasi nessuna nave viene presa in carico |
 
-C'è un branch per gradino, `livello-01` … `livello-05`, ognuno con la soluzione fino a quel livello.
+C'è un branch per gradino, `livello-01` … `livello-03`, ognuno con la soluzione fino a quel livello.
 Il diff fra due consecutivi è esattamente quello che aggiunge il gradino:
 
 ```bash
-git diff livello-03 livello-04 -- src/Sagas/
+git diff livello-01 livello-02 -- src/Sagas/
 ```
 
 ## Come si vince
 
-Superare il livello 5. La campagna è persa quando cade l'ultima città.
+Superare il livello 3. La campagna è persa quando cade l'ultima città.
 
 A parità di vittoria contano, in quest'ordine: le **città in piedi**, le **navi atterrate**, i
 **colpi non spesi**.

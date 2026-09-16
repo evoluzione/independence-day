@@ -19,12 +19,13 @@ partenza — la saga esiste ma non fa niente.
 docker compose --profile test run --rm tests
 ```
 
-Test rossi, raggruppati in **cinque gradini**, uno per livello. **Sono la specifica**: il nome dice a
+Test rossi, raggruppati in **tre gradini**, uno per livello. **Sono la specifica**: il nome dice a
 che livello servono, il commento dice perché, e l'asserzione dice esattamente cosa deve finire sul
 bus.
 
 Vanno fatti diventare verdi **in ordine**. Con i gradini fino a N verdi la campagna supera i primi N
-livelli senza perdere una città — garantito il minimo: qualche gradino porta anche un po' più in là.
+livelli senza perdere una città, e si ferma al successivo. Non per un pelo: senza il gradino giusto
+al livello dopo non perdi una città, **le perdi tutte e cinque**.
 
 ## 3. Apri i due file
 
@@ -83,19 +84,17 @@ Quando si rompe, hai tre posti dove guardare:
 | `docker compose logs -f saga` | quello che il tuo processo decide, evento per evento |
 | Il resoconto di fine ondata | città, navi atterrate, colpi rimasti, cannoni lasciati accesi |
 
-## 7. Ripeti fino a cinque
+## 7. Ripeti fino a tre
 
 Ogni gradino aggiunge un comportamento, e ogni comportamento sblocca un livello:
 
-| | |
-| --- | --- |
-| **1. Aprire** | chiedi un cannone, e qualcosa comincia a sparare |
-| **2. Restituire** | quel cannone è un prestito: alla fine va reso, o non c'è per la nave dopo |
-| **3. Insistere** | gli ordini si perdono in silenzio, e il battito è l'unico modo di accorgersene |
-| **4. Riparare** | i cannoni si inceppano, la riparazione non sempre prende, e riparare non riapre il fuoco |
-| **5. Chiudere** | il processo finisce quando il conto è saldato, non quando la nave cade |
+| | | |
+| --- | --- | --- |
+| **1. Aprire** | 5 navi | chiedi un cannone, e qualcosa comincia a sparare |
+| **2. Restituire e reagire** | 10 navi | il cannone è un prestito, gli ordini si perdono in silenzio, e i cannoni si inceppano |
+| **3. Chiudere** | 15 navi | il processo finisce quando il conto è saldato, non quando la nave cade |
 
-Quando sono verdi tutti e cinque, la campagna si vince.
+Quando sono verdi tutti e tre, la campagna si vince.
 
 ---
 
@@ -116,25 +115,25 @@ duri una ricarica: non lo sai e non devi saperlo. Tu chiedi, la Terra decide.
 
 ## Dove guardare
 
-- **[Le regole](REGOLE.md)** — i numeri, i guasti, i cinque livelli
+- **[Le regole](REGOLE.md)** — i numeri, i guasti, i tre livelli
 - **[Comandi ed eventi](EVENTI.md)** — cosa puoi mandare e cosa ti arriva
 - **[L'architettura](ARCHITETTURA.md)** — i tre servizi e dove sta cosa
 
 ## Se ti blocchi
 
-C'è un branch per ogni gradino — `livello-01` … `livello-05` — con la soluzione **fino a quel
-livello**. Se sei fermo al quarto, guarda solo il quarto:
+C'è un branch per ogni gradino — `livello-01`, `livello-02`, `livello-03` — con la soluzione **fino
+a quel livello**. Se sei fermo al secondo, guarda solo il secondo:
 
 ```bash
-git diff livello-03 livello-04 -- src/Sagas/
+git diff livello-01 livello-02 -- src/Sagas/
 ```
 
 Il diff fra due branch consecutivi è esattamente quello che aggiunge quel gradino, e niente di più.
 Per vedere tutto quello che serve fino a un certo punto, confronta con `main`:
 
 ```bash
-git diff main livello-04 -- src/Sagas/
+git diff main livello-02 -- src/Sagas/
 ```
 
-`livello-05` è la saga completa. Guardala solo dopo aver provato la tua: il diff con `main` è di due
+`livello-03` è la saga completa. Guardala solo dopo aver provato la tua: il diff con `main` è di due
 file, ed è esattamente l'esercizio.
