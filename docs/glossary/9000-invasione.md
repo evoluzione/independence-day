@@ -50,7 +50,7 @@ che rimetta indietro qualcosa.
 
 ## Colpo
 
-**L'unità di tutto: centodieci per città, cinquecentocinquanta in tutto, e non si ricaricano mai.**
+**L'unità di tutto: centoquaranta per città, settecento in tutto, e non si ricaricano mai.**
 Quello che si spreca al livello due non c'è al livello nove.
 
 - **Aliases / Acronyms**: Round
@@ -170,7 +170,7 @@ aggregato: non un errore, non un rifiuto, silenzio.
 
 ## Stazza
 
-**Quanto è dura una nave**: caccia, incrociatore, corazzata. Uno, tre o sei colpi **a segno** per
+**Quanto è dura una nave**: caccia, incrociatore, corazzata. Uno, quattro o nove colpi **a segno** per
 abbatterla — e un colpo su tre manca il bersaglio, quindi ne servono di più.
 Il danno se tocca terra è lo stesso per tutte: la città non c'è più.
 
@@ -184,7 +184,8 @@ Il danno se tocca terra è lo stesso per tutte: la città non c'è più.
 **Quanto ha la difesa per abbattere una nave prima che tocchi terra.** Otto secondi, configurabili.
 
 - **Aliases / Acronyms**: ApproachSeconds
-- **Context**: Otto secondi sono trentadue grilletti: il tempo non è mai la cosa che manca. Il cronometro sta
+- **Context**: Otto secondi sono una ventina di grilletti, e una corazzata ne chiede quattordici: per
+  le stazze pesanti il tempo è appena sufficiente, e un inceppamento non ci sta dentro. Il cronometro sta
   sulla Terra, perché è lei a sapere se la nave è ancora viva.
 - **Related**: Nave, Cannone
 - **Source**: `src/Earth/Evoluzione.IndependenceDay.Earth.Facade/BackgroundServices/ApproachDeadline.cs`

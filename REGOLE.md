@@ -7,12 +7,12 @@ lì, è di quella città, e cade con lei.
 
 | | |
 | --- | --- |
-| Colpi in dotazione | **110 per città**, 550 in tutto |
-| Ricarica | un colpo ogni **250 ms** |
+| Colpi in dotazione | **140 per città**, 700 in tutto |
+| Ricarica | un colpo ogni **350 ms** |
 | Bersagli | **uno alla volta**: un cannone spara a una nave sola |
 | Raggio | tutte le città sparano a **tutte** le navi, non solo a quella sopra di loro |
 
-Le munizioni **non si ricaricano mai** — né fra un'ondata e l'altra, né durante. I 550 colpi sono
+Le munizioni **non si ricaricano mai** — né fra un'ondata e l'altra, né durante. I 700 colpi sono
 tutti quelli che ci sono da qui alla fine della campagna.
 
 **Quale cannone spari non lo decidi tu.** Chiedi di aprire il fuoco su una nave, e la Terra sceglie:
@@ -40,8 +40,8 @@ nessun evento**: lo sa solo la Terra. Lo si scopre perché la nave cade.
 | Stazza | Colpi per abbatterla |
 | --- | ---: |
 | 🛸 Caccia | 1 |
-| 🛰️ Incrociatore | 3 |
-| 🚀 Corazzata | 6 |
+| 🛰️ Incrociatore | 4 |
+| 🚀 Corazzata | 9 |
 
 **Una nave che tocca terra rade al suolo la città.** Qualunque stazza, anche un caccia al primo
 livello. Non c'è un'integrità da erodere: o la fermi, o quella città non c'è più — e con lei se ne
@@ -112,27 +112,29 @@ arriva dopo trova i cannoni già impegnati.
 | Livello | Navi | 🛸 | 🛰️ | 🚀 | Colpi necessari | Cumulato |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 | 5 | 5 | 0 | 0 | 5 | 5 |
-| 2 | 6 | 5 | 1 | 0 | 8 | 13 |
-| 3 | 7 | 5 | 2 | 0 | 11 | 24 |
-| 4 | 8 | 5 | 3 | 0 | 14 | 38 |
-| 5 | 9 | 5 | 4 | 0 | 17 | 55 |
-| 6 | 10 | 5 | 5 | 0 | 20 | 75 |
-| 7 | 11 | 4 | 6 | 1 | 28 | 103 |
-| 8 | 12 | 3 | 7 | 2 | 36 | 139 |
-| 9 | 13 | 2 | 8 | 3 | 44 | 183 |
-| 10 | 14 | 1 | 9 | 4 | 52 | **235** |
+| 2 | 6 | 5 | 1 | 0 | 9 | 14 |
+| 3 | 7 | 5 | 2 | 0 | 13 | 27 |
+| 4 | 8 | 5 | 3 | 0 | 17 | 44 |
+| 5 | 9 | 5 | 4 | 0 | 21 | 65 |
+| 6 | 10 | 5 | 5 | 0 | 25 | 90 |
+| 7 | 11 | 4 | 6 | 1 | 37 | 127 |
+| 8 | 12 | 3 | 7 | 2 | 49 | 176 |
+| 9 | 13 | 2 | 8 | 3 | 61 | 237 |
+| 10 | 14 | 1 | 9 | 4 | 73 | **310** |
 
 I colpi in tabella sono quelli **a segno**. Con un colpo su tre che manca il bersaglio, quelli da
-sparare sono la metà in più: circa 350 su tutta la campagna.
+sparare sono la metà in più: circa 465 su tutta la campagna.
 
-Le corazzate compaiono solo dal settimo livello, e non prima: quattro navi che chiedono nove
-grilletti ciascuna occupano quattro cannoni su cinque per quattro secondi, e dietro c'è il resto
-dell'ondata che aspetta.
+Le corazzate compaiono solo dal settimo livello, e chiedono **nove colpi a segno**: con un colpo su
+tre a vuoto sono quattordici grilletti, cioè cinque secondi degli otto disponibili. Un inceppamento
+nel mezzo e la nave tocca terra. E sono quattro navi che tengono occupati quattro cannoni su cinque
+mentre dietro arriva il resto dell'ondata.
 
-350 colpi da sparare contro 550 in dotazione, meno quelli che se ne vanno nelle riparazioni. **La
-soluzione di riferimento arriva al livello 10 con un centinaio di colpi e cinque città in piedi,
-senza lasciar passare nemmeno una nave.** Una che non chiude i cannoni muore al quarto, con nove
-colpi su dieci sparati contro relitti.
+465 colpi da sparare contro 700 in dotazione, meno quelli che se ne vanno nelle riparazioni. Il
+margine c'è ed è sottile: **la soluzione di riferimento supera il decimo livello con centoventi o
+centocinquanta colpi rimasti, e a volte ci arriva con una città in meno.** Vincere si può; vincere
+senza perdere niente non è garantito nemmeno a lei. Una saga che non chiude i cannoni muore al
+quarto, con nove colpi su dieci sparati contro relitti.
 
 Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. Agli ultimi livelli le corazzate
 partono per prime e se ne prendono quattro su cinque, e chi arriva dopo aspetta. Un cannone lasciato

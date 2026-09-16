@@ -10,7 +10,7 @@ namespace Evoluzione.IndependenceDay.Space.Facade.BackgroundServices;
 public class InvasionSettings
 {
     /// <summary>Quanto passa fra una nave e l'altra dentro la stessa ondata.</summary>
-    public int LaunchIntervalMs { get; set; } = 1300;
+    public int LaunchIntervalMs { get; set; } = 1000;
 
     /// <summary>Ogni quanto il generatore si guarda intorno.</summary>
     public int TickMs { get; set; } = 500;

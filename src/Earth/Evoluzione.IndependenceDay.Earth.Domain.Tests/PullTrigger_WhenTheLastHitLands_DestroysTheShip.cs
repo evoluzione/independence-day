@@ -9,8 +9,8 @@ using ShipId = Evoluzione.IndependenceDay.Earth.Messages.DomainIds.ShipId;
 namespace Evoluzione.IndependenceDay.Earth.Domain.Tests;
 
 /// <summary>
-/// Un incrociatore regge tre colpi a segno. Ma un colpo su tre manca il bersaglio, quindi ce ne vogliono
-/// quattro — e quando cade, i cannoni continuano a sparare.
+/// Un incrociatore regge quattro colpi a segno. Ma un colpo su tre manca il bersaglio, quindi di
+/// grilletti ne servono cinque — e quando cade, i cannoni continuano a sparare.
 /// </summary>
 /// <remarks>
 /// Quanti colpi serva a una stazza <b>non</b> lo dice nessun evento: chi coordina lo scopre perche'
@@ -32,8 +32,10 @@ public class PullTrigger_WhenTheLastHitLands_DestroysTheShip : EarthCommandSpeci
         yield return new EarthShotFired(Earth, City, _shipId, 1, Armory.RoundsPerCity - 1, Guid.NewGuid());
         yield return new EarthShotFired(Earth, City, _shipId, 2, Armory.RoundsPerCity - 2, Guid.NewGuid());
 
-        // Il terzo colpo di questo cannone e' mancato: la nave regge ancora.
+        // Il terzo grilletto di questo cannone ha mancato il bersaglio: la nave regge ancora.
         yield return new EarthShotMissed(Earth, City, _shipId, Armory.RoundsPerCity - 3, Guid.NewGuid());
+
+        yield return new EarthShotFired(Earth, City, _shipId, 3, Armory.RoundsPerCity - 4, Guid.NewGuid());
     }
 
     protected override PullTrigger When() => new(Earth, City, _correlationId, Coordinator);
@@ -43,7 +45,7 @@ public class PullTrigger_WhenTheLastHitLands_DestroysTheShip : EarthCommandSpeci
 
     protected override IEnumerable<DomainEvent> Expect()
     {
-        yield return new EarthShotFired(Earth, City, _shipId, 3, Armory.RoundsPerCity - 4, _correlationId);
+        yield return new EarthShotFired(Earth, City, _shipId, 4, Armory.RoundsPerCity - 5, _correlationId);
         yield return new EarthShipDestroyed(Earth, City, _shipId, _correlationId);
     }
 }

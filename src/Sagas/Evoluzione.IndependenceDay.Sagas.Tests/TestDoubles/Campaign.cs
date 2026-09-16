@@ -59,7 +59,7 @@ public sealed class Campaign
 {
     private const int TickMs = 100;
     private const int HeartbeatMs = 500;
-    private const int LaunchIntervalMs = 1300;
+    private const int LaunchIntervalMs = 1000;
 
     private static readonly Account Who = new("test", "Campaign");
     private static readonly EarthId Earth = new(Cities.DefenseId);

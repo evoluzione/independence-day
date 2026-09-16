@@ -23,8 +23,8 @@ public static class Ships
     public static int HitsToDestroy(ShipClass stazza) => stazza switch
     {
         ShipClass.Fighter => 1,
-        ShipClass.Cruiser => 3,
-        ShipClass.Battleship => 6,
+        ShipClass.Cruiser => 4,
+        ShipClass.Battleship => 9,
         _ => 1
     };
 
