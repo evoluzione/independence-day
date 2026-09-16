@@ -65,10 +65,17 @@ services:
 
 ## La soluzione
 
-Il branch `soluzione` contiene la saga completa, che supera tutti e dieci i livelli con cinque città
-in piedi e nessuna nave a terra. Guardala solo dopo aver provato la tua: il diff con `main` è di
-**due file**, ed è esattamente l'esercizio.
+C'è un branch per ogni gradino, `livello-01` … `livello-10`, con la saga scritta **fino a quel
+livello**. Guardali solo dopo aver provato la tua: il diff fra due consecutivi è esattamente quello
+che aggiunge quel gradino, e niente di più.
 
 ```bash
-git diff main soluzione -- src/Sagas/
+git diff livello-04 livello-05 -- src/Sagas/
+```
+
+`livello-10` è la saga completa, che supera tutti e dieci i livelli con cinque città in piedi e
+nessuna nave a terra. Il diff con `main` è di **due file**, ed è esattamente l'esercizio.
+
+```bash
+git diff main livello-10 -- src/Sagas/
 ```

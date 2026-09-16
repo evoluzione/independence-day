@@ -129,5 +129,5 @@ Per vedere tutto quello che serve fino a un certo punto, confronta con `main`:
 git diff main livello-05 -- src/Sagas/
 ```
 
-`livello-10` è la saga completa, ed è la stessa cosa del branch `soluzione`. Guardala solo dopo aver
-provato la tua: il diff con `main` è di due file, ed è esattamente l'esercizio.
+`livello-10` è la saga completa. Guardala solo dopo aver provato la tua: il diff con `main` è di due
+file, ed è esattamente l'esercizio.
