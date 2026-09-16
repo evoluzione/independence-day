@@ -57,14 +57,18 @@ nave già caduta è un cannone che non c'è.
 ## I tre guasti
 
 Non sono errori: sono il gioco. Sono **deterministici** — nessun dado, nessuna probabilità nascosta —
-e stanno scritti in chiaro in `Contracts/World/Armory.cs`.
+e stanno scritti in chiaro in `Contracts/World/Radio.cs` e `Contracts/World/Armory.cs`.
 
-### 1. L'ordine perso — uno su tredici
+### 1. L'ordine perso — uno su venticinque
 
-Un ordine su tredici **non produce nessun evento**. Non un errore, non un rifiuto: silenzio. Vale per
-tutti e tre gli ordini, apertura, cessate il fuoco e riparazione.
+Un ordine su venticinque **non arriva alla Terra**. Si perde sul collegamento, prima di raggiungere
+qualunque cannone: sulla Terra non succede niente, quindi non c'è niente da raccontare e non torna
+indietro nessun evento — nemmeno un rifiuto. Vale per tutti e tre gli ordini.
 
 Non c'è niente da intercettare. L'unico modo di accorgersene è il **battito**.
+
+Non è un aggregato che decide di ignorarti: un comando che arriva a un aggregato produce **sempre**
+un evento. Quelli che si perdono non ci arrivano proprio.
 
 Due ordini di fila non si perdono mai: riprovare basta sempre, e non può avvitarsi.
 

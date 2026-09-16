@@ -13,9 +13,8 @@ namespace Evoluzione.IndependenceDay.Earth.ReadModel.EventHandlers;
 /// Gli eventi di dominio restano dentro il contesto che li ha scritti: quelli che escono sul bus sono
 /// una traduzione esplicita, con gli identificativi di <c>Contracts</c>.
 /// <para>
-/// Non tutti escono. <c>EarthOrderLost</c>, <c>EarthShotFired</c> e <c>EarthShotWasted</c> non hanno
-/// una traduzione, e non per dimenticanza: il primo <b>deve</b> restare silenzioso, e gli altri due
-/// sono cronaca del tiro che riguarda la pagina, non chi coordina.
+/// Non tutti escono. <c>EarthShotFired</c> e <c>EarthShotWasted</c> non hanno una traduzione, e non
+/// per dimenticanza: sono cronaca del tiro colpo per colpo, e riguardano la pagina, non chi coordina.
 /// </para>
 /// </remarks>
 internal static class Translate

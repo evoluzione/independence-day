@@ -1,6 +1,8 @@
 using Evoluzione.IndependenceDay.Earth.Domain.CommandHandlers;
 using Evoluzione.IndependenceDay.Earth.Facade.BackgroundServices;
+using Evoluzione.IndependenceDay.Contracts.Commands;
 using Evoluzione.IndependenceDay.Earth.Facade.IntegrationEventHandlers;
+using Evoluzione.IndependenceDay.Earth.Facade.Messaging;
 using Evoluzione.IndependenceDay.Earth.ReadModel;
 using Evoluzione.IndependenceDay.Earth.ReadModel.EventHandlers;
 using Evoluzione.IndependenceDay.Infrastructure.EventStore;
@@ -33,6 +35,9 @@ public static class ModuleExtensions
         services.AddRabbitMq(rabbitMqSettings);
 
         services.AddSingleton<BattleFeed>();
+
+        // Il collegamento con chi coordina, contatore compreso: uno solo per tutto il servizio.
+        services.AddSingleton<RadioLink>();
         services.AddScoped<IBattleService, BattleService>();
 
         services.Configure<ApproachSettings>(configuration.GetSection("Earth:Approach"));
@@ -55,11 +60,17 @@ public static class ModuleExtensions
         services.AddCommandHandler<CommissionEarthCommandHandler>();
         services.AddCommandHandler<RecommissionEarthCommandHandler>();
         services.AddCommandHandler<DetectShipCommandHandler>();
-        services.AddCommandHandler<OpenFireCommandHandler>();
-        services.AddCommandHandler<CeaseFireCommandHandler>();
-        services.AddCommandHandler<RepairCannonCommandHandler>();
         services.AddCommandHandler<PullTriggerCommandHandler>();
         services.AddCommandHandler<LandShipCommandHandler>();
+
+        // I tre ordini che arrivano da fuori passano dalla radio, che ogni tanto ne perde uno. Gli
+        // altri no: quelli la Terra li manda a se stessa, e non attraversano niente.
+        services.AddScoped<OpenFireCommandHandler>();
+        services.AddScoped<CeaseFireCommandHandler>();
+        services.AddScoped<RepairCannonCommandHandler>();
+        services.AddCommandHandler<OverRadio<OpenFire, OpenFireCommandHandler>>();
+        services.AddCommandHandler<OverRadio<CeaseFire, CeaseFireCommandHandler>>();
+        services.AddCommandHandler<OverRadio<RepairCannon, RepairCannonCommandHandler>>();
 
         // Proiezioni: quello che la dashboard legge.
         services.AddDomainEventHandler<EarthCityCommissionedEventHandler>();
@@ -68,7 +79,6 @@ public static class ModuleExtensions
         services.AddDomainEventHandler<EarthFireOpenedEventHandler>();
         services.AddDomainEventHandler<EarthFireCeasedEventHandler>();
         services.AddDomainEventHandler<EarthNoCannonReadyEventHandler>();
-        services.AddDomainEventHandler<EarthOrderLostEventHandler>();
         services.AddDomainEventHandler<EarthShotFiredEventHandler>();
         services.AddDomainEventHandler<EarthShotWastedEventHandler>();
         services.AddDomainEventHandler<EarthCannonJammedEventHandler>();

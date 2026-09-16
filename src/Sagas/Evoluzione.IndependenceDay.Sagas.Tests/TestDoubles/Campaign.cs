@@ -71,6 +71,7 @@ public sealed class Campaign
     private EarthDefense _earth = null!;
     private DateTime _now = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+    private int _orders;
     private int _spent;
     private int _wasted;
     private int _jams;
@@ -259,7 +260,6 @@ public sealed class Campaign
             case EarthShotFired: _spent++; break;
             case EarthShotWasted: _spent++; _wasted++; break;
             case EarthCannonJammed: _jams++; break;
-            case EarthOrderLost: _lost++; break;
             case EarthShipDestroyed: _destroyed++; break;
             case EarthShipLanded: _landed++; break;
         }
@@ -319,8 +319,21 @@ public sealed class Campaign
             Apply(order);
     }
 
+    /// <summary>
+    /// Manda un ordine alla Terra, o lo lascia cadere.
+    /// </summary>
+    /// <remarks>
+    /// La perdita sta qui e non nell'aggregato, come nel gioco vero: un ordine perso non arriva
+    /// proprio, quindi non produce nessun evento e non c'e' niente da raccontare.
+    /// </remarks>
     private void Apply(Command order)
     {
+        if (order is OpenFire or CeaseFire or RepairCannon && !Radio.Delivers(++_orders))
+        {
+            _lost++;
+            return;
+        }
+
         switch (order)
         {
             case OpenFire fire:

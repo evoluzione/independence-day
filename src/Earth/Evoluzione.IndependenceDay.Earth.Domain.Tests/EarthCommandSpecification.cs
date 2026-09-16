@@ -39,17 +39,4 @@ public abstract class EarthCommandSpecification<TCommand> : Muflone.Specificatio
             yield return new EarthCityCommissioned(Earth, new CityId(city.Id), city.Name, integrity, rounds,
                 Guid.NewGuid());
     }
-
-    /// <summary>
-    /// Porta il contatore degli ordini fino a un passo da quello che si perde.
-    /// </summary>
-    /// <remarks>
-    /// Gli ordini persi sono deterministici, quindi per provarli basta contare. L'ordine perso e'
-    /// quello che porta il contatore a tre.
-    /// </remarks>
-    protected static IEnumerable<DomainEvent> OrdersSoFar(int count)
-    {
-        for (var i = 0; i < count; i++)
-            yield return new EarthOrderLost(Earth, "prova", City, new ShipId(Guid.NewGuid()), Guid.NewGuid());
-    }
 }

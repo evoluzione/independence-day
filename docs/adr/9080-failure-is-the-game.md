@@ -25,11 +25,11 @@ che non arriva, che non produce nulla, e su cui non c'è niente da intercettare.
 
 | | |
 | --- | --- |
-| **L'ordine perso** | uno su tredici, e non produce nessun evento |
+| **L'ordine perso** | uno su venticinque, e si ferma sul collegamento prima di arrivare |
 | **L'inceppamento** | ogni nove grilletti, e non si sblocca da solo |
 | **Il colpo nel vuoto** | conseguenza, non causa: un cannone acceso su una nave caduta |
 
-Uno su tredici e non uno su sette, perché una nave che tocca terra rade al suolo la città: una difesa
+Uno su venticinque e non uno su sette, perché una nave che tocca terra rade al suolo la città: una difesa
 condotta bene deve poterle fermare tutte, e con guasti più fitti la perfezione diventava
 irraggiungibile. Un gioco che si perde comunque non insegna a giocarlo meglio.
 
@@ -39,9 +39,12 @@ non può avvitarsi in un giro infinito.
 
 Il pattern sta nella documentazione e nel codice condiviso: la sfida è gestirlo, non indovinarlo.
 
-L'ordine perso non è silenzioso per omissione. `EarthOrderLost` viene sollevato e proiettato nel
-diario, ma **non ha una traduzione di integrazione**: resta dentro la Terra. Chi ha ordinato non
-riceve niente, e a schermo resta la traccia di perché quella città era scoperta.
+**L'ordine perso si perde sul collegamento, non dentro il dominio.** La prima stesura lo metteva
+nell'aggregato, che riceveva un comando valido e decideva di ignorarlo: era una rete che finge, e
+insegnava la cosa sbagliata. Un comando che arriva a un aggregato produce *sempre* un evento; quelli
+che si perdono non ci arrivano. La perdita vive quindi al bordo del servizio, in `RadioLink`, e il
+contatore sta in memoria e non nell'event store — quanti messaggi ha perso un collegamento non è un
+fatto di dominio.
 
 ## Consequences
 

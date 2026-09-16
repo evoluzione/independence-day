@@ -52,7 +52,7 @@ quattro cose che nessuno farà al posto tuo:
 
 | | |
 | --- | --- |
-| **Insistere** | un ordine su tredici si perde, e non produce nessun evento. Te ne accorgi solo dal battito |
+| **Insistere** | un ordine su venticinque si perde, e non produce nessun evento. Te ne accorgi solo dal battito |
 | **Riparare** | un cannone si inceppa ogni nove colpi e non si sblocca da solo |
 | **Restituire** | un cannone acceso continua a sparare su una nave già caduta, finché non lo spegni |
 | **Chiudere** | il processo non finisce quando la nave cade, ma quando il conto con la Terra è chiuso |
@@ -90,9 +90,11 @@ services:
 
 ## La soluzione
 
-Il branch `soluzione` contiene il processo completo, che supera tutti e dieci i livelli. Guardalo
-solo dopo aver provato il tuo: il diff con `main` è di pochi file, ed è esattamente l'esercizio.
+Il branch `soluzione` contiene il processo completo, che supera tutti e dieci i livelli con cinque
+città in piedi e nessuna nave a terra. Guardalo solo dopo aver provato il tuo: il diff con `main` è
+di **tre file**, ed è esattamente l'esercizio.
 
 ```bash
 git checkout soluzione
+git diff main soluzione -- src/Sagas/
 ```

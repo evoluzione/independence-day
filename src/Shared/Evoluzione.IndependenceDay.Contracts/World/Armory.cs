@@ -9,9 +9,9 @@ namespace Evoluzione.IndependenceDay.Contracts.World;
 /// cannone lasciato a sparare su una nave gia' abbattuta non e' soltanto munizione buttata, e' un
 /// cannone che non c'e' quando arriva la nave dopo.
 /// <para>
-/// I guasti sono <b>deterministici</b>. Nessun dado: due squadre diverse affrontano gli stessi
-/// inceppamenti e gli stessi ordini persi, allo stesso momento della campagna. Sono scritti qui in
-/// chiaro perche' la sfida e' gestirli, non indovinarli.
+/// I guasti sono <b>deterministici</b>: nessun dado, nessuna probabilita' nascosta. Sono scritti qui
+/// in chiaro perche' la sfida e' gestirli, non indovinarli. L'altro guasto — l'ordine che non arriva
+/// — non e' dei cannoni: vive sul collegamento, in <see cref="Radio"/>.
 /// </para>
 /// </remarks>
 public static class Armory
@@ -36,23 +36,4 @@ public static class Armory
 
     /// <summary>Quanto costa in munizioni rimettere in sesto un cannone inceppato.</summary>
     public const int RepairCost = 3;
-
-    /// <summary>
-    /// Se un ordine si perde per strada.
-    /// </summary>
-    /// <remarks>
-    /// Un ordine perso non produce <b>nessun</b> evento: non c'e' un errore da intercettare, c'e' solo
-    /// silenzio. Chi coordina se ne accorge soltanto perche' al battito successivo la nave e' ancora
-    /// viva e nessuno le sta sparando.
-    /// <para>
-    /// Il conto dei tentativi cresce a ogni ordine eseguito o perso: due ordini di fila non si perdono
-    /// mai, quindi riprovare basta sempre. Insistere e' la risposta giusta, e non puo' avvitarsi.
-    /// <para>
-    /// Uno su tredici e non uno su sette: una nave che tocca terra rade al suolo la citta', quindi
-    /// una difesa condotta bene deve poterle fermare <b>tutte</b>. Con guasti piu' fitti la perfezione
-    /// diventava impossibile, e un gioco che si perde comunque non insegna a giocarlo meglio.
-    /// </para>
-    /// </para>
-    /// </remarks>
-    public static bool OrderLost(int ordersReceived) => ordersReceived % 13 == 3;
 }

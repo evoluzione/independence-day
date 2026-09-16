@@ -17,8 +17,9 @@ Tre ordini, e nessuno dice *quale* cannone o *quanti* colpi: quelle sono decisio
 Ogni ordine va all'aggregato `EarthDefense`, con `Cities.DefenseId` come aggregato e il
 `CorrelationId` del tuo processo — è quello il filo che riporta l'esito a te e non a un altro.
 
-**Il silenzio è un esito.** Non c'è un evento "ordine perso": se l'ordine non arriva, non succede
-niente e non te lo dice nessuno.
+**Il silenzio è un esito.** Non c'è un evento "ordine perso", e non è una dimenticanza: se l'ordine
+si perde sul collegamento non raggiunge nessun aggregato, quindi sulla Terra non succede niente e non
+c'è niente da raccontare. Un comando che *arriva* invece produce sempre un evento.
 
 ## Quello che ti arriva
 
@@ -111,7 +112,7 @@ nella saga è **quali eventi attraversano il processo**, il perché sta altrove.
 
 | | |
 | --- | --- |
-| `EarthOrderLost` | esiste, ma **non esce dalla Terra**. Lo si vede solo nel diario a schermo |
+| Un evento per l'ordine perso | non esiste. L'ordine non è mai arrivato: non c'è niente da raccontare |
 | `EarthShotFired` · `EarthShotWasted` | cronaca del tiro colpo per colpo: riguarda la pagina, non te |
 | Quanti colpi serva una stazza | è un conto di dominio, e il dominio è la Terra |
 | Quanti colpi restano a un cannone | te lo dicono `FireOpened` e `FireCeased`, per quel cannone |

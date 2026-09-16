@@ -134,17 +134,27 @@ avvicinamento; da lì si passa alla successiva con un pulsante.
 - **Related**: Livello, Campagna
 - **Source**: `src/Space/Evoluzione.IndependenceDay.Space.Domain/Entities/Invasion.cs`
 
+## Collegamento
+
+**La radio fra chi coordina e la Terra.** Non è affidabile: un ordine su venticinque si perde per strada.
+
+- **Aliases / Acronyms**: Radio, RadioLink
+- **Context**: Sta al bordo del servizio, non nel dominio. Un aggregato che ignorasse un comando
+  valido sarebbe una rete che finge; quelli che si perdono non arrivano fino a lui.
+- **Related**: Ordine perso, Battito
+- **Source**: `src/Earth/Evoluzione.IndependenceDay.Earth.Facade/Messaging/RadioLink.cs`
+
 ## Ordine perso
 
-**Un ordine su tredici non arriva, e non produce nessun evento.** Non un errore, non un rifiuto:
-silenzio.
+**Un ordine su venticinque non arriva alla Terra.** Si ferma sul collegamento, prima di qualunque
+aggregato: non un errore, non un rifiuto, silenzio.
 
 - **Aliases / Acronyms**: OrderLost
-- **Context**: È deterministico, e due di fila non si perdono mai: riprovare basta sempre.
-  `EarthOrderLost` resta dentro la Terra e non ha una traduzione di integrazione — se ne avesse una
-  non sarebbe silenzio.
-- **Related**: Battito
-- **Source**: `src/Shared/Evoluzione.IndependenceDay.Contracts/World/Armory.cs`
+- **Context**: È deterministico, e due di fila non si perdono mai: riprovare basta sempre. Non
+  esiste un evento che lo racconti, e non è una dimenticanza: se l'ordine non è arrivato, sulla
+  Terra non è successo niente.
+- **Related**: Battito, Collegamento
+- **Source**: `src/Shared/Evoluzione.IndependenceDay.Contracts/World/Radio.cs`
 
 ## Stazza
 

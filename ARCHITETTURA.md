@@ -85,6 +85,11 @@ della battaglia: la Terra risponde con un evento. Vedi
 sa la Terra, e resta sulla Terra. Il progetto saghe non contiene nessuna regola di gioco. Vedi
 [ADR-9070](docs/adr/9070-the-owner-decides.md).
 
+**Un comando che arriva a un aggregato produce sempre un evento.** Gli ordini che si perdono si
+fermano prima, sul collegamento (`RadioLink`, sul bordo della Terra). Un aggregato che ricevesse un
+comando valido e decidesse di ignorarlo sarebbe una rete che finge. Vedi
+[ADR-9080](docs/adr/9080-failure-is-the-game.md).
+
 **Il tempo lo conosce chi esegue.** La ricarica sta in `FireControl`, la scadenza in
 `ApproachDeadline`, il battito in `Heartbeat`. Sono tre giri di fondo sulla Terra, e chi coordina non
 ha nessun timer.

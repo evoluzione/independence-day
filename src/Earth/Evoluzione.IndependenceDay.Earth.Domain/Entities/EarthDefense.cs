@@ -65,14 +65,14 @@ public sealed record Incoming(string CityId, ShipClass Class, int Hits);
 /// e' lei a sapere chi e' libero, chi e' rotto e a chi restano colpi.</item>
 /// <item>Il fuoco, una volta aperto, <b>non si ferma da solo</b>. Nemmeno quando la nave e' caduta:
 /// il cannone continua a sparare nel vuoto finche' non arriva un cessate il fuoco.</item>
-/// <item>Ogni tanto un ordine si perde e ogni tanto un cannone si inceppa. Non sono errori del
-/// chiamante: sono fatti della battaglia, e vanno gestiti.</item>
+/// <item>Ogni tanto un cannone si inceppa. Non e' un errore del chiamante, e' un fatto della
+/// battaglia: si risponde con un evento e si va avanti.</item>
 /// <item>Quando il tempo scade la nave tocca terra, e se la citta' cade perde anche il cannone.</item>
 /// </list>
 /// <para>
-/// Nessuna regola solleva un'eccezione. Un ordine impossibile e' un evento, non un errore — ed e'
-/// questo che tiene vivo il processo, che dopo ogni ordine aspetta un esito. Ma non tutti gli ordini
-/// hanno un esito: quello perso non ne ha nessuno, ed e' il caso interessante.
+/// Nessuna regola solleva un'eccezione, e nessun comando che arriva qui resta senza risposta: un
+/// ordine impossibile e' un evento, non un errore. Gli ordini che si perdono non arrivano mai fin
+/// qui — si fermano sul collegamento, e questo aggregato non sa nemmeno che esistano.
 /// </para>
 /// </remarks>
 public class EarthDefense : AggregateRoot
@@ -101,15 +101,6 @@ public class EarthDefense : AggregateRoot
     public Dictionary<string, Cannon> Cannons { get; private set; } = [];
     public Dictionary<string, Incoming> Ships { get; private set; } = [];
     public int LastRecommissionedWave { get; private set; }
-
-    /// <summary>
-    /// Quanti ordini la Terra ha ricevuto in tutto, persi compresi.
-    /// </summary>
-    /// <remarks>
-    /// E' il contatore da cui dipende quali ordini si perdono. Sta sull'aggregato e non sul cannone
-    /// perche' un ordine si perde per strada, prima di sapere a chi era diretto.
-    /// </remarks>
-    public int OrdersReceived { get; private set; }
 
     public static EarthDefense Commission(EarthId id, int rounds, int integrity, Guid correlationId) =>
         new(id, rounds, integrity, correlationId);
@@ -164,9 +155,6 @@ public class EarthDefense : AggregateRoot
 
         var city = new CityId(Guid.Parse(chosen.Id));
 
-        if (Lost("apertura del fuoco", city, shipId, correlationId))
-            return;
-
         RaiseEvent(new EarthFireOpened((EarthId)Id, city, shipId, chosen.Cannon.Rounds, correlationId));
     }
 
@@ -182,9 +170,6 @@ public class EarthDefense : AggregateRoot
             cannon.Target != shipId.Value)
             return;
 
-        if (Lost("cessate il fuoco", cityId, shipId, correlationId))
-            return;
-
         RaiseEvent(new EarthFireCeased((EarthId)Id, cityId, shipId, cannon.Rounds, correlationId));
     }
 
@@ -192,9 +177,6 @@ public class EarthDefense : AggregateRoot
     public void RepairCannon(CityId cityId, ShipId shipId, Guid correlationId)
     {
         if (!Cannons.TryGetValue(cityId.Value, out var cannon) || cannon.Status != CannonStatus.Jammed)
-            return;
-
-        if (Lost("riparazione", cityId, shipId, correlationId))
             return;
 
         var left = Math.Max(0, cannon.Rounds - Armory.RepairCost);
@@ -271,30 +253,11 @@ public class EarthDefense : AggregateRoot
             RaiseEvent(new EarthCityFallen((EarthId)Id, cityId, shipId, correlationId));
     }
 
-    /// <summary>
-    /// Se questo ordine e' fra quelli che si perdono, lo segna e basta.
-    /// </summary>
-    /// <remarks>
-    /// Segnarlo fa avanzare il contatore, e il contatore e' quello che garantisce che due ordini di
-    /// fila non si perdano mai: chi riprova ottiene sempre qualcosa. L'evento resta dentro la Terra,
-    /// quindi chi ha ordinato non riceve niente — solo silenzio.
-    /// </remarks>
-    private bool Lost(string order, CityId cityId, ShipId shipId, Guid correlationId)
-    {
-        if (!Armory.OrderLost(OrdersReceived + 1))
-            return false;
-
-        RaiseEvent(new EarthOrderLost((EarthId)Id, order, cityId, shipId, correlationId));
-
-        return true;
-    }
-
     public void Apply(EarthCommissioned @event)
     {
         Id = @event.AggregateId;
         Cannons = [];
         Ships = [];
-        OrdersReceived = 0;
     }
 
     public void Apply(EarthCityCommissioned @event) =>
@@ -310,7 +273,6 @@ public class EarthDefense : AggregateRoot
     {
         LastRecommissionedWave = @event.Wave;
         Ships = [];
-        OrdersReceived = 0;
         foreach (var cannon in Cannons.Values)
         {
             cannon.Integrity = @event.Integrity;
@@ -324,15 +286,12 @@ public class EarthDefense : AggregateRoot
     public void Apply(EarthShipDetected @event) =>
         Ships[@event.ShipId.Value] = new Incoming(@event.CityId.Value, @event.ShipClass, 0);
 
-    public void Apply(EarthOrderLost @event) => OrdersReceived++;
-
     public void Apply(EarthNoCannonReady @event)
     {
     }
 
     public void Apply(EarthFireOpened @event)
     {
-        OrdersReceived++;
         var cannon = Cannons[@event.CityId.Value];
         cannon.Status = CannonStatus.Firing;
         cannon.Target = @event.ShipId.Value;
@@ -340,7 +299,6 @@ public class EarthDefense : AggregateRoot
 
     public void Apply(EarthFireCeased @event)
     {
-        OrdersReceived++;
         var cannon = Cannons[@event.CityId.Value];
         cannon.Target = null;
         cannon.Status = cannon.Rounds > 0 ? CannonStatus.Ready : CannonStatus.Empty;
@@ -356,7 +314,6 @@ public class EarthDefense : AggregateRoot
 
     public void Apply(EarthCannonRepaired @event)
     {
-        OrdersReceived++;
         var cannon = Cannons[@event.CityId.Value];
         cannon.Rounds = @event.RoundsLeft;
         cannon.Status = CannonStatus.Ready;
