@@ -15,8 +15,9 @@ public sealed record WavePlan(IReadOnlyList<ShipClass> Ships)
 /// La curva di difficolta': come cresce l'invasione livello dopo livello.
 /// </summary>
 /// <remarks>
-/// E' la regola del gioco, e sta in un posto solo perche' e' quella che le squadre devono poter
-/// leggere per capire contro cosa stanno progettando. Cresce su due assi — piu' navi, e navi piu'
+/// E' la regola del gioco, e sta <b>qui e basta</b>: i numeri non si ripetono in nessuna
+/// configurazione, perche' due copie divergono in silenzio e il gioco finisce per lanciare ondate
+/// diverse da quelle su cui e' tarato il bilanciamento. Cresce su due assi — piu' navi, e navi piu'
 /// pesanti — cosi' che a un certo punto non basti piu' rispondere a una minaccia alla volta.
 /// <para>
 /// Le munizioni <b>non</b> si ricaricano fra un livello e l'altro: quello che si spreca al livello
