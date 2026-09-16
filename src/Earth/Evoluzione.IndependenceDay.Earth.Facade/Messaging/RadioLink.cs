@@ -25,10 +25,20 @@ public sealed class RadioLink
     /// </summary>
     /// <remarks>
     /// Il contatore e' in memoria e non nell'event store, ed e' giusto cosi': quanti messaggi ha
-    /// perso un collegamento non e' un fatto di dominio. Un riavvio del servizio lo azzera, e non
-    /// cambia niente per chi gioca.
+    /// perso un collegamento non e' un fatto di dominio.
     /// </remarks>
     public bool Delivers() => Radio.Delivers(Interlocked.Increment(ref _orders));
+
+    /// <summary>
+    /// Una campagna nuova riparte da capo anche sul collegamento.
+    /// </summary>
+    /// <remarks>
+    /// Senza questo, <b>quali</b> ordini si perdono dipende da quante campagne sono state giocate
+    /// prima in questo processo: la stessa saga, rigiocata, incontra guasti in punti diversi. Le
+    /// regole promettono che i guasti siano deterministici — nessun dado — e questo e' quello che lo
+    /// rende vero da una partita all'altra e non solo dentro una.
+    /// </remarks>
+    public void Reset() => Interlocked.Exchange(ref _orders, 0);
 }
 
 /// <summary>
