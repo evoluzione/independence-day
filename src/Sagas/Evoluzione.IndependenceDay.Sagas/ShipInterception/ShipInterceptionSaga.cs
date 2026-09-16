@@ -47,8 +47,9 @@ namespace Evoluzione.IndependenceDay.Sagas.ShipInterception;
 /// l'evento semplicemente non arriva mai, e il processo resta fermo sul gradino precedente.
 /// </para>
 /// <para>
-/// I test di <c>Sagas.Tests</c> sono cinque gradini, uno per livello della campagna: con i gradini
-/// fino a N verdi si superano i primi N livelli. Falli diventare verdi in ordine.
+/// I test di <c>Sagas.Tests</c> sono tre gradini, uno per livello della campagna: con i gradini fino
+/// a N verdi si superano i primi N livelli, e senza si perdono tutte e cinque le citta'. Falli
+/// diventare verdi in ordine.
 /// </para>
 /// </remarks>
 public sealed class ShipInterceptionSaga(

@@ -16,13 +16,12 @@ namespace Evoluzione.IndependenceDay.Sagas.Tests;
 /// L'intercettazione, provata senza accendere niente: ne' bus, ne' Mongo, ne' event store.
 /// </summary>
 /// <remarks>
-/// <b>Cinque test, cinque livelli.</b> Ogni test e' il gradino che serve a superare il livello con lo
-/// stesso numero: con i primi tre verdi la campagna arriva in fondo al terzo livello senza perdere
-/// una citta'. Vanno fatti diventare verdi <b>in ordine</b>: ognuno da' per scontato quello che c'e'
-/// nei precedenti, e nessuno serve prima del suo livello.
+/// <b>Tre gradini, tre livelli.</b> I test sono raggruppati per livello, e il gruppo che porta il
+/// numero N e' esattamente quello che serve a superare il livello N: con i gruppi fino a N verdi la
+/// campagna arriva in fondo al livello N senza perdere una citta', e si ferma al successivo.
 /// <para>
-/// E' una garanzia sul minimo: un gradino scritto bene puo' portare anche un po' piu' in la'. Quello
-/// che non succede mai e' il contrario — saltarne uno ferma la campagna dove quel gradino serviva.
+/// Non e' un margine: e' netto. Chi arriva al livello N+1 senza il suo gradino non perde una citta',
+/// le perde <b>tutte e cinque</b>. I gradini sono tre perche' ognuno sia cosi'.
 /// </para>
 /// <para>
 /// Al posto dell'infrastruttura ci sono tre sostituti — un bus che raccoglie invece di spedire, un
@@ -96,7 +95,7 @@ public class ShipInterceptionSagaTests
         Assert.Equal(_gunGuid, Guid.Parse(Last<CeaseFire>().CityId.Value));
     }
 
-    // --- livello 3: insistere quando c'e' silenzio -----------------------------------------------
+    // --- livello 2 (seguito): insistere quando c'e' silenzio -----------------------------------------------
 
     /// <summary>
     /// Un ordine su venticinque non arriva, e un ordine non arrivato non produce nessun evento.
@@ -107,7 +106,7 @@ public class ShipInterceptionSagaTests
     /// arriva dopo.
     /// </remarks>
     [Fact]
-    public async Task Livello_3_al_battito_si_insiste_solo_se_non_le_spara_nessuno()
+    public async Task Livello_2_al_battito_si_insiste_solo_se_non_le_spara_nessuno()
     {
         await Start();
         await Firing();
@@ -130,7 +129,7 @@ public class ShipInterceptionSagaTests
     /// esserci una risposta — visto dall'altra parte.
     /// </remarks>
     [Fact]
-    public async Task Livello_3_un_cannone_rimasto_acceso_si_richiude()
+    public async Task Livello_2_un_cannone_rimasto_acceso_si_richiude()
     {
         await Start();
         await Firing();
@@ -142,7 +141,7 @@ public class ShipInterceptionSagaTests
         Assert.Equal(_gunGuid, Guid.Parse(Last<CeaseFire>().CityId.Value));
     }
 
-    // --- livello 4: riparare, e rimettere in azione ------------------------------------------------
+    // --- livello 2 (seguito): riparare, e rimettere in azione ------------------------------------------------
 
     /// <summary>
     /// Un cannone inceppato non spara e non si sblocca da solo: dimenticarlo e' perderlo per tutta la
@@ -153,7 +152,7 @@ public class ShipInterceptionSagaTests
     /// la risposta e' la stessa. Si ripete finche' il cannone non torna.
     /// </remarks>
     [Fact]
-    public async Task Livello_4_un_cannone_inceppato_si_fa_riparare_e_si_insiste()
+    public async Task Livello_2_un_cannone_inceppato_si_fa_riparare_e_si_insiste()
     {
         await Start();
         await Firing();
@@ -178,7 +177,7 @@ public class ShipInterceptionSagaTests
     /// rete, non il meccanismo.
     /// </remarks>
     [Fact]
-    public async Task Livello_4_il_cannone_riparato_torna_subito_in_azione()
+    public async Task Livello_2_il_cannone_riparato_torna_subito_in_azione()
     {
         await Start();
         await Firing();
@@ -190,17 +189,17 @@ public class ShipInterceptionSagaTests
         Assert.Equal(_shipGuid, Guid.Parse(Last<OpenFire>().ShipId.Value));
     }
 
-    // --- livello 5: chiudere il conto --------------------------------------------------------------
+    // --- livello 3: chiudere il conto --------------------------------------------------------------
 
     /// <summary>
     /// Un processo che non si chiude mai tiene la sua linea in sala operativa per sempre.
     /// </summary>
     /// <remarks>
-    /// Non fa male subito, e per quattro livelli non si vede. Poi le linee finiscono, e una nave viene
+    /// Non fa male subito, e per due livelli non si vede. Poi le linee finiscono, e una nave viene
     /// avvistata senza che nessuno la prenda in carico: nessun ordine, nessun cannone, nessun errore.
     /// </remarks>
     [Fact]
-    public async Task Livello_5_il_processo_si_chiude_quando_il_conto_e_saldato()
+    public async Task Livello_3_il_processo_si_chiude_quando_il_conto_e_saldato()
     {
         await Start();
         await Firing();
@@ -216,12 +215,12 @@ public class ShipInterceptionSagaTests
     /// </summary>
     /// <remarks>
     /// Chiudere quando la nave cade sembra corretto. Ma il cessate il fuoco puo' perdersi, e il
-    /// richiamo del terzo livello arriva a un processo che non c'e' piu': quel cannone resta acceso
+    /// richiamo del secondo livello arriva a un processo che non c'e' piu': quel cannone resta acceso
     /// per il resto della campagna, e nessuno lo verra' mai a sapere. Lo stesso vale per un cannone
     /// lasciato inceppato: e' rotto per colpa di questo processo, e nessun altro sa che esiste.
     /// </remarks>
     [Fact]
-    public async Task Livello_5_il_processo_non_chiude_finche_il_conto_non_e_saldato()
+    public async Task Livello_3_il_processo_non_chiude_finche_il_conto_non_e_saldato()
     {
         await Start();
         await Firing();
@@ -245,11 +244,11 @@ public class ShipInterceptionSagaTests
     /// <remarks>
     /// E' la trappola piu' silenziosa di tutte, ed e' l'ultima faccia dello stesso conto: finche' e'
     /// li', il battito conta quella nave come coperta — <c>CannonsFiring</c> e' uno — quindi
-    /// l'insistenza del terzo livello non scatta, e la nave arriva a terra con un cannone puntato
+    /// l'insistenza del secondo livello non scatta, e la nave arriva a terra con un cannone puntato
     /// addosso che non spara. Va restituito, e ne va chiesto un altro nello stesso momento.
     /// </remarks>
     [Fact]
-    public async Task Livello_5_un_cannone_a_secco_si_restituisce_e_si_rimpiazza()
+    public async Task Livello_3_un_cannone_a_secco_si_restituisce_e_si_rimpiazza()
     {
         await Start();
         await Firing();

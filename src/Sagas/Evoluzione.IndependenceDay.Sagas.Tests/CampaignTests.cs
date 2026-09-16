@@ -31,7 +31,7 @@ public class CampaignTests(ITestOutputHelper output)
         foreach (var (level, landed, standing, rounds) in campaign.PerLevel)
             output.WriteLine($"  livello {level,2}: {landed} atterrate, {standing} citta', {rounds} colpi");
 
-        Assert.Equal(5, campaign.CleanThrough);
+        Assert.Equal(3, campaign.CleanThrough);
         Assert.True(result.Won, $"la campagna doveva essere vinta: {result}");
         Assert.Equal(0, result.OpenCannons);
         Assert.Equal(0, result.OpenLines);

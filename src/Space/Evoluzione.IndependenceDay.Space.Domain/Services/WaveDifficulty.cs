@@ -39,13 +39,13 @@ public sealed class WaveDifficulty
     public int BaseShips { get; set; } = 5;
 
     /// <summary>Quante navi in piu' a ogni livello.</summary>
-    public int ShipsPerLevel { get; set; } = 1;
+    public int ShipsPerLevel { get; set; } = 5;
 
     /// <summary>Da che livello compaiono gli incrociatori.</summary>
     public int CruisersFromLevel { get; set; } = 2;
 
     /// <summary>Da che livello compaiono le corazzate.</summary>
-    public int BattleshipsFromLevel { get; set; } = 4;
+    public int BattleshipsFromLevel { get; set; } = 2;
 
     public WavePlan For(int level)
     {

@@ -19,16 +19,16 @@ public static class Invasion
     /// </summary>
     /// <remarks>
     /// Una partita deve avere una fine raggiungibile, altrimenti "quante ondate hai resistito" non e'
-    /// un punteggio ma una misura di pazienza. Cinque livelli, uno per gradino del processo: ognuno
-    /// chiede una cosa che ai precedenti non serviva, e il quinto chiede quasi tutta la capacita' di
-    /// fuoco delle cinque citta'.
+    /// un punteggio ma una misura di pazienza. Tre livelli, uno per gradino del processo: ognuno
+    /// chiede una cosa che al precedente non serviva, e chi non ce l'ha non perde una citta' — le
+    /// perde <b>tutte</b>. I gradini sono pochi perche' ognuno sia netto.
     /// <para>
     /// Lo conoscono tutti e due i servizi — lo Spazio per non mandare un'undicesima ondata, la Terra
     /// per sapere quando dichiarare vinta la campagna — quindi sta qui e non nella configurazione di
     /// uno dei due.
     /// </para>
     /// </remarks>
-    public const int LastLevel = 5;
+    public const int LastLevel = 3;
 
     /// <summary>
     /// Quanto tempo ha la difesa per fermare una flotta prima che tocchi terra.

@@ -19,7 +19,7 @@ public static class Armory
     /// <summary>
     /// Colpi in dotazione a ogni citta' per <b>tutta</b> la campagna. Non si ricaricano mai.
     /// </summary>
-    public const int RoundsPerCity = 50;
+    public const int RoundsPerCity = 40;
 
     /// <summary>Quanto passa fra un colpo e il successivo dello stesso cannone.</summary>
     public const int ReloadMs = 350;
@@ -46,7 +46,7 @@ public static class Armory
     /// mandare la riparazione e di riaprire il fuoco. Un cannone inceppato e dimenticato e' perso per
     /// il resto della campagna.
     /// </remarks>
-    public const int JamEveryShots = 14;
+    public const int JamEveryShots = 10;
 
     /// <summary>Quanto costa in munizioni <b>ogni tentativo</b> di rimettere in sesto un cannone.</summary>
     public const int RepairCost = 3;
