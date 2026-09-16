@@ -37,6 +37,10 @@ public static class ExtensionsHelper
         services.AddCommandHandler<SagaStartedByCommandHandler<StartShipInterception>>();
         services.AddIntegrationEventHandler<ShipDetectedIntegrationEventHandler>();
 
+        // Una campagna nuova rimette in piedi le citta', e con loro la sala operativa: senza,
+        // i processi rimasti aperti da una partita persa terrebbero le linee per sempre.
+        services.AddIntegrationEventHandler<InvasionStartedIntegrationEventHandler>();
+
         services.AddSagaStarter<StartShipInterception, ShipInterceptionSaga>();
 
         // Ogni evento vuole due registrazioni, e servono entrambe: la prima lo fa arrivare dal bus, la

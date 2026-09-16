@@ -8,6 +8,9 @@ namespace Evoluzione.IndependenceDay.Sagas.Infrastructure.MongoDB;
 public interface IOperationsRoom
 {
     Task<long> OpenLines(CancellationToken ct = default);
+
+    /// <summary>Libera tutte le linee: comincia una campagna nuova.</summary>
+    Task FreeLines(CancellationToken ct = default);
 }
 
 /// <summary>
@@ -27,4 +30,13 @@ public sealed class MongoOperationsRoom(
 
     public Task<long> OpenLines(CancellationToken ct = default) =>
         _collection.CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty, cancellationToken: ct);
+
+    /// <remarks>
+    /// Senza questo, i processi rimasti aperti da una partita persa terrebbero le loro linee anche
+    /// nella successiva, e dopo due o tre tentativi non ci sarebbe piu' una linea libera per nessuno:
+    /// le navi verrebbero avvistate e nessuno le prenderebbe in carico. Le citta' si rimettono in
+    /// piedi a ogni campagna nuova, e la sala operativa con loro.
+    /// </remarks>
+    public Task FreeLines(CancellationToken ct = default) =>
+        _collection.DeleteManyAsync(FilterDefinition<BsonDocument>.Empty, ct);
 }

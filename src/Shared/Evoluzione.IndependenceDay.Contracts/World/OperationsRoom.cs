@@ -12,6 +12,10 @@ namespace Evoluzione.IndependenceDay.Contracts.World;
 /// navi passano a decine, le linee non tornano indietro, e a un certo punto una nave viene avvistata
 /// e non c'e' nessuno che la prenda in carico: nessun ordine, nessun cannone, nessun errore. Solo una
 /// citta' in meno.
+/// <para>
+/// Le linee tornano tutte libere quando comincia una campagna <b>nuova</b>, come le citta'. Dentro la
+/// stessa campagna non torna indietro niente.
+/// </para>
 /// </para>
 /// </remarks>
 public static class OperationsRoom

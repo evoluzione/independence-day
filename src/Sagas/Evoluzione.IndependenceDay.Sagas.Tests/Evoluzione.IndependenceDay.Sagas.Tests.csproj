@@ -7,6 +7,9 @@
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1" />
     <ProjectReference Include="..\Evoluzione.IndependenceDay.Sagas\Evoluzione.IndependenceDay.Sagas.csproj" />
+    <!-- La sala operativa e' regola del campo di gioco, non esercizio: il suo unico guasto vive nel
+         gioco vero, quindi la prova sta sull'handler che la rimette a posto. -->
+    <ProjectReference Include="..\Evoluzione.IndependenceDay.Sagas.Facade\Evoluzione.IndependenceDay.Sagas.Facade.csproj" />
     <!-- La simulazione gioca la campagna con l'aggregato vero della Terra e la curva vera dello
          Spazio: senza, taratura e prova del contrario sarebbero su una copia che puo' divergere. -->
     <ProjectReference Include="..\..\Earth\Evoluzione.IndependenceDay.Earth.Domain\Evoluzione.IndependenceDay.Earth.Domain.csproj" />

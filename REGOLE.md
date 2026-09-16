@@ -91,6 +91,9 @@ aspettare il battito costa mezzo secondo su otto di finestra.
 
 **30 linee.** Un processo aperto ne occupa una, e la libera **solo chiudendosi**.
 
+Le linee tornano tutte libere quando comincia una campagna **nuova**, come le città. Dentro la stessa
+campagna non torna indietro niente.
+
 Sono molte più delle navi che possono essere in volo insieme, quindi non è una risorsa da dosare: è
 la ragione per cui chiudere un processo è una mossa. Un processo che non si chiude mai non fa male
 subito — tiene la sua linea, e basta. Ma le navi passano a decine e le linee non tornano indietro:
