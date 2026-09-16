@@ -45,7 +45,7 @@ public sealed class WaveDifficulty
     public int CruisersFromLevel { get; set; } = 2;
 
     /// <summary>Da che livello compaiono le corazzate.</summary>
-    public int BattleshipsFromLevel { get; set; } = 6;
+    public int BattleshipsFromLevel { get; set; } = 7;
 
     public WavePlan For(int level)
     {

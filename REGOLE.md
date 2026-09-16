@@ -116,23 +116,27 @@ arriva dopo trova i cannoni già impegnati.
 | 3 | 7 | 5 | 2 | 0 | 11 | 24 |
 | 4 | 8 | 5 | 3 | 0 | 14 | 38 |
 | 5 | 9 | 5 | 4 | 0 | 17 | 55 |
-| 6 | 10 | 4 | 5 | 1 | 25 | 80 |
-| 7 | 11 | 3 | 6 | 2 | 33 | 113 |
-| 8 | 12 | 2 | 7 | 3 | 41 | 154 |
-| 9 | 13 | 1 | 8 | 4 | 49 | 203 |
-| 10 | 14 | 0 | 9 | 5 | 57 | **260** |
+| 6 | 10 | 5 | 5 | 0 | 20 | 75 |
+| 7 | 11 | 4 | 6 | 1 | 28 | 103 |
+| 8 | 12 | 3 | 7 | 2 | 36 | 139 |
+| 9 | 13 | 2 | 8 | 3 | 44 | 183 |
+| 10 | 14 | 1 | 9 | 4 | 52 | **235** |
 
-I colpi in tabella sono quelli **a segno**. Con un colpo su tre mancati, quelli da sparare sono la
-metà in più: circa 390 su tutta la campagna.
+I colpi in tabella sono quelli **a segno**. Con un colpo su tre che manca il bersaglio, quelli da
+sparare sono la metà in più: circa 350 su tutta la campagna.
 
-390 colpi da sparare contro 550 in dotazione, meno quelli che se ne vanno nelle riparazioni. **La
+Le corazzate compaiono solo dal settimo livello, e non prima: quattro navi che chiedono nove
+grilletti ciascuna occupano quattro cannoni su cinque per quattro secondi, e dietro c'è il resto
+dell'ondata che aspetta.
+
+350 colpi da sparare contro 550 in dotazione, meno quelli che se ne vanno nelle riparazioni. **La
 soluzione di riferimento arriva al livello 10 con un centinaio di colpi e cinque città in piedi,
 senza lasciar passare nemmeno una nave.** Una che non chiude i cannoni muore al quarto, con nove
 colpi su dieci sparati contro relitti.
 
-Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. Al decimo livello le corazzate
-partono insieme e se li prendono tutti, e chi arriva dopo aspetta. Un cannone lasciato acceso su un
-relitto non è un colpo sprecato: è un posto vuoto in quella fila.
+Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. Agli ultimi livelli le corazzate
+partono per prime e se ne prendono quattro su cinque, e chi arriva dopo aspetta. Un cannone lasciato
+acceso su un relitto non è un colpo sprecato: è un posto vuoto in quella fila.
 
 ## Come si vince
 
