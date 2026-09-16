@@ -107,15 +107,13 @@ OpenFire            ──►  ✗ perso sul collegamento, non arriva mai
 Quattro passi, e saltarne uno **non dà errore**: l'evento semplicemente non arriva mai, e il processo
 resta fermo sul gradino precedente.
 
-1. **La saga lo dichiara** — `ISagaEventHandlerAsync<TEvento>` su `ShipInterceptionSaga`, con un
-   `HandleAsync` da una riga che chiama `Advance`.
-2. **Arriva dal bus** — `services.AddIntegrationEventHandler<SagaIntegrationEventHandler<TEvento>>()`
+1. **La saga lo dichiara** — `ISagaEventHandlerAsync<TEvento>` nell'elenco su `ShipInterceptionSaga`.
+2. **La saga lo gestisce** — un `HandleAsync` che chiama `Advance` con quello che c'è da fare.
+3. **Arriva dal bus** — `services.AddIntegrationEventHandler<SagaIntegrationEventHandler<TEvento>>()`
    in `Sagas.Facade/ExtensionsHelper.cs`.
-3. **Arriva al processo** — `services.AddSagaEventHandler<TEvento, ShipInterceptionSaga>()`, stesso file.
-4. **Il processo lo gestisce** — un ramo nello `switch` di `InterceptionProcess.React`.
+4. **Arriva alla saga** — `services.AddSagaEventHandler<TEvento, ShipInterceptionSaga>()`, stesso file.
 
-I primi tre sono trasporto, il quarto è la decisione. Sono separati apposta: quello che si legge
-nella saga è **quali eventi attraversano il processo**, il perché sta altrove.
+Gli ultimi due sono trasporto, e sono quelli che si dimenticano.
 
 ## Cosa non ti arriva, e non è una dimenticanza
 

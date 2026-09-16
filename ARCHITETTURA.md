@@ -70,7 +70,7 @@ src/
 │   ├── .Facade/            FireControl · ApproachDeadline · Heartbeat · gli endpoint
 │   └── .Host/wwwroot/      la sala operativa: una pagina, alimentata da server-sent events
 └── Sagas/
-    ├── .Sagas/             ◄── QUI. ShipInterceptionSaga, InterceptionProcess, InterceptionState
+    ├── .Sagas/             ◄── QUI. Due file: ShipInterceptionSaga e InterceptionState
     ├── .Facade/            le registrazioni: due righe per ogni evento che vuoi ascoltare
     └── .Infrastructure/    lo stato delle saghe su Mongo
 ```

@@ -38,8 +38,8 @@ problemi:
 - un passo già fatto può dover essere **disfatto**, e la disfatta può a sua volta perdersi;
 - il processo finisce quando il conto è chiuso, non quando l'obiettivo è raggiunto.
 
-Quello che resta in `InterceptionProcess` è la macchina a stati di questi quattro problemi, e si prova
-con un test che non accende niente.
+Quello che resta nella saga è la macchina a stati di questi quattro problemi: un handler per evento,
+e due file in tutto — la saga e il suo stato.
 
 ## Consequences
 

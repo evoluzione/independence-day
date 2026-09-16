@@ -28,8 +28,9 @@ Nella documentazione XML non si usano lettere accentate: `citta'`, non `città`.
 e la partita si ferma senza che a schermo si veda niente
 ([R-9020](docs/rules/9020-projections-never-rethrow.md)).
 
-**La saga non decide.** Carica lo stato, scarta le riconsegne, chiede al processo, esegue. Nessun
-`if` ([R-9060](docs/rules/9060-saga-does-not-decide.md)).
+**Il progetto delle saghe non ospita dominio.** Nessuna costante di gioco, nessun conto: quelli
+stanno nell'aggregato che possiede la risorsa. Una saga è due file, lo stato e la saga
+([R-9060](docs/rules/9060-saga-does-not-decide.md)).
 
 ## Prima di dire che è fatto
 

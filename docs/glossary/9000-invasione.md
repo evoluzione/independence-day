@@ -112,7 +112,7 @@ finisce quando la nave cade: finisce quando il conto con la Terra è chiuso.
 - **Context**: Non vede le altre intercettazioni, non vede i colpi rimasti, non sa quanti ne servano.
   Quello che sa lo ha sentito dire.
 - **Related**: Cessate il fuoco, Battito
-- **Source**: `src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/InterceptionProcess.cs`
+- **Source**: `src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/ShipInterceptionSaga.cs`
 
 ## Livello
 

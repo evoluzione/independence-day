@@ -42,8 +42,9 @@ Scrivi il processo che difende la Terra. Vince chi supera il **livello 10**.
 src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/
 ```
 
-Così com'è, la saga si avvia e non gestisce nessun evento: nessun cannone spara, ogni nave tocca
-terra, e le prime città cadono già alla prima ondata.
+Due file: lo stato e la saga. Così com'è, la saga si avvia, dichiara gli eventi che le interessano e
+non fa niente con nessuno: nessun cannone spara, ogni nave tocca terra, e le cinque città cadono già
+alla prima ondata.
 
 Cinque città, **un cannone ciascuna**, 110 colpi a testa che non si ricaricano mai. Una nave che
 tocca terra rade al suolo la città, quindi vanno fermate tutte. Tu chiedi di aprire il fuoco su una
@@ -90,9 +91,9 @@ services:
 
 ## La soluzione
 
-Il branch `soluzione` contiene il processo completo, che supera tutti e dieci i livelli con cinque
-città in piedi e nessuna nave a terra. Guardalo solo dopo aver provato il tuo: il diff con `main` è
-di **tre file**, ed è esattamente l'esercizio.
+Il branch `soluzione` contiene la saga completa, che supera tutti e dieci i livelli con cinque città
+in piedi e nessuna nave a terra. Guardala solo dopo aver provato la tua: il diff con `main` è di
+**due file**, ed è esattamente l'esercizio.
 
 ```bash
 git checkout soluzione

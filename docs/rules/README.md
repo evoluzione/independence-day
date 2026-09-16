@@ -63,5 +63,5 @@ specframe rigenera dalle decisioni del catalogo.
 | [R-9030](./9030-domain-events-carry-their-aggregate.md) | Un evento di dominio porta il nome del proprio aggregato | ADR-9000 |
 | [R-9040](./9040-commit-id-is-always-new.md) | Il commitId di un comando e' sempre nuovo | ADR-9020 |
 | [R-9050](./9050-apply-is-unconditional.md) | Un Apply non contiene condizioni | R-9010 |
-| [R-9060](./9060-saga-does-not-decide.md) | Una saga non decide, e non ospita dominio | ADR-9020, ADR-9070 |
+| [R-9060](./9060-saga-does-not-decide.md) | Una saga conduce il processo, non contiene il dominio | ADR-9020, ADR-9070 |
 | [R-9070](./9070-compensation-is-confirmed.md) | Una compensazione va confermata prima di chiudere | ADR-9070, ADR-9080 |

@@ -6,6 +6,7 @@ using Evoluzione.IndependenceDay.Earth.Messages.Events;
 using Evoluzione.IndependenceDay.Sagas.ShipInterception;
 using Evoluzione.IndependenceDay.Space.Domain.Services;
 using Muflone;
+using Microsoft.Extensions.Logging.Abstractions;
 using Muflone.CustomTypes;
 using Muflone.Messages.Commands;
 using Muflone.Messages.Events;
@@ -65,8 +66,9 @@ public sealed class Campaign
     private static readonly Contracts.Ids.EarthId ContractsEarth = new(Cities.DefenseId);
 
     private readonly WaveDifficulty _difficulty = new();
-    private readonly InterceptionProcess _process = new();
-    private readonly Dictionary<Guid, InterceptionState> _states = [];
+    private readonly RecordingServiceBus _bus = new();
+    private readonly InMemorySagaRepository _sagas = new();
+    private readonly HashSet<Guid> _started = [];
     private readonly Dictionary<Guid, DateTime> _detectedAt = [];
     private readonly Dictionary<Guid, DateTime> _lastShotAt = [];
 
@@ -173,12 +175,11 @@ public sealed class Campaign
         _earth.DetectShip(new EarthCityId(cityId), new EarthShipId(shipId), shipClass, Guid.NewGuid());
         Drain();
 
-        // L'avvistamento accende il processo, come fa l'handler di integrazione nel gioco vero.
-        var state = _process.Open(new StartShipInterception(new Contracts.Ids.ShipId(shipId),
-            new Contracts.Ids.CityId(cityId), shipId, Who));
-        _states[shipId] = state;
-
-        Execute(_process.FirstOrder(state));
+        // L'avvistamento accende la saga, come fa l'handler di integrazione nel gioco vero.
+        _started.Add(shipId);
+        Saga().StartedByAsync(new StartShipInterception(new Contracts.Ids.ShipId(shipId),
+            new Contracts.Ids.CityId(cityId), shipId, Who)).GetAwaiter().GetResult();
+        Execute();
     }
 
     /// <summary>La centrale di tiro: un colpo per ogni cannone che ha finito di ricaricare.</summary>
@@ -309,17 +310,45 @@ public sealed class Campaign
         };
     }
 
+    /// <summary>
+    /// Consegna un evento alla saga, e manda alla Terra quello che ne esce.
+    /// </summary>
+    /// <remarks>
+    /// La saga e' quella vera: la si costruisce a ogni evento, come fa il contenitore in produzione,
+    /// e lo stato lo ritrova dal repository in memoria.
+    /// </remarks>
     private void Deliver(Guid shipId, Event @event)
     {
-        if (!_states.TryGetValue(shipId, out var state))
+        if (!_started.Contains(shipId))
             return;
 
-        Execute(_process.React(state, @event));
+        switch (@event)
+        {
+            case C.ShipApproaching e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.FireOpened e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.FireCeased e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.NoCannonReady e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.CannonJammed e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.CannonRepaired e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.CannonEmpty e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.CannonStillFiring e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.ShipDestroyed e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.ShipLanded e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+        }
+
+        Execute();
     }
 
-    private void Execute(InterceptionReaction reaction)
+    private ShipInterceptionSaga Saga() =>
+        new(_bus, _sagas, new NoStateLocator(), new NullLoggerFactory());
+
+    /// <summary>Svuota il bus: quello che la saga ha ordinato arriva alla Terra.</summary>
+    private void Execute()
     {
-        foreach (var order in reaction.Orders)
+        var orders = _bus.Sent.OfType<Command>().ToList();
+        _bus.Sent.Clear();
+
+        foreach (var order in orders)
             Apply(order);
     }
 
