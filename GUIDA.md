@@ -72,11 +72,14 @@ Se un comportamento funziona nei test e non nel gioco, guarda qui per primo.
 
 ## 6. Rigioca
 
+Il container della saga sta gia' guardando i tuoi file: al salvataggio ricompila e riparte da solo,
+non c'e' niente da rilanciare. Il riavvio si vede qui:
+
 ```bash
-docker compose up --build
+docker compose logs -f saga
 ```
 
-*Inizia la campagna*, e guarda fin dove arrivi. Dovresti superare tanti livelli quanti test hai
+Poi *Inizia la campagna*, e guarda fin dove arrivi. Dovresti superare tanti livelli quanti test hai
 verdi.
 
 Quando si rompe, hai tre posti dove guardare:

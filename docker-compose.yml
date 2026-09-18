@@ -3,8 +3,9 @@
 #
 #   docker compose up --build
 #
-# Non c'e' niente da installare: i tre servizi .NET vengono compilati dentro l'immagine SDK, quindi
+# Non c'e' niente da installare: i servizi .NET vengono compilati dentro l'immagine SDK, quindi
 # sulla macchina bastano Docker e il repository.
+# La saga gira sotto `dotnet watch`: si salva il file, il container ricompila e riparte da solo.
 # La dashboard e' su http://localhost:8080
 #
 # Le porte pubblicate stanno fuori dagli standard (2114/2115, 5673/15673, 27018) di proposito: e' normale
@@ -162,13 +163,28 @@ services:
   # ne' lo Spazio ne' la Terra.
   # -----------------------------------------------------------------------------------------------
   saga:
-    build:
-      context: ./src
-      dockerfile: Sagas/Evoluzione.IndependenceDay.Sagas.Host/Dockerfile
+    image: mcr.microsoft.com/dotnet/sdk:10.0
     container_name: id4-saga
+    working_dir: /src
+    # La saga e' il file che si scrive: gira sotto `dotnet watch` con il sorgente montato, cosi' un
+    # salvataggio ricompila e riparte senza `docker compose up --build`. Stesso schema del servizio
+    # `tests` qui sotto — immagine SDK, ./src montato, cache NuGet condivisa.
+    #
+    # --no-hot-reload: il processo riparte per intero a ogni salvataggio invece di applicare la patch
+    # a caldo. Gli handler della saga si registrano nel container DI all'avvio, quindi una modifica
+    # applicata a caldo verrebbe compilata ma non ascoltata — sembrerebbe che il codice nuovo non
+    # faccia niente. Il riavvio costa qualche secondo e non mente.
+    #
+    # Il watcher usa il polling: su bind mount Docker (Mac e Windows) gli eventi inotify non arrivano.
+    command: dotnet watch --non-interactive --no-hot-reload --project Sagas/Evoluzione.IndependenceDay.Sagas.Host/Evoluzione.IndependenceDay.Sagas.Host.csproj run
     environment:
       Sagas__MongoDbSettings__ConnectionString: mongodb://admin:admin@mongodb:27017
       Sagas__RabbitMQ__Host: rabbitmq
+      ASPNETCORE_HTTP_PORTS: 8080
+      DOTNET_USE_POLLING_FILE_WATCHER: 1
+    volumes:
+      - ./src:/src
+      - nuget-cache:/root/.nuget/packages
     depends_on:
       rabbitmq: { condition: service_healthy }
       mongodb: { condition: service_healthy }
