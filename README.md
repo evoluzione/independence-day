@@ -16,22 +16,9 @@ docker compose up --build
 Poi **[http://localhost:8080](http://localhost:8080)** e *Inizia la campagna*.
 
 Non serve altro: né .NET, né Node, né una base dati. I tre servizi vengono compilati dentro l'immagine
-SDK, quindi sulla macchina bastano Docker e questo repository.
+SDK, quindi sulla macchina bastano **Docker** e **Git**.
 
-Questo vale per farlo girare. Per **scrivere** i due file dell'esercizio con IntelliSense, senza
-installare l'SDK .NET sulla macchina: estensione [Dev
-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-in VS Code, poi *Reopen in Container* (richiede comunque Docker in esecuzione).
-
-```bash
-docker compose --profile test run --rm tests
-```
-
-Test rossi, raggruppati in tre gradini, uno per livello. Falli diventare verdi in ordine: con i
-gradini fino a N verdi la campagna supera i primi N livelli, e senza il gradino giusto al livello
-dopo si perdono tutte e cinque le città.
-
-Poi apri i due file da scrivere, che sono tutto l'esercizio:
+I due file da scrivere, che sono tutto l'esercizio:
 
 ```
 src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/
@@ -39,13 +26,61 @@ src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/
 
 👉 **[La guida](GUIDA.md)** spiega i passi uno per uno. Comincia da lì.
 
+## Compilare, con o senza .NET installato
+
+Far girare il gioco non richiede .NET. Per **scrivere** i due file ci sono tre strade: scegli la tua,
+il kata è identico in tutte e tre.
+
+### Hai l'SDK .NET 10 sulla macchina
+
+Apri la cartella in VS Code e basta, IntelliSense c'è già. I test girano nativi, ed è la via più
+rapida — nessun container di mezzo:
+
+```bash
+dotnet test src/Evoluzione.IndependenceDay.slnx
+```
+
+### Non hai .NET e non vuoi installarlo — dev container
+
+Serve l'estensione [Dev
+Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+Apri la cartella, poi *Reopen in Container* dal toast che compare (o F1 → `Dev Containers: Reopen in
+Container`).
+
+VS Code riaggancia la finestra a un container che ha l'SDK dentro: l'editor resta sul tuo PC, il
+compilatore no. La prima volta scarica ~1 GB e fa il restore, una volta sola. Da lì il terminale
+integrato **è dentro il container**, quindi:
+
+```bash
+dotnet test src/Evoluzione.IndependenceDay.slnx
+```
+
+Il gioco invece si accende **da un terminale del tuo PC**, non da quello di VS Code: dentro il dev
+container non c'è Docker.
+
+### Non vuoi né .NET né il dev container
+
+I test girano lo stesso, nell'immagine SDK, senza installare niente:
+
+```bash
+docker compose --profile test run --rm tests
+```
+
+Nessun IntelliSense, ma i test sono la specifica e bastano a chiudere il kata.
+
+## I test
+
+Comunque tu li lanci, sono rossi e raggruppati in **tre gradini**, uno per livello. Falli diventare
+verdi in ordine: con i gradini fino a N verdi la campagna supera i primi N livelli, e senza il
+gradino giusto al livello dopo si perdono tutte e cinque le città.
+
 ## Dove sta cosa
 
 |                      |                                                                                                                 |
 | -------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Sala operativa       | [http://localhost:8080](http://localhost:8080)                                                                   |
 | Log del tuo processo | `docker compose logs -f saga`                                                                                 |
-| Test                 | `docker compose --profile test run --rm tests`                                                                |
+| Test                 | `dotnet test src/Evoluzione.IndependenceDay.slnx`, oppure `docker compose --profile test run --rm tests`          |
 | API dello spazio     | [http://localhost:8090/space/ships](http://localhost:8090/space/ships)                                           |
 | RabbitMQ             | [http://localhost:15673](http://localhost:15673) — guest / guest                                                |
 | KurrentDB            | [http://localhost:2114](http://localhost:2114) (spazio) · [http://localhost:2115](http://localhost:2115) (terra) |

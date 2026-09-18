@@ -1,10 +1,13 @@
+// Serve solo a scrivere il codice: dentro c'e' l'SDK .NET, quindi IntelliSense e `dotnet test`
+// funzionano senza installare niente sulla macchina. Il gioco continua a girare fuori, con
+// `docker compose up --build` da un terminale normale.
 {
   "name": "independence-day",
   "image": "mcr.microsoft.com/dotnet/sdk:10.0",
-  "workspaceFolder": "/workspace",
   "customizations": {
     "vscode": {
-      "extensions": ["ms-dotnettools.csdevkit"]
+      // L'estensione base, non C# Dev Kit: stessa IntelliSense, senza login Microsoft ne' licenza.
+      "extensions": ["ms-dotnettools.csharp"]
     }
   },
   "postCreateCommand": "dotnet restore src/Evoluzione.IndependenceDay.slnx"

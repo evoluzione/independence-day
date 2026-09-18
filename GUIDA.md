@@ -19,6 +19,10 @@ partenza — la saga esiste ma non fa niente.
 docker compose --profile test run --rm tests
 ```
 
+Se hai .NET installato, o se stai lavorando dentro il dev container, usa invece `dotnet test
+src/Evoluzione.IndependenceDay.slnx`: è la stessa cosa, ma parte subito. Le
+[tre strade](README.md#compilare-con-o-senza-net-installato) sono nel README.
+
 Test rossi, raggruppati in **tre gradini**, uno per livello. **Sono la specifica**: il nome dice a
 che livello servono, il commento dice perché, e l'asserzione dice esattamente cosa deve finire sul
 bus.
