@@ -72,11 +72,10 @@
   svg { width: 100%; height: 100%; flex: 1; min-height: 0; display: block; }
 
   #log { overflow-y: auto; flex: 1; }
-  .row { display: grid; grid-template-columns: 62px 22px 1fr; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
+  .row { display: grid; grid-template-columns: 22px 1fr; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
   .row:first-child { border-top: 0; }
   .row.new { animation: flash 1.2s ease-out; }
   @keyframes flash { from { background: #17324a; } to { background: transparent; } }
-  .row time, .row .where { color: var(--dim); }
   .row .emoji { text-align: center; }
   .row.ok .what { color: var(--ok); } .row.warn .what { color: var(--warn); }
   .row.bad .what { color: var(--bad); } .row.saga .what { color: var(--saga); }
@@ -259,22 +258,22 @@ const CITY_POS = {
 const posOf = (cityId) => CITY_POS[cityId] || [300, 160];
 
 const STEPS = {
-  'detected':             ['🛸', 'avvistamento'],
-  'fire':                 ['🔫', 'fuoco aperto'],
-  'shot':                 ['💢', 'colpo'],
-  'missed':               ['🎯', 'bersaglio mancato'],
-  'cease':                ['🛑', 'cessate il fuoco'],
-  'no-cannon':            ['🚫', 'nessun cannone'],
-  'jammed':               ['🔩', 'inceppato'],
-  'repaired':             ['🔧', 'riparato'],
-  'empty':                ['🈳', 'a secco'],
-  'resupply-dispatched':  ['📦', 'convoglio chiamato'],
-  'resupplied':           ['📦', 'convoglio arrivato'],
-  'wasted':               ['🕳️', 'colpo su un relitto'],
-  'destroyed':            ['💥', 'abbattuta'],
-  'landed':               ['👽', 'atterrata'],
-  'city-fallen':          ['🏚️', 'citta perduta'],
-  'wave-start':           ['📯', 'ondata'],
+  'detected':             '🛸',
+  'fire':                 '🔫',
+  'shot':                 '💢',
+  'missed':               '🎯',
+  'cease':                '🛑',
+  'no-cannon':            '🚫',
+  'jammed':               '🔩',
+  'repaired':             '🔧',
+  'empty':                '🈳',
+  'resupply-dispatched':  '📦',
+  'resupplied':           '📦',
+  'wasted':               '🕳️',
+  'destroyed':            '💥',
+  'landed':               '👽',
+  'city-fallen':          '🏚️',
+  'wave-start':           '📯',
 };
 
 const CANNON = {
@@ -341,13 +340,11 @@ function renderLog(log) {
   const first = seen.size === 0;
   for (const e of fresh) {
     seen.add(e.id);
-    const [emoji, label] = STEPS[e.step] || ['•', e.step];
-    const t = new Date(e.at).toLocaleTimeString('it-IT', { hour12: false });
+    const emoji = STEPS[e.step] || '•';
     const row = document.createElement('div');
     row.className = `row ${esc(e.tone)} ${first ? '' : 'new'}`;
-    row.innerHTML = `<time>${t}</time><span class="emoji">${emoji}</span><span>
-      <span class="what">${esc(e.detail)}</span>
-      <span class="where">${e.cityName ? `— ${esc(e.cityName)} ` : ''}· ${esc(label)}</span></span>`;
+    row.innerHTML = `<span class="emoji">${emoji}</span>
+      <span class="what">${esc(e.detail)}${e.cityName ? ` — ${esc(e.cityName)}` : ''}</span>`;
     box.prepend(row);
   }
 }
