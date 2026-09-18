@@ -269,9 +269,13 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
         // risolta una nave appena la sente cadere, e quell'annuncio le arriva prima che la propria
         // proiezione abbia registrato l'atterraggio. Chiudere li' vorrebbe dire mostrare una citta'
         // ancora in piedi che un istante dopo non c'e' piu'.
+        //
+        // Senza nemmeno una citta' in piedi non c'e' piu' niente da difendere: la partita e' finita
+        // li', e non quando lo Spazio si accorge di aver esaurito l'ondata. Aspettare vorrebbe dire
+        // guardare le navi rimaste atterrare su macerie con la sconfitta gia' decisa.
         var started = state is not null;
-        var over = started && !state!.Running && incoming.Count == 0;
         var gameOver = started && standing == 0;
+        var over = gameOver || (started && !state!.Running && incoming.Count == 0);
         var campaignWon = over && standing > 0 && state!.Level >= Invasion.LastLevel;
         var won = over && standing > 0;
 
@@ -283,11 +287,15 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
 
         var status = !started ? "idle" : over ? "over" : "running";
 
+        // L'ondata chiusa porta la sua ora di chiusura; una caduta della Terra a ondata ancora
+        // aperta non ce l'ha, e la durata e' quella fino a adesso.
+        var endedAt = state?.Running == true ? now : state?.UpdatedAt ?? now;
+
         WaveSummary? summary = over
             ? new WaveSummary(
                 state!.Wave, state.Level, won, verdict,
-                state.StartedAt, state.UpdatedAt,
-                (int)Math.Max(0, (state.UpdatedAt - state.StartedAt).TotalSeconds),
+                state.StartedAt, endedAt,
+                (int)Math.Max(0, (endedAt - state.StartedAt).TotalSeconds),
                 ships.Count, destroyed.Count, landed.Count,
                 steps.GetValueOrDefault("shot") + steps.GetValueOrDefault("missed") +
                 steps.GetValueOrDefault("wasted"),
