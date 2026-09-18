@@ -35,7 +35,31 @@ public static class ExtensionsHelper
 
         services.AddSagaStarter<StartShipInterception, ShipInterceptionSaga>();
 
-        // services.AddIntegrationEventHandler<SagaIntegrationEventHandler<ShipApproaching>>();
-        // services.AddSagaEventHandler<ShipApproaching, ShipInterceptionSaga>();
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<ShipApproaching>>();
+        services.AddSagaEventHandler<ShipApproaching, ShipInterceptionSaga>();
+
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<FireOpened>>();
+        services.AddSagaEventHandler<FireOpened, ShipInterceptionSaga>();
+
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<FireCeased>>();
+        services.AddSagaEventHandler<FireCeased, ShipInterceptionSaga>();
+
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<CannonJammed>>();
+        services.AddSagaEventHandler<CannonJammed, ShipInterceptionSaga>();
+
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<CannonRepaired>>();
+        services.AddSagaEventHandler<CannonRepaired, ShipInterceptionSaga>();
+
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<CannonEmpty>>();
+        services.AddSagaEventHandler<CannonEmpty, ShipInterceptionSaga>();
+
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<CannonResupplied>>();
+        services.AddSagaEventHandler<CannonResupplied, ShipInterceptionSaga>();
+
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<ShipDestroyed>>();
+        services.AddSagaEventHandler<ShipDestroyed, ShipInterceptionSaga>();
+
+        services.AddIntegrationEventHandler<SagaIntegrationEventHandler<ShipLanded>>();
+        services.AddSagaEventHandler<ShipLanded, ShipInterceptionSaga>();
     }
 }

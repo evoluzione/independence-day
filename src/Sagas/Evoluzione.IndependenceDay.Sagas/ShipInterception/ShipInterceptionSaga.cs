@@ -33,30 +33,35 @@ public sealed class ShipInterceptionSaga(
 
     private static readonly EarthId Earth = new(Cities.DefenseId);
 
-    public override Task StartedByAsync(StartShipInterception command) =>
-        SaveState(command.CorrelationId, new InterceptionState
+    public override async Task StartedByAsync(StartShipInterception command)
+    {
+        await SaveState(command.CorrelationId, new InterceptionState
         {
             CorrelationId = command.CorrelationId,
             Status = SagaStatus.InProgress
         });
 
-    public Task HandleAsync(ShipApproaching @event) => Advance(@event, _ => []);
+        await SendCommand(OpenFire(command.ShipId, command.CorrelationId), command.CorrelationId);
+    }
 
-    public Task HandleAsync(ShipDestroyed @event) => Advance(@event, _ => []);
+    public Task HandleAsync(ShipApproaching @event) => Advance(@event, id =>
+        @event.CannonsFiring > 0 ? [] : [OpenFire(@event.ShipId, id)]);
 
-    public Task HandleAsync(ShipLanded @event) => Advance(@event, _ => []);
+    public Task HandleAsync(ShipDestroyed @event) => Advance(@event, id => [CeaseFire(@event.ShipId, id)]);
+
+    public Task HandleAsync(ShipLanded @event) => Advance(@event, id => [CeaseFire(@event.ShipId, id)]);
 
     public Task HandleAsync(FireOpened @event) => Advance(@event, _ => []);
 
     public Task HandleAsync(FireCeased @event) => Advance(@event, _ => []);
 
-    public Task HandleAsync(CannonJammed @event) => Advance(@event, _ => []);
+    public Task HandleAsync(CannonJammed @event) => Advance(@event, id => [Repair(@event.CityId, @event.ShipId, id)]);
 
-    public Task HandleAsync(CannonRepaired @event) => Advance(@event, _ => []);
+    public Task HandleAsync(CannonRepaired @event) => Advance(@event, id => [OpenFire(@event.ShipId, id)]);
 
-    public Task HandleAsync(CannonEmpty @event) => Advance(@event, _ => []);
+    public Task HandleAsync(CannonEmpty @event) => Advance(@event, id => [Resupply(@event.CityId, @event.ShipId, id)]);
 
-    public Task HandleAsync(CannonResupplied @event) => Advance(@event, _ => []);
+    public Task HandleAsync(CannonResupplied @event) => Advance(@event, id => [OpenFire(@event.ShipId, id)]);
 
     private async Task Advance(Event @event, Func<Guid, List<Command>> decide)
     {
