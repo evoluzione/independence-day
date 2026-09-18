@@ -14,10 +14,6 @@ namespace Evoluzione.IndependenceDay.Sagas.Facade;
 
 public static class ExtensionsHelper
 {
-    /// <summary>
-    /// Le proprieta' dello stato con cui un evento in ritardo ritrova il suo processo quando non puo'
-    /// indirizzarlo per correlationId. Ognuna diventa un indice sulla collection delle saghe.
-    /// </summary>
     internal static readonly string[] BusinessKeyFields = ["ShipId"];
 
     public static IServiceCollection AddSagas(this IServiceCollection services, IConfiguration configuration)
@@ -36,10 +32,6 @@ public static class ExtensionsHelper
     {
         services.AddCommandHandler<SagaStartedByCommandHandler<StartShipInterception>>();
         services.AddIntegrationEventHandler<ShipDetectedIntegrationEventHandler>();
-
-        // Una campagna nuova rimette in piedi le citta', e con loro la sala operativa: senza,
-        // i processi rimasti aperti da una partita persa terrebbero le linee per sempre.
-        services.AddIntegrationEventHandler<InvasionStartedIntegrationEventHandler>();
 
         services.AddSagaStarter<StartShipInterception, ShipInterceptionSaga>();
 

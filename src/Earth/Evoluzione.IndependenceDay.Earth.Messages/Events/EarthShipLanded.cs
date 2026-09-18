@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Earth.Messages.Events;
 
-/// <summary>La nave ha toccato terra, e la citta' ne ha pagato il prezzo.</summary>
 public sealed class EarthShipLanded(
     EarthId aggregateId,
     CityId cityId,

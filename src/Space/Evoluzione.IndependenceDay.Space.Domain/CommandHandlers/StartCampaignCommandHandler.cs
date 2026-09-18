@@ -9,7 +9,6 @@ namespace Evoluzione.IndependenceDay.Space.Domain.CommandHandlers;
 public class StartCampaignCommandHandler(
     IRepository repository,
 
-
     IOptions<WaveDifficulty> difficulty,
     ILoggerFactory loggerFactory) : CommandHandlerAsync<StartCampaign>(repository, loggerFactory)
 {
@@ -21,7 +20,7 @@ public class StartCampaignCommandHandler(
         var invasion = await Repository.TryGetByIdAsync<Invasion>(id, cancellationToken);
 
         if (invasion is null)
-            invasion = Invasion.Begin(id, difficulty.Value.For(1), command.CorrelationId);
+            invasion = Invasion.Begin(id, difficulty.Value.Plan(), command.CorrelationId);
         else
             invasion.StartCampaign(difficulty.Value, command.CorrelationId);
 

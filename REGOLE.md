@@ -9,14 +9,16 @@ casuale: **i guasti sono deterministici**, nessun dado, nessuna probabilità.
 | | |
 | --- | --- |
 | Città | **5**, un cannone ciascuna |
-| Colpi | **40 per città**, 200 in tutto. Non si ricaricano **mai**, né fra un'ondata e l'altra |
+| Colpi | **40 per città** all'inizio, 200 in tutto. Non si ricaricano da soli, ma un cannone a
+secco si rifornisce |
 | Cadenza | un colpo ogni **350 ms** |
 | Bersagli | **uno alla volta**: un cannone spara a una nave sola |
 | Raggio | tutte le città sparano a tutte le navi, non solo a quella sopra di loro |
 
 **Quale cannone spari non lo decidi tu.** Chiedi di aprire il fuoco su una nave, e la Terra sceglie:
 prende il più **scarico** fra quelli liberi. Consuma prima le riserve piccole e tiene indietro quelle
-piene — con il prezzo che ne segue, e che è la regola del terzo livello.
+piene, così la potenza di fuoco che resta è concentrata invece che spalmata su cinque cannoni tutti
+quasi a secco.
 
 **Un colpo su tre manca il bersaglio.** La munizione se ne va e la nave regge. Non c'è niente da fare
 e non te lo dice nessuno: il fuoco è aperto, quindi il cannone ricarica e riprova da solo.
@@ -44,107 +46,73 @@ campagna.
 
 Dalla presa in carico hai **8 secondi**. Poi tocca terra.
 
-## I quattro guasti
+## I tre guasti
 
-### 1. L'ordine perso — uno su venticinque
-
-Non arriva alla Terra. Non succede niente, quindi **non torna indietro nessun evento** — nemmeno un
-rifiuto. Vale per tutti e tre gli ordini. L'unico modo di accorgersene è il battito.
-
-Due ordini di fila non si perdono mai: riprovare basta sempre.
-
-### 2. L'inceppamento — ogni dieci grilletti
+### 1. L'inceppamento — ogni dieci grilletti
 
 Il colpo non parte, non consuma munizioni, e il cannone si ferma. Il conto è sui **grilletti
 premuti**, colpi mancati e colpi su relitti compresi.
 
 Non si sblocca da solo: senza `RepairCannon` è perso per il resto della campagna.
 
-### 3. La riparazione che non prende — una su due
+### 2. La riparazione
 
-Riparare costa **3 colpi a tentativo** e non riapre il fuoco: rimette il cannone disponibile, e
-fermo. Ma **una riparazione su due non prende**: i colpi se ne vanno e il cannone resta inceppato.
+Riparare costa **3 colpi** e non riapre il fuoco: rimette il cannone disponibile, e fermo.
+Rimetterlo in azione è una mossa a parte.
 
-La Terra lo dice — `CannonStillJammed` — quindi è un evento, non un silenzio. Due tentativi di fila
-non falliscono mai.
+### 3. Il cannone a secco
 
-### 4. Il cannone a secco
-
-Un cannone che finisce i colpi **resta assegnato alla sua nave** finché non lo si restituisce. Non
-spara più, ma per il battito quella nave risulta coperta.
+Un cannone che finisce i colpi si libera: smette di essere assegnato alla sua nave, e chi la stava
+intercettando resta scoperto. Non torna carico da solo — va chiamato il convoglio, `RequestResupply`
+— e il convoglio ci mette **3 secondi** a portare **20 colpi**. Rimettere il cannone in azione, come
+per la riparazione, è un ordine a parte: `CannonResupplied` non riapre il fuoco.
 
 ## Il battito — ogni mezzo secondo
 
-La Terra racconta come stanno le cose senza che nessuno lo chieda. Serve a vedere le tre cose che
-**nessun evento** può raccontare, perché sono assenze:
-
-| Battito | Vuol dire |
-| --- | --- |
-| `ShipApproaching` con **zero cannoni** | l'apertura del fuoco si è persa |
-| `CannonStillFiring` | il cessate il fuoco si è perso |
-| `CannonStillJammed` | la riparazione si è persa, o non ha preso |
+La Terra racconta come stanno le cose senza che nessuno lo chieda. Serve a vedere l'unica cosa che
+**nessun evento** può raccontare, perché è un'assenza: `ShipApproaching` con **zero cannoni** dice
+che una nave è scoperta — perché tutti i cannoni erano impegnati quando è arrivata, non perché un
+ordine si sia perso da qualche parte.
 
 È l'unico orologio che hai — ed è una rete, non il meccanismo: quando un evento dice già tutto,
 aspettare il battito costa mezzo secondo su otto di finestra.
 
-## La sala operativa
+## L'ondata
 
-**16 linee.** Un processo aperto ne occupa una, e la libera **solo chiudendosi**.
+Una nave parte ogni **secondo**, ed è tutta la campagna: **36 navi**, un'unica ondata.
 
-Le linee tornano tutte libere quando comincia una campagna **nuova**, come le città. Dentro la stessa
-campagna non torna indietro niente.
+| 🛸 Caccia | 🛰️ Incrociatore | 🚀 Corazzata | Colpi a segno |
+| ---: | ---: | ---: | ---: |
+| 12 | 18 | 6 | 138 |
 
-Sono molte più delle navi che possono essere in volo insieme, quindi non è una risorsa da dosare: è
-la ragione per cui chiudere un processo è una mossa. Un processo che non si chiude mai non fa male
-subito — tiene la sua linea, e basta. Ma le navi passano a decine e le linee non tornano indietro:
-a un certo punto una nave viene avvistata e nessuno la prende in carico. Nessun ordine, nessun
-cannone, nessun errore.
+Non arrivano in blocco per stazza: sei blocchi identici, ognuno con **una corazzata, tre
+incrociatori, due caccia** — le più pesanti in testa a ogni blocco. Se le sei corazzate arrivassero
+tutte insieme inceppherebbero i cinque cannoni nei primi secondi, e senza riparazione un inceppamento
+non passa mai: nessuna nave dopo, nemmeno un caccia che basta un colpo a fermare, troverebbe più un
+cannone libero per tutta l'ondata. A blocchi, il peso è distribuito lungo tutta l'ondata.
 
-## I tre livelli
+Il conto dei colpi a segno (138) supera i 200 in dotazione una volta contati i colpi a vuoto e le
+riparazioni — circa due colpi spesi per ogni colpo a segno. Il margine si assottiglia con l'ondata, ed
+è la ragione per cui i rifornimenti contano: senza, l'ultimo terzo dell'ondata trova i cannoni a
+secco.
 
-Una nave parte ogni **secondo** e punta le città **a turno**. Le più pesanti partono per prime: chi
-arriva dopo trova i cannoni già impegnati.
+## Le cinque mosse
 
-| Livello | Navi | 🛸 | 🛰️ | 🚀 | Colpi a segno | Cumulato |
-| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 5 | 5 | 0 | 0 | 5 | 5 |
-| 2 | 10 | 8 | 1 | 1 | 21 | 26 |
-| 3 | 15 | 11 | 2 | 2 | 37 | **63** |
+I test di `Sagas.Tests` sono cinque, uno per problema. Non sono un cancello: ogni mossa in più
+abbatte **più navi** di quella prima, e si vede nel resoconto di fine ondata.
 
-Trenta navi in tutto. Con un colpo su tre a vuoto, i 63 colpi a segno sono circa **95 grilletti** su
-200 in dotazione, meno quelli spesi nelle riparazioni. La soluzione di riferimento chiude il terzo
-livello con cinque città in piedi, nessuna nave a terra e una sessantina di colpi avanzati.
-
-Il vincolo vero però non sono i colpi: sono i **cannoni liberi**. All'ultimo livello le corazzate
-partono per prime, e chi arriva dopo aspetta. Un cannone lasciato acceso su un relitto non è un colpo
-sprecato: è un posto vuoto in quella fila.
-
-## I tre gradini
-
-I test di `Sagas.Tests` sono raggruppati in **tre gradini**, e ognuno è un livello: con i gradini
-fino a N verdi la campagna arriva in fondo al livello N senza perdere una città, e si ferma al
-successivo.
-
-**Non è un margine, è netto.** Chi arriva al livello N+1 senza il gradino N non perde una città: le
-perde tutte e cinque. I gradini sono tre proprio perché ognuno sia così — con gradini più fitti il
-confine si decideva per una nave sola, e lì non conta la saga, conta quale ordine si è perso.
-
-| Livello | Navi | Gradino | Cosa succede senza |
-| ---: | ---: | --- | --- |
-| 1 | 5 | **aprire il fuoco** — `StartedBy` → `OpenFire` | non spara nessuno, e cadono cinque città |
-| 2 | 10 | **restituire e reagire ai guasti** — `ShipDestroyed` → `CeaseFire`, il battito, `CannonJammed` → `RepairCannon` | i cinque cannoni restano puntati sui relitti: zero cannoni liberi, cadono cinque città |
-| 3 | 15 | **chiudere il conto** — `CompleteSaga` a conto saldato, `CannonEmpty` → `CeaseFire` + `OpenFire` | le linee occupate al livello 2 non tornano: quasi nessuna nave viene presa in carico |
-
-C'è un branch per gradino, `livello-01` … `livello-03`, ognuno con la soluzione fino a quel livello.
-Il diff fra due consecutivi è esattamente quello che aggiunge il gradino:
-
-```bash
-git diff livello-01 livello-02 -- src/Sagas/
-```
+| # | Problema | Senza |
+| ---: | --- | --- |
+| 1 | Aprire il fuoco all'avvistamento, e insistere se il battito dice che la nave è scoperta | non spara nessuno |
+| 2 | Restituire il cannone quando la nave cade | il fuoco continua sul relitto, e il cannone manca alla nave dopo |
+| 3 | Far riparare un cannone inceppato | un cannone su cinque è perso per sempre al primo inceppamento |
+| 4 | Rimettere subito in azione un cannone appena riparato | il cannone resta fermo fino al battito successivo |
+| 5 | Chiedere i rifornimenti per un cannone a secco, e riaprire il fuoco alla consegna | un cannone su cinque si ferma per sempre alla prima ricarica esaurita |
 
 ## Come si vince
 
-Superare il livello 3. La campagna è persa quando cade l'ultima città.
+Arrivare in fondo all'ondata con **almeno una città in piedi**. La campagna è persa quando cade
+l'ultima città.
 
 A parità di vittoria contano, in quest'ordine: le **città in piedi**, le **navi atterrate**, i
 **colpi non spesi**.

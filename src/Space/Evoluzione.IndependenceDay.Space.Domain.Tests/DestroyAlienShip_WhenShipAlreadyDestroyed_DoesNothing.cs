@@ -8,10 +8,6 @@ using Muflone.Messages.Events;
 
 namespace Evoluzione.IndependenceDay.Space.Domain.Tests;
 
-/// <summary>
-/// Il caso della riconsegna: respinta e atomica possono arrivare tutte e due sulla stessa nave.
-/// La seconda non e' un errore e non deve scrivere niente.
-/// </summary>
 public class DestroyAlienShip_WhenShipAlreadyDestroyed_DoesNothing : SpaceCommandSpecification<DestroyAlienShip>
 {
     private readonly ShipId _shipId = new(Guid.NewGuid());

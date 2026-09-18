@@ -8,14 +8,6 @@ using ShipId = Evoluzione.IndependenceDay.Earth.Messages.DomainIds.ShipId;
 
 namespace Evoluzione.IndependenceDay.Earth.Domain.Tests;
 
-/// <summary>
-/// Riparare rimette il cannone in piedi, non in azione.
-/// </summary>
-/// <remarks>
-/// Torna disponibile, con qualche colpo in meno, e fermo. Chi lo ha fatto riparare deve anche
-/// rimetterlo a sparare: fermarsi a meta' significa aver speso munizioni per un cannone che resta
-/// li' a guardare.
-/// </remarks>
 public class RepairCannon_WhenTheCannonIsJammed_BringsItBackButNotFiring : EarthCommandSpecification<RepairCannon>
 {
     private readonly ShipId _shipId = new(Guid.NewGuid());

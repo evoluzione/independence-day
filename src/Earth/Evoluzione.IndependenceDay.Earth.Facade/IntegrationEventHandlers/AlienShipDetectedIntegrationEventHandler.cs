@@ -5,14 +5,6 @@ using Evoluzione.IndependenceDay.Infrastructure.Messaging;
 
 namespace Evoluzione.IndependenceDay.Earth.Facade.IntegrationEventHandlers;
 
-/// <summary>
-/// L'avvistamento dello Spazio diventa una presa in carico della Terra.
-/// </summary>
-/// <remarks>
-/// Il quadro della Terra non si scrive qui: lo scrive la proiezione di <c>EarthShipDetected</c>,
-/// cioe' dopo che l'aggregato ha accettato la nave. Scriverlo prima vorrebbe dire mostrare navi che
-/// la difesa non ha mai preso in carico, e accettare ordini su di loro.
-/// </remarks>
 public class AlienShipDetectedIntegrationEventHandler(
     IServiceBus serviceBus,
     ILoggerFactory loggerFactory) : IntegrationEventHandlerAsync<AlienShipDetected>(loggerFactory)

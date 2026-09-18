@@ -2,15 +2,6 @@ using MongoDB.Driver;
 
 namespace Evoluzione.IndependenceDay.Infrastructure.MongoDB;
 
-/// <summary>
-/// Scritture di proiezione che rifiutano di essere sorpassate.
-/// </summary>
-/// <remarks>
-/// Due eventi dello stesso aggregato possono arrivare al read model fuori ordine: chi atterra per
-/// ultimo vince, e non e' detto sia quello accaduto per ultimo — una flotta respinta tornerebbe "in
-/// avvicinamento". Ogni scrittura porta con se' la posizione dell'evento sul log e si applica solo se
-/// il documento e' fermo a una posizione precedente.
-/// </remarks>
 public abstract class ProjectionPersister<TDocument>(IMongoDatabase database)
     where TDocument : IProjectionDocument
 {
@@ -25,8 +16,7 @@ public abstract class ProjectionPersister<TDocument>(IMongoDatabase database)
         DateTime editDate,
         CancellationToken ct = default)
     {
-        // Senza posizione sul log non c'e' niente da confrontare: si scrive e si lascia la versione
-        // dov'era, cosi' la prossima scrittura versionata trova ancora il riferimento giusto.
+
         var unversioned = revision < 0;
 
         var filter = unversioned

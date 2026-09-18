@@ -8,7 +8,6 @@ using Muflone.Saga.Persistence;
 
 namespace Evoluzione.IndependenceDay.Sagas.Tests.TestDoubles;
 
-/// <summary>Raccoglie i comandi invece di spedirli: e' quello che i test osservano.</summary>
 public sealed class RecordingServiceBus : IServiceBus
 {
     public List<object> Sent { get; } = [];

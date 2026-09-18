@@ -17,9 +17,25 @@ using EarthShipId = Evoluzione.IndependenceDay.Earth.Messages.DomainIds.ShipId;
 
 namespace Evoluzione.IndependenceDay.Sagas.Tests.TestDoubles;
 
-/// <summary>Com'e' finita una campagna simulata.</summary>
+[Flags]
+public enum Skills
+{
+    None = 0,
+
+    Fire = 1,
+
+    Cease = 2,
+
+    Repair = 4,
+
+    Resume = 8,
+
+    Resupply = 16,
+
+    All = Fire | Cease | Repair | Resume | Resupply
+}
+
 public sealed record CampaignResult(
-    int LevelReached,
     int CitiesStanding,
     int ShipsDestroyed,
     int ShipsLanded,
@@ -28,39 +44,19 @@ public sealed record CampaignResult(
     int RoundsWasted,
     int RoundsLeft,
     int Jams,
-    int OrdersLost,
     int OpenCannons,
-    int OpenLines,
-    int Unattended,
     int Empties,
-    int FailedRepairs)
+    int Resupplies)
 {
-    public bool Won => LevelReached >= Invasion.LastLevel && CitiesStanding > 0;
+    public bool Won => CitiesStanding > 0;
 
     public override string ToString() =>
-        $"livello {LevelReached}, {CitiesStanding} citta' in piedi, {ShipsDestroyed} abbattute, " +
-        $"{ShipsLanded} atterrate, {RoundsSpent} colpi ({RoundsMissed} mancati, {RoundsWasted} su relitti), " +
-        $"{RoundsLeft} rimasti, " +
-        $"{Jams} inceppamenti, {OrdersLost} ordini persi, {OpenCannons} cannoni lasciati accesi, " +
-        $"{OpenLines} linee occupate, {Unattended} navi senza nessuno che le seguisse, " +
-        $"{Empties} cannoni a secco, {FailedRepairs} riparazioni non prese";
+        $"{CitiesStanding} citta' in piedi, {ShipsDestroyed} abbattute, {ShipsLanded} atterrate, " +
+        $"{RoundsSpent} colpi ({RoundsMissed} mancati, {RoundsWasted} su relitti), {RoundsLeft} rimasti, " +
+        $"{Jams} inceppamenti, {OpenCannons} cannoni lasciati accesi, {Empties} cannoni a secco, " +
+        $"{Resupplies} consegne";
 }
 
-/// <summary>
-/// La campagna intera, giocata in memoria: niente bus, niente Mongo, niente event store.
-/// </summary>
-/// <remarks>
-/// Usa l'aggregato vero della Terra e il processo vero — non finte copie — e al posto
-/// dell'infrastruttura mette un orologio che avanza a passi. E' lo strumento con cui si tara il
-/// bilanciamento: cambiare un numero in <see cref="Armory"/> o in <see cref="WaveDifficulty"/> e
-/// rilanciare i test dice subito se il gioco e' diventato impossibile o banale.
-/// <para>
-/// Una semplificazione c'e', ed e' voluta: i comandi arrivano all'aggregato nello stesso passo in cui
-/// vengono impartiti, mentre in produzione ci sono una coda e un event store in mezzo. La simulazione
-/// e' quindi un filo piu' generosa del gioco vero — va bene, perche' serve a dire che una strategia
-/// <b>non</b> basta, e quella conclusione regge a maggior ragione.
-/// </para>
-/// </remarks>
 public sealed class Campaign
 {
     private const int TickMs = 100;
@@ -72,63 +68,41 @@ public sealed class Campaign
     private static readonly EarthId Earth = new(Cities.DefenseId);
     private static readonly Contracts.Ids.EarthId ContractsEarth = new(Cities.DefenseId);
 
-
     private readonly RecordingServiceBus _bus = new();
     private readonly InMemorySagaRepository _sagas = new();
     private readonly HashSet<Guid> _started = [];
     private readonly Dictionary<Guid, DateTime> _detectedAt = [];
     private readonly Dictionary<Guid, DateTime> _lastShotAt = [];
 
+    private readonly Dictionary<Guid, (DateTime Due, Guid ShipId)> _resupplyDue = [];
+
     private EarthDefense _earth = null!;
     private DateTime _now = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    private int _orders;
     private int _spent;
     private int _missed;
     private int _wasted;
     private int _jams;
-    private int _lost;
     private int _destroyed;
     private int _landed;
-    private int _unattended;
-    private int _failedRepairs;
     private int _empties;
+    private int _resupplies;
 
-    /// <summary>Se falso, il processo non restituisce mai un cannone: e' la prova del contrario.</summary>
-    public bool Compensates { get; init; } = true;
+    public Skills Skills { get; init; } = Skills.All;
 
     private readonly WaveDifficulty _difficulty = new();
-
-    /// <summary>Com'e' andato ogni livello: e' cosi' che si vede <b>dove</b> si e' rotto qualcosa.</summary>
-    public readonly List<(int Level, int Landed, int Standing, int RoundsLeft)> PerLevel = [];
-
-    /// <summary>Fino a che livello non e' atterrata nessuna nave.</summary>
-    public int CleanThrough => PerLevel.TakeWhile(level => level.Landed == 0).Count();
 
     public CampaignResult Play()
     {
         _earth = EarthDefense.Commission(Earth, Armory.RoundsPerCity, Ships.FullIntegrity, Guid.NewGuid());
         Drain();
 
-        var level = 0;
-        for (var l = 1; l <= Invasion.LastLevel; l++)
-        {
-            level = l;
-            var before = _landed;
-            Wave(_difficulty.For(l));
-            Settle();
-            PerLevel.Add((l, _landed - before, Standing().Count,
-                _earth.Cannons.Values.Where(c => c.Status != CannonStatus.Lost).Sum(c => c.Rounds)));
+        Wave(_difficulty.Plan());
+        Settle();
 
-            if (Standing().Count == 0)
-                break;
-        }
-
-        return new CampaignResult(level, Standing().Count, _destroyed, _landed, _spent, _missed, _wasted,
+        return new CampaignResult(Standing().Count, _destroyed, _landed, _spent, _missed, _wasted,
             _earth.Cannons.Values.Where(c => c.Status != CannonStatus.Lost).Sum(c => c.Rounds),
-            _jams, _lost,
-            _earth.Cannons.Values.Count(c => c.Status == CannonStatus.Firing),
-            _sagas.Open, _unattended, _empties, _failedRepairs);
+            _jams, _earth.Cannons.Values.Count(c => c.Status == CannonStatus.Firing), _empties, _resupplies);
     }
 
     private void Wave(WavePlan plan)
@@ -137,8 +111,6 @@ public sealed class Campaign
         var lastLaunch = DateTime.MinValue;
         var lastBeat = _now;
 
-        // Un'ondata dura finche' ci sono navi da lanciare o navi in volo. Il tetto di giri e' una
-        // rete: se qualcosa si incastra il test fallisce invece di girare per sempre.
         for (var tick = 0; tick < 4000; tick++)
         {
             var targets = Standing();
@@ -154,6 +126,7 @@ public sealed class Campaign
 
             Triggers();
             Landings();
+            Resupplies();
 
             if (_now - lastBeat >= TimeSpan.FromMilliseconds(HeartbeatMs))
             {
@@ -170,20 +143,13 @@ public sealed class Campaign
         throw new InvalidOperationException("L'ondata non si e' mai chiusa: c'e' un giro che non avanza.");
     }
 
-    /// <summary>
-    /// Fra un'ondata e l'altra il battito continua: e' li' che si rimedia a un cessate il fuoco
-    /// perso all'ultimo istante.
-    /// </summary>
-    /// <remarks>
-    /// Nel gioco vero non esiste un "fra un'ondata e l'altra" per la Terra: i giri di fondo non si
-    /// fermano mai. La simulazione lavora a ondate, quindi deve ricrearlo — altrimenti misurerebbe
-    /// un cannone acceso che nella realta' si sarebbe chiuso da solo un secondo dopo.
-    /// </remarks>
     private void Settle()
     {
-        for (var tick = 0; tick < 60 && _earth.Cannons.Values.Any(c => c.Status == CannonStatus.Firing); tick++)
+        for (var tick = 0; tick < 60 &&
+             _earth.Cannons.Values.Any(c => c.Status is CannonStatus.Firing or CannonStatus.Resupplying); tick++)
         {
             Triggers();
+            Resupplies();
             Beats();
             _now = _now.AddMilliseconds(HeartbeatMs);
         }
@@ -197,22 +163,12 @@ public sealed class Campaign
         _earth.DetectShip(new EarthCityId(cityId), new EarthShipId(shipId), shipClass, Guid.NewGuid());
         Drain();
 
-        // La sala operativa ha un numero finito di linee: se sono tutte occupate da processi che non
-        // si sono mai chiusi, questa nave non viene presa in carico da nessuno.
-        if (_sagas.Open >= OperationsRoom.Lines)
-        {
-            _unattended++;
-            return;
-        }
-
-        // L'avvistamento accende la saga, come fa l'handler di integrazione nel gioco vero.
         _started.Add(shipId);
         Saga().StartedByAsync(new StartShipInterception(new Contracts.Ids.ShipId(shipId),
             new Contracts.Ids.CityId(cityId), shipId, Who)).GetAwaiter().GetResult();
         Execute();
     }
 
-    /// <summary>La centrale di tiro: un colpo per ogni cannone che ha finito di ricaricare.</summary>
     private void Triggers()
     {
         foreach (var (cityId, cannon) in _earth.Cannons.ToList())
@@ -245,7 +201,19 @@ public sealed class Campaign
         }
     }
 
-    /// <summary>Il battito: navi ancora vive, e cannoni rimasti puntati su relitti.</summary>
+    private void Resupplies()
+    {
+        foreach (var (cityId, due) in _resupplyDue.ToList())
+        {
+            if (_now < due.Due)
+                continue;
+
+            _resupplyDue.Remove(cityId);
+            _earth.DeliverSupplies(new EarthCityId(cityId), new EarthShipId(due.ShipId), Guid.NewGuid());
+            Drain();
+        }
+    }
+
     private void Beats()
     {
         var approach = Invasion.ApproachSeconds * 1000;
@@ -259,22 +227,8 @@ public sealed class Campaign
                 new Contracts.Ids.CityId(Guid.Parse(ship.CityId)),
                 Math.Max(0, approach - (int)(_now - _detectedAt[id]).TotalMilliseconds), firing, id));
         }
-
-        foreach (var (cityId, cannon) in _earth.Cannons.ToList())
-        {
-            if (cannon.Target is not null && !_earth.Ships.ContainsKey(cannon.Target))
-                Deliver(Guid.Parse(cannon.Target), new C.CannonStillFiring(ContractsEarth,
-                    new Contracts.Ids.CityId(Guid.Parse(cityId)),
-                    new Contracts.Ids.ShipId(Guid.Parse(cannon.Target)), Guid.Parse(cannon.Target)));
-
-            if (cannon.Status == CannonStatus.Jammed && cannon.JammedOn is not null)
-                Deliver(Guid.Parse(cannon.JammedOn), new C.CannonStillJammed(ContractsEarth,
-                    new Contracts.Ids.CityId(Guid.Parse(cityId)),
-                    new Contracts.Ids.ShipId(Guid.Parse(cannon.JammedOn)), Guid.Parse(cannon.JammedOn)));
-        }
     }
 
-    /// <summary>Porta fuori dall'aggregato quello che e' appena successo, e lo consegna ai processi.</summary>
     private void Drain()
     {
         var events = ((IAggregate)_earth).GetUncommittedEvents().OfType<DomainEvent>().ToList();
@@ -283,6 +237,7 @@ public sealed class Campaign
         foreach (var @event in events)
         {
             Count(@event);
+            Schedule(@event);
 
             var translated = Translate(@event);
             if (translated is not null)
@@ -299,27 +254,32 @@ public sealed class Campaign
             case EarthShotWasted: _spent++; _wasted++; break;
             case EarthCannonJammed: _jams++; break;
             case EarthCannonEmpty: _empties++; break;
-            case EarthCannonStillJammed: _failedRepairs++; break;
+            case EarthCannonResupplied: _resupplies++; break;
             case EarthShipDestroyed: _destroyed++; break;
             case EarthShipLanded: _landed++; break;
         }
+    }
+
+    private void Schedule(DomainEvent @event)
+    {
+        if (@event is EarthResupplyDispatched dispatched)
+            _resupplyDue[Guid.Parse(dispatched.CityId.Value)] =
+                (_now.AddSeconds(Armory.ResupplySeconds), Guid.Parse(dispatched.ShipId.Value));
     }
 
     private static Guid ShipOf(DomainEvent @event) => @event switch
     {
         EarthFireOpened e => Guid.Parse(e.ShipId.Value),
         EarthFireCeased e => Guid.Parse(e.ShipId.Value),
-        EarthNoCannonReady e => Guid.Parse(e.ShipId.Value),
         EarthCannonJammed e => Guid.Parse(e.ShipId.Value),
         EarthCannonRepaired e => Guid.Parse(e.ShipId.Value),
-        EarthCannonStillJammed e => Guid.Parse(e.ShipId.Value),
         EarthCannonEmpty e => Guid.Parse(e.ShipId.Value),
+        EarthCannonResupplied e => Guid.Parse(e.ShipId.Value),
         EarthShipDestroyed e => Guid.Parse(e.ShipId.Value),
         EarthShipLanded e => Guid.Parse(e.ShipId.Value),
         _ => Guid.Empty
     };
 
-    /// <summary>Quello che esce sul bus, e quello che resta dentro la Terra: qui come nel gioco vero.</summary>
     private static Event? Translate(DomainEvent @event)
     {
         var city = (Func<EarthCityId, Contracts.Ids.CityId>)(id => new Contracts.Ids.CityId(Guid.Parse(id.Value)));
@@ -331,15 +291,14 @@ public sealed class Campaign
                 Guid.Parse(e.ShipId.Value)),
             EarthFireCeased e => new C.FireCeased(ContractsEarth, city(e.CityId), ship(e.ShipId), e.RoundsLeft,
                 Guid.Parse(e.ShipId.Value)),
-            EarthNoCannonReady e => new C.NoCannonReady(ContractsEarth, ship(e.ShipId), Guid.Parse(e.ShipId.Value)),
             EarthCannonJammed e => new C.CannonJammed(ContractsEarth, city(e.CityId), ship(e.ShipId),
                 Guid.Parse(e.ShipId.Value)),
             EarthCannonRepaired e => new C.CannonRepaired(ContractsEarth, city(e.CityId), ship(e.ShipId),
                 e.RoundsLeft, Guid.Parse(e.ShipId.Value)),
-            EarthCannonStillJammed e => new C.CannonStillJammed(ContractsEarth, city(e.CityId), ship(e.ShipId),
-                Guid.Parse(e.ShipId.Value)),
             EarthCannonEmpty e => new C.CannonEmpty(ContractsEarth, city(e.CityId), ship(e.ShipId),
                 Guid.Parse(e.ShipId.Value)),
+            EarthCannonResupplied e => new C.CannonResupplied(ContractsEarth, city(e.CityId), ship(e.ShipId),
+                e.Rounds, Guid.Parse(e.ShipId.Value)),
             EarthShipDestroyed e => new C.ShipDestroyed(ContractsEarth, ship(e.ShipId), city(e.CityId),
                 Guid.Parse(e.ShipId.Value)),
             EarthShipLanded e => new C.ShipLanded(ContractsEarth, ship(e.ShipId), city(e.CityId), e.Damage,
@@ -348,16 +307,12 @@ public sealed class Campaign
         };
     }
 
-    /// <summary>
-    /// Consegna un evento alla saga, e manda alla Terra quello che ne esce.
-    /// </summary>
-    /// <remarks>
-    /// La saga e' quella vera: la si costruisce a ogni evento, come fa il contenitore in produzione,
-    /// e lo stato lo ritrova dal repository in memoria.
-    /// </remarks>
     private void Deliver(Guid shipId, Event @event)
     {
         if (!_started.Contains(shipId))
+            return;
+
+        if (@event is C.CannonRepaired && !Skills.HasFlag(Skills.Resume))
             return;
 
         switch (@event)
@@ -365,12 +320,10 @@ public sealed class Campaign
             case C.ShipApproaching e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.FireOpened e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.FireCeased e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
-            case C.NoCannonReady e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.CannonJammed e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.CannonRepaired e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.CannonEmpty e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
-            case C.CannonStillFiring e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
-            case C.CannonStillJammed e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
+            case C.CannonResupplied e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.ShipDestroyed e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
             case C.ShipLanded e: Saga().HandleAsync(e).GetAwaiter().GetResult(); break;
         }
@@ -381,7 +334,6 @@ public sealed class Campaign
     private ShipInterceptionSaga Saga() =>
         new(_bus, _sagas, new NoStateLocator(), new NullLoggerFactory());
 
-    /// <summary>Svuota il bus: quello che la saga ha ordinato arriva alla Terra.</summary>
     private void Execute()
     {
         var orders = _bus.Sent.OfType<Command>().ToList();
@@ -391,33 +343,24 @@ public sealed class Campaign
             Apply(order);
     }
 
-    /// <summary>
-    /// Manda un ordine alla Terra, o lo lascia cadere.
-    /// </summary>
-    /// <remarks>
-    /// La perdita sta qui e non nell'aggregato, come nel gioco vero: un ordine perso non arriva
-    /// proprio, quindi non produce nessun evento e non c'e' niente da raccontare.
-    /// </remarks>
     private void Apply(Command order)
     {
-        if (order is OpenFire or CeaseFire or RepairCannon && !Radio.Delivers(++_orders))
-        {
-            _lost++;
-            return;
-        }
-
         switch (order)
         {
             case OpenFire fire:
                 _earth.OpenFire(new EarthShipId(Guid.Parse(fire.ShipId.Value)), Guid.NewGuid());
                 break;
-            case CeaseFire cease when Compensates:
+            case CeaseFire cease when Skills.HasFlag(Skills.Cease):
                 _earth.CeaseFire(new EarthCityId(Guid.Parse(cease.CityId.Value)),
                     new EarthShipId(Guid.Parse(cease.ShipId.Value)), Guid.NewGuid());
                 break;
-            case RepairCannon repair:
+            case RepairCannon repair when Skills.HasFlag(Skills.Repair):
                 _earth.RepairCannon(new EarthCityId(Guid.Parse(repair.CityId.Value)),
                     new EarthShipId(Guid.Parse(repair.ShipId.Value)), Guid.NewGuid());
+                break;
+            case RequestResupply resupply when Skills.HasFlag(Skills.Resupply):
+                _earth.RequestResupply(new EarthCityId(Guid.Parse(resupply.CityId.Value)),
+                    new EarthShipId(Guid.Parse(resupply.ShipId.Value)), Guid.NewGuid());
                 break;
             default:
                 return;

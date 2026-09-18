@@ -2,7 +2,6 @@ using Evoluzione.IndependenceDay.Contracts.World;
 
 namespace Evoluzione.IndependenceDay.Earth.Messages.Commands;
 
-/// <summary>Prende in carico una nave avvistata, con la citta' che sta puntando e la sua stazza.</summary>
 public sealed class DetectShip(
     EarthId aggregateId,
     CityId cityId,

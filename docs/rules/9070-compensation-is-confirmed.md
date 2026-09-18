@@ -8,17 +8,21 @@
 Un passo che impegna una risorsa di qualcun altro apre un debito. Il processo lo chiude mandando
 l'azione compensativa **e aspettandone la conferma**.
 
-Tre conseguenze, tutte obbligatorie:
+Due conseguenze, entrambe obbligatorie:
 
 1. La compensazione ha un evento di esito proprio, e quell'evento va ascoltato. Un'azione
    compensativa che non conferma è una speranza.
 2. Il processo **non si chiude** quando l'obiettivo è raggiunto, ma quando non resta nessun debito
    aperto. Sono due condizioni separate e servono entrambe.
-3. La compensazione va ritentata. Anche lei può perdersi, e va rimandata finché non conferma.
 
 Lo stato della saga tiene l'elenco dei debiti aperti. Se un evento di apertura arriva quando
-l'obiettivo è già risolto — l'ordine era per strada — quel debito va aperto e chiuso subito, non
-ignorato.
+l'obiettivo è già risolto — l'ordine era per strada mentre la nave cadeva — quel debito va aperto e
+chiuso subito, non ignorato.
+
+> **Amendment 2026-09-18.** Un terzo punto imponeva di ripetere la compensazione perché anche lei
+> poteva perdersi sul collegamento. È caduto con l'ordine perso stesso — vedi
+> [ADR-9080](../adr/9080-failure-is-the-game.md). Un cessate il fuoco che arriva a destinazione non
+> ha più bisogno di essere insistito.
 
 ## Why
 
@@ -41,6 +45,8 @@ contro navi già abbattute, e il diario era pieno di righe verdi.
 Revisione: se un processo manda un'azione compensativa, cerca l'handler del suo evento di conferma. Se
 non c'è, è un difetto — non importa quanto sia improbabile la perdita.
 
-Test: ogni processo con una compensazione ha due test. Uno prova che **non chiude** finché la conferma
-non arriva; l'altro è la prova del contrario, cioè che una versione che non compensa **fallisce**. Il
-secondo è quello che accorge quando il gioco smette di insegnare: vedi `CampaignTests`.
+Test: `ShipInterceptionSagaTests` prova che la compensazione parte quando la nave è risolta.
+`CampaignTests` è la prova del contrario su scala: gioca la stessa ondata cinque volte, aggiungendo un
+comportamento alla volta, e pretende che ogni aggiunta — compensazione compresa — abbatta più navi
+della precedente. Se restituire i cannoni diventasse decorativo, quel gradino smetterebbe di
+guadagnare navi, e il test lo direbbe.

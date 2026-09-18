@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Earth.Messages.Commands;
 
-/// <summary>Riporta tutto a nuovo per una campagna. Non succede fra un livello e l'altro.</summary>
 public sealed class RecommissionEarth(
     EarthId aggregateId,
     int rounds,

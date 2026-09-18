@@ -4,14 +4,6 @@ using C = Evoluzione.IndependenceDay.Contracts.Events;
 
 namespace Evoluzione.IndependenceDay.Earth.ReadModel.EventHandlers;
 
-/// <summary>
-/// Il montaggio comune di chi porta un fatto della Terra fuori, sul bus.
-/// </summary>
-/// <remarks>
-/// Un publisher non proietta niente: traduce e spedisce. Sono dieci e stanno in un file solo perche'
-/// dieci file da otto righe l'uno nascondono la cosa che conta, cioe' <b>quali</b> fatti escono e
-/// quali no.
-/// </remarks>
 public abstract class EarthPublisher<TEvent>(IEventBus bus, ILoggerFactory loggerFactory)
     : DomainEventHandlerAsync<TEvent>(loggerFactory) where TEvent : DomainEvent
 {
@@ -39,7 +31,6 @@ public class FireOpenedPublisher(IEventBus bus, ILoggerFactory loggers)
             e.CorrelationId());
 }
 
-/// <remarks>La conferma della compensazione: senza, chi ha chiuso non sa di aver chiuso davvero.</remarks>
 public class FireCeasedPublisher(IEventBus bus, ILoggerFactory loggers)
     : EarthPublisher<EarthFireCeased>(bus, loggers)
 {
@@ -70,18 +61,19 @@ public class CannonRepairedPublisher(IEventBus bus, ILoggerFactory loggers)
             e.CorrelationId());
 }
 
-public class CannonStillJammedPublisher(IEventBus bus, ILoggerFactory loggers)
-    : EarthPublisher<EarthCannonStillJammed>(bus, loggers)
-{
-    protected override IntegrationEvent Translated(EarthCannonStillJammed e) =>
-        new C.CannonStillJammed(Earth(e), Translate.City(e.CityId), Translate.Ship(e.ShipId), e.CorrelationId());
-}
-
 public class CannonEmptyPublisher(IEventBus bus, ILoggerFactory loggers)
     : EarthPublisher<EarthCannonEmpty>(bus, loggers)
 {
     protected override IntegrationEvent Translated(EarthCannonEmpty e) =>
         new C.CannonEmpty(Earth(e), Translate.City(e.CityId), Translate.Ship(e.ShipId), e.CorrelationId());
+}
+
+public class CannonResuppliedPublisher(IEventBus bus, ILoggerFactory loggers)
+    : EarthPublisher<EarthCannonResupplied>(bus, loggers)
+{
+    protected override IntegrationEvent Translated(EarthCannonResupplied e) =>
+        new C.CannonResupplied(Earth(e), Translate.City(e.CityId), Translate.Ship(e.ShipId), e.Rounds,
+            e.CorrelationId());
 }
 
 public class ShipDestroyedPublisher(IEventBus bus, ILoggerFactory loggers)

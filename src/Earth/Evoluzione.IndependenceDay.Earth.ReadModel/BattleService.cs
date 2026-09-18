@@ -8,13 +8,8 @@ namespace Evoluzione.IndependenceDay.Earth.ReadModel;
 
 public sealed class BattleService : ProjectionPersister<City>, IBattleService
 {
-    /// <summary>Quante righe di diario tornano alla pagina. Il resto resta su Mongo.</summary>
     private const int LogPageSize = 150;
 
-    /// <summary>
-    /// Per quanto una nave gia' risolta resta nello snapshot: il tempo che serve alla pagina per
-    /// mostrarla sparire invece di vederla svanire fra un fotogramma e l'altro.
-    /// </summary>
     private static readonly TimeSpan ResolvedShipLinger = TimeSpan.FromSeconds(90);
 
     private readonly IMongoCollection<Ship> _ships;
@@ -31,12 +26,11 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
     public Task<BattleState?> State(CancellationToken ct = default) =>
         _state.Find(x => x.Id == BattleState.Key).FirstOrDefaultAsync(ct)!;
 
-    public Task WaveStarted(int wave, int level, int ships, DateTime at, CancellationToken ct = default) =>
+    public Task WaveStarted(int wave, int ships, DateTime at, CancellationToken ct = default) =>
         _state.UpdateOneAsync(
             Builders<BattleState>.Filter.Eq(x => x.Id, BattleState.Key),
             Builders<BattleState>.Update
                 .Set(x => x.Wave, wave)
-                .Set(x => x.Level, level)
                 .Set(x => x.Ships, ships)
                 .Set(x => x.Running, true)
                 .Set(x => x.StartedAt, at)
@@ -51,8 +45,6 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
             Builders<BattleState>.Update.Set(x => x.Running, false).Set(x => x.UpdatedAt, at),
             cancellationToken: ct);
 
-    // --- le citta' e i loro cannoni ---------------------------------------------------------------
-
     public Task CommissionCity(Guid cityId, string name, int integrity, int rounds, DateTime at, long revision,
         CancellationToken ct = default) =>
         TryApply(cityId, revision,
@@ -61,8 +53,7 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
                 .SetOnInsert(x => x.Integrity, integrity)
                 .SetOnInsert(x => x.Rounds, rounds)
                 .SetOnInsert(x => x.Cannon, "ready")
-                .SetOnInsert(x => x.Target, Guid.Empty)
-                .SetOnInsert(x => x.JammedOn, Guid.Empty),
+                .SetOnInsert(x => x.Target, Guid.Empty),
             upsert: true, at, ct);
 
     public Task ResetCities(int integrity, int rounds, DateTime at, CancellationToken ct = default) =>
@@ -72,7 +63,6 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
                 .Set(x => x.Rounds, rounds)
                 .Set(x => x.Cannon, "ready")
                 .Set(x => x.Target, Guid.Empty)
-                .Set(x => x.JammedOn, Guid.Empty)
                 .Set(x => x.UpdatedAt, at),
             cancellationToken: ct);
 
@@ -80,15 +70,11 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
         CancellationToken ct = default) =>
         TryApply(cityId, revision, Builders<City>.Update.Set(x => x.Integrity, integrity), upsert: false, at, ct);
 
-    /// <remarks>
-    /// Lo stato del cannone non si versiona: le scritture arrivano tutte dagli eventi della stessa
-    /// citta', quindi in ordine, e il filtro sulla revisione le farebbe scartare a vicenda.
-    /// </remarks>
     public Task SetCannon(Guid cityId, string status, Guid target, DateTime at, CancellationToken ct = default) =>
-        Collection.UpdateOneAsync(
-            Builders<City>.Filter.Eq(x => x.Id, cityId),
-            Builders<City>.Update.Set(x => x.Cannon, status).Set(x => x.Target, target).Set(x => x.UpdatedAt, at),
-            cancellationToken: ct);
+    Collection.UpdateOneAsync(
+        Builders<City>.Filter.Eq(x => x.Id, cityId),
+        Builders<City>.Update.Set(x => x.Cannon, status).Set(x => x.Target, target).Set(x => x.UpdatedAt, at),
+        cancellationToken: ct);
 
     public Task SetRounds(Guid cityId, int rounds, DateTime at, CancellationToken ct = default) =>
         Collection.UpdateOneAsync(
@@ -103,36 +89,27 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
                 .Set(x => x.Rounds, rounds).Set(x => x.LastShotAt, at).Set(x => x.UpdatedAt, at),
             cancellationToken: ct);
 
-    /// <remarks>Cambia lo stato e basta: il bersaglio resta dov'e'. Serve al cannone a secco, che
-    /// resta assegnato alla sua nave finche' non lo si restituisce.</remarks>
     public Task SetCannonStatus(Guid cityId, string status, DateTime at, CancellationToken ct = default) =>
-        Collection.UpdateOneAsync(
-            Builders<City>.Filter.Eq(x => x.Id, cityId),
-            Builders<City>.Update.Set(x => x.Cannon, status).Set(x => x.UpdatedAt, at),
-            cancellationToken: ct);
-
-    public Task SetJammedOn(Guid cityId, Guid shipId, DateTime at, CancellationToken ct = default) =>
-        Collection.UpdateOneAsync(
-            Builders<City>.Filter.Eq(x => x.Id, cityId),
-            Builders<City>.Update.Set(x => x.JammedOn, shipId).Set(x => x.UpdatedAt, at),
-            cancellationToken: ct);
+    Collection.UpdateOneAsync(
+        Builders<City>.Filter.Eq(x => x.Id, cityId),
+        Builders<City>.Update.Set(x => x.Cannon, status).Set(x => x.UpdatedAt, at),
+        cancellationToken: ct);
 
     public async Task<IReadOnlyList<City>> FiringCannons(CancellationToken ct = default) =>
         await Collection.Find(c => c.Cannon == "firing").ToListAsync(ct);
 
-    /// <remarks>
-    /// Impegnati, non "che sparano": un cannone a secco ha ancora il suo bersaglio e conta come
-    /// presente su quella nave, anche se non parte piu' un colpo. E' quello che il battito deve
-    /// raccontare, altrimenti direbbe che una nave e' coperta da un cannone che non spara.
-    /// </remarks>
     public async Task<IReadOnlyList<City>> EngagedCannons(CancellationToken ct = default) =>
-        await Collection.Find(c => (c.Cannon == "firing" || c.Cannon == "empty") && c.Target != Guid.Empty)
-            .ToListAsync(ct);
+    await Collection.Find(c => c.Cannon == "firing" && c.Target != Guid.Empty).ToListAsync(ct);
 
-    public async Task<IReadOnlyList<City>> JammedCannons(CancellationToken ct = default) =>
-        await Collection.Find(c => c.Cannon == "jammed").ToListAsync(ct);
+    public Task MarkResupply(Guid cityId, Guid shipId, DateTime at, CancellationToken ct = default) =>
+        Collection.UpdateOneAsync(
+            Builders<City>.Filter.Eq(x => x.Id, cityId),
+            Builders<City>.Update.Set(x => x.ResupplyFor, shipId).Set(x => x.ResupplyAt, at)
+                .Set(x => x.UpdatedAt, at),
+            cancellationToken: ct);
 
-    // --- le navi ----------------------------------------------------------------------------------
+    public async Task<IReadOnlyList<City>> ResupplyingCannons(CancellationToken ct = default) =>
+        await Collection.Find(c => c.Cannon == "resupplying").ToListAsync(ct);
 
     public async Task DetectShip(Guid shipId, Guid cityId, ShipClass shipClass, int wave, Guid correlationId,
         DateTime at, long revision, CancellationToken ct = default)
@@ -156,23 +133,12 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
             new UpdateOptions { IsUpsert = true }, ct);
     }
 
-    /// <remarks>
-    /// I colpi incassati non si versionano, per la stessa ragione dei cannoni: arrivano in ordine
-    /// dallo stesso aggregato.
-    /// </remarks>
     public Task SetHits(Guid shipId, int hits, DateTime at, CancellationToken ct = default) =>
-        _ships.UpdateOneAsync(
-            Builders<Ship>.Filter.Eq(x => x.Id, shipId),
-            Builders<Ship>.Update.Set(x => x.Hits, hits).Set(x => x.UpdatedAt, at),
-            cancellationToken: ct);
+    _ships.UpdateOneAsync(
+        Builders<Ship>.Filter.Eq(x => x.Id, shipId),
+        Builders<Ship>.Update.Set(x => x.Hits, hits).Set(x => x.UpdatedAt, at),
+        cancellationToken: ct);
 
-    /// <remarks>
-    /// Si filtra sullo stato e non sulla versione. La nave e' l'unico documento toccato sia da un
-    /// evento di integrazione (l'avvistamento, che dal bus arriva senza posizione sul log) sia da
-    /// eventi di dominio (l'esito, che la posizione ce l'ha): confrontare le due scale non funziona.
-    /// Ma <c>incoming → esito</c> e' un passaggio a senso unico, e quello basta gia' a dire chi viene
-    /// prima: la prima chiusura vince, le successive non trovano piu' niente da chiudere.
-    /// </remarks>
     public async Task CloseShip(Guid shipId, string status, DateTime at, CancellationToken ct = default)
     {
         var filter = Builders<Ship>.Filter.And(
@@ -189,8 +155,6 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
 
     public async Task<IReadOnlyList<Ship>> OpenShips(CancellationToken ct = default) =>
         await _ships.Find(s => s.Status == "incoming").ToListAsync(ct);
-
-    // --- il diario --------------------------------------------------------------------------------
 
     public async Task Log(Guid shipId, string step, string detail, Guid cityId, string tone, DateTime at,
         CancellationToken ct = default, int amount = 0)
@@ -215,8 +179,6 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
             Amount = amount
         }, cancellationToken: ct);
 
-    // --- il quadro per la pagina ------------------------------------------------------------------
-
     public async Task<BattleSnapshot> GetSnapshot(CancellationToken ct = default)
     {
         var state = await State(ct);
@@ -225,8 +187,6 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
 
         var cities = await Collection.Find(FilterDefinition<City>.Empty).ToListAsync(ct);
 
-        // Tutto filtrato sull'ondata in corso: gli eventi delle precedenti restano su Mongo — non si
-        // cancella niente — ma non appartengono a questa battaglia.
         var ships = await _ships.Find(s => s.Wave == wave).ToListAsync(ct);
         var log = await _log.Find(e => e.Wave == wave)
             .SortByDescending(x => x.At).Limit(LogPageSize).ToListAsync(ct);
@@ -241,9 +201,6 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
         var landed = ships.Where(s => s.Status == "landed").ToList();
         var destroyed = ships.Where(s => s.Status == "destroyed").ToList();
 
-        // I contatori si ricavano dal diario invece di stare su un documento a parte: una riconsegna
-        // dello stesso evento gonfierebbe un contatore incrementato a mano, e nessuno se ne
-        // accorgerebbe. Cosi' il numero e' sempre quello che si legge nel diario.
         var steps = await CountBySteps(wave, ct);
 
         var since = now - ResolvedShipLinger;
@@ -262,38 +219,23 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
         var standing = cityViews.Count(c => !c.Fallen);
         var roundsLeft = cities.Sum(c => c.Integrity > 0 ? c.Rounds : 0);
 
-        // Chi dice che un'ondata e' finita e' lo Spazio, che sa quante navi ha mandato: la Terra lo
-        // apprende dal bus. Calcolarlo qui dalle navi vorrebbe dire indovinare quante ne mancano.
-        //
-        // Ma finche' la Terra ha una nave in volo il resoconto non puo' chiudersi: lo Spazio considera
-        // risolta una nave appena la sente cadere, e quell'annuncio le arriva prima che la propria
-        // proiezione abbia registrato l'atterraggio. Chiudere li' vorrebbe dire mostrare una citta'
-        // ancora in piedi che un istante dopo non c'e' piu'.
-        //
-        // Senza nemmeno una citta' in piedi non c'e' piu' niente da difendere: la partita e' finita
-        // li', e non quando lo Spazio si accorge di aver esaurito l'ondata. Aspettare vorrebbe dire
-        // guardare le navi rimaste atterrare su macerie con la sconfitta gia' decisa.
         var started = state is not null;
         var gameOver = started && standing == 0;
         var over = gameOver || (started && !state!.Running && incoming.Count == 0);
-        var campaignWon = over && standing > 0 && state!.Level >= Invasion.LastLevel;
-        var won = over && standing > 0;
+        var campaignWon = over && standing > 0;
 
         var verdict = !over ? ""
-            : gameOver ? $"La Terra e' caduta al livello {state!.Level}."
-            : campaignWon ? $"Invasione respinta: tutti i {Invasion.LastLevel} livelli superati."
-            : landed.Count == 0 ? "Ondata respinta: nemmeno una nave ha toccato terra."
-            : $"Ondata superata. {standing} citta' su {cityViews.Count} ancora in piedi.";
+            : gameOver ? "La Terra e' caduta."
+            : landed.Count == 0 ? "Invasione respinta: nemmeno una nave ha toccato terra."
+            : $"Invasione respinta: {standing} citta' su {cityViews.Count} ancora in piedi.";
 
         var status = !started ? "idle" : over ? "over" : "running";
 
-        // L'ondata chiusa porta la sua ora di chiusura; una caduta della Terra a ondata ancora
-        // aperta non ce l'ha, e la durata e' quella fino a adesso.
         var endedAt = state?.Running == true ? now : state?.UpdatedAt ?? now;
 
         WaveSummary? summary = over
             ? new WaveSummary(
-                state!.Wave, state.Level, won, verdict,
+                state!.Wave, campaignWon, verdict,
                 state.StartedAt, endedAt,
                 (int)Math.Max(0, (endedAt - state.StartedAt).TotalSeconds),
                 ships.Count, destroyed.Count, landed.Count,
@@ -307,9 +249,9 @@ public sealed class BattleService : ProjectionPersister<City>, IBattleService
         return new BattleSnapshot(
             new EarthState(standing, cityViews.Count, roundsLeft, cityViews),
             new AlienState(incoming.Count, destroyed.Count, landed.Count),
-            new InvasionView(wave, state?.Level ?? 0, status, totalShips,
+            new InvasionView(wave, status, totalShips,
                 Math.Max(0, totalShips - destroyed.Count - landed.Count),
-                over, gameOver, campaignWon, Invasion.LastLevel, verdict, summary),
+                over, gameOver, campaignWon, verdict, summary),
             steps,
             shipViews,
             log.Select(entry => new LogView(entry.Id, entry.At, entry.Step, entry.Detail, entry.CityName,

@@ -6,13 +6,6 @@ using Muflone.Saga.Persistence;
 
 namespace Evoluzione.IndependenceDay.Sagas.Infrastructure.MongoDB;
 
-/// <summary>
-/// Lo stato delle saghe su Mongo: un documento per correlationId.
-/// </summary>
-/// <remarks>
-/// <c>CompleteAsync</c> cancella il documento: una saga conclusa non lascia traccia. Una fallita o
-/// annullata resta, ed e' voluto — e' l'unico posto in cui si vede che qualcosa e' rimasto a meta'.
-/// </remarks>
 public sealed class MongoSagaRepository(
     [FromKeyedServices("sagas-mongodb")] IMongoDatabase database) : ISagaRepository
 {
@@ -55,8 +48,6 @@ public sealed class MongoSagaRepository(
         _collection.DeleteOneAsync(
             Builders<BsonDocument>.Filter.Eq(MongoSagaCollection.CorrelationIdField, correlationId.ToString("N")));
 
-    // Lo stesso discriminatore che il locator interroga: se le due forme divergono la ricerca non
-    // trova nulla, e il difetto si presenta come "l'evento non arriva".
     internal static string StateType<TSagaState>() where TSagaState : class, new() =>
         typeof(TSagaState).AssemblyQualifiedName ?? typeof(TSagaState).FullName ?? typeof(TSagaState).Name;
 }

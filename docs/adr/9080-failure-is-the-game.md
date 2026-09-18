@@ -16,48 +16,36 @@ partite diverse, e vincere diventerebbe in parte fortuna. Il secondo è peggiore
 l'altra volta funzionava.
 
 C'è anche la questione di **quale** guasto. Un errore che torna indietro come evento si gestisce
-guardando l'evento, ed è il caso facile. Il caso che rompe davvero le saghe è l'altro: il messaggio
-che non arriva, che non produce nulla, e su cui non c'è niente da intercettare.
+guardando l'evento, ed è il caso facile. Il caso interessante per una saga è l'altro: un cannone che
+smette di rispondere da solo, senza che nessuno abbia sbagliato niente.
+
+> **Amendment 2026-09-18.** Il gioco aveva anche un quarto guasto, l'ordine perso sul collegamento:
+> uno su venticinque, mai arrivato, senza nemmeno un rifiuto — l'unico modo di accorgersene era il
+> battito. È stato tolto passando a un'unica ondata da cinque problemi distinti: il collegamento
+> inaffidabile duplicava la lezione del primo problema (la contesa sui cannoni, non un ordine
+> perduto) senza aggiungerne una nuova, e allargava la superficie del kata oltre le cinque mosse che
+> doveva insegnare. **Restano tre guasti**, tutti dentro il dominio; il battito resta obbligatorio,
+> ma la sua ragione ora è la contesa, non il silenzio di un ordine.
 
 ## Decision
 
-**Quattro guasti, tutti deterministici, tutti scritti in chiaro in `Contracts/World/Armory.cs`:**
+**Tre guasti, tutti deterministici, tutti scritti in chiaro in `Contracts/World/Armory.cs`:**
 
 | | |
 | --- | --- |
 | **Il bersaglio mancato** | uno su tre. Frequente e banale: il cannone riprova da solo, ma resta occupato |
-| **L'ordine perso** | uno su venticinque, e si ferma sul collegamento prima di arrivare |
-| **L'inceppamento** | ogni venti grilletti, e non si sblocca da solo |
+| **L'inceppamento** | ogni dieci grilletti, e non si sblocca da solo |
 | **Il colpo su un relitto** | conseguenza, non causa: un cannone acceso su una nave caduta |
 
-Uno su venticinque e non uno su sette, perché una nave che tocca terra rade al suolo la città: una difesa
-condotta bene deve poterle fermare tutte, e con guasti più fitti la perfezione diventava
-irraggiungibile. Un gioco che si perde comunque non insegna a giocarlo meglio.
-
-Nessuna probabilità, nessun seme, nessun generatore: contatori. Il conto dei tentativi avanza anche
-quando l'ordine si perde, quindi **due ordini di fila non si perdono mai** — riprovare basta sempre, e
-non può avvitarsi in un giro infinito.
-
-Il pattern sta nella documentazione e nel codice condiviso: la sfida è gestirlo, non indovinarlo.
-
-**L'ordine perso si perde sul collegamento, non dentro il dominio.** La prima stesura lo metteva
-nell'aggregato, che riceveva un comando valido e decideva di ignorarlo: era una rete che finge, e
-insegnava la cosa sbagliata. Un aggregato non scarta mai un ordine che ha ancora senso: quelli che si
-perdono non gli arrivano proprio. Resta vero che esce in silenzio davanti a un ordine diventato moot
-— una riconsegna, un cessate il fuoco su un cannone riassegnato — ma quella è idempotenza, non una
-rete che finge, e le due cose vanno distinte perché chi coordina le vive uguali. La perdita vive quindi al bordo del servizio, in `RadioLink`, e il
-contatore sta in memoria e non nell'event store — quanti messaggi ha perso un collegamento non è un
-fatto di dominio.
+Nessuna probabilità, nessun seme, nessun generatore: contatori. Il pattern sta nella documentazione e
+nel codice condiviso: la sfida è gestirlo, non indovinarlo.
 
 ## Consequences
 
-- Un processo che si accorge del silenzio si può scrivere, provare e correggere. Senza determinismo
-  sarebbe un lavoro a tentoni.
-- Il battito diventa obbligatorio: senza un orologio, un ordine perso è invisibile per sempre.
-- Le sequenze non sono comunque identiche fra due partite: l'ordine in cui i comandi arrivano
-  all'aggregato dipende dalla coda, quindi **quali** ordini si perdono varia. Il *pattern* è fisso, la
-  sua incidenza sulle singole città no. È un compromesso accettato: l'alternativa sarebbe serializzare
-  tutto, e sarebbe un altro sistema.
+- Un processo che si accorge di un cannone fermo si può scrivere, provare e correggere. Senza
+  determinismo sarebbe un lavoro a tentoni.
+- Il battito resta necessario: è l'unico modo di scoprire che una nave è rimasta scoperta perché
+  tutti i cannoni erano impegnati quando è arrivata.
 - Un partecipante può leggere `Armory` e prevedere il prossimo inceppamento. Non gli serve a niente —
   non può scegliere il cannone — e sapere come funziona il mondo fa parte del gioco.
 - La simulazione della campagna è riproducibile, quindi utilizzabile per tarare il bilanciamento.

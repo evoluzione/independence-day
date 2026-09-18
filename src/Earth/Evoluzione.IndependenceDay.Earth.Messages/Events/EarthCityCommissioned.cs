@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Earth.Messages.Events;
 
-/// <summary>Una citta' in piedi, con il suo cannone carico.</summary>
 public sealed class EarthCityCommissioned(
     EarthId aggregateId,
     CityId cityId,

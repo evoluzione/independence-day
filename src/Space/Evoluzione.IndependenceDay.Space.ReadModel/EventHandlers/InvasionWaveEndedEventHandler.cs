@@ -7,7 +7,6 @@ namespace Evoluzione.IndependenceDay.Space.ReadModel.EventHandlers;
 public class InvasionWaveEndedEventHandler(IInvasionProgressService service, ILoggerFactory loggerFactory)
     : DomainEventHandlerAsync<InvasionWaveEnded>(loggerFactory)
 
-
 {
     private readonly ILogger _logger = loggerFactory.CreateLogger<InvasionWaveEndedEventHandler>();
 

@@ -40,9 +40,7 @@ public static class ModuleExtensions
         services.AddScoped<ITargetCityService, TargetCityService>();
 
         services.Configure<InvasionSettings>(configuration.GetSection("Space:Invasion"));
-        // La curva sta in WaveDifficulty e in nessun altro posto. Era anche in appsettings, e i due
-        // numeri hanno divergiuto in silenzio: il gioco vero lanciava ondate diverse da quelle su cui
-        // era tarato il bilanciamento, e nessun test poteva accorgersene.
+
         services.Configure<WaveDifficulty>(_ => { });
         services.AddHostedService<InvasionGenerator>();
 
@@ -51,12 +49,9 @@ public static class ModuleExtensions
         return services;
     }
 
-    // internal e non private: i test di architettura verificano che ogni handler del contesto sia
-    // registrato qui, senza dover aprire Mongo, EventStore e RabbitMQ per scoprirlo.
     internal static IServiceCollection AddSpaceMessageHandlers(this IServiceCollection services)
     {
         services.AddCommandHandler<StartCampaignCommandHandler>();
-        services.AddCommandHandler<StartNextWaveCommandHandler>();
         services.AddCommandHandler<EndInvasionCommandHandler>();
         services.AddCommandHandler<LaunchAlienShipCommandHandler>();
         services.AddCommandHandler<DestroyAlienShipCommandHandler>();

@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Earth.Messages.Events;
 
-/// <summary>Campagna nuova: cannoni a pieno e citta' rimesse in piedi.</summary>
 public sealed class EarthRecommissioned(
     EarthId aggregateId,
     int rounds,

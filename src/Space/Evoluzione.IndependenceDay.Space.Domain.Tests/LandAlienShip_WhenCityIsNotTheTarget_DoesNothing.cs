@@ -8,10 +8,6 @@ using Muflone.Messages.Events;
 
 namespace Evoluzione.IndependenceDay.Space.Domain.Tests;
 
-/// <summary>
-/// Una nave atterra sulla citta' che puntava. Un ordine per un'altra citta' e' un messaggio finito
-/// sull'aggregato sbagliato: si scarta in silenzio invece di inventare un atterraggio.
-/// </summary>
 public class LandAlienShip_WhenCityIsNotTheTarget_DoesNothing : SpaceCommandSpecification<LandAlienShip>
 {
     private readonly ShipId _shipId = new(Guid.NewGuid());

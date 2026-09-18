@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Space.ReadModel.EventHandlers;
 
-/// <summary>Campagna nuova: tutte le citta' tornano bersagli validi.</summary>
 public class CitiesResetOnNewCampaignEventHandler(ITargetCityService cities, ILoggerFactory loggerFactory)
     : DomainEventHandlerAsync<InvasionWaveStarted>(loggerFactory)
 {
@@ -8,9 +7,6 @@ public class CitiesResetOnNewCampaignEventHandler(ITargetCityService cities, ILo
 
     public override async Task HandleAsync(InvasionWaveStarted @event, CancellationToken cancellationToken = default)
     {
-        if (@event.Level != 1)
-            return;
-
         try
         {
             await cities.ResetAll(@event.When(), cancellationToken);

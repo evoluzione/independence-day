@@ -8,15 +8,6 @@ using ShipId = Evoluzione.IndependenceDay.Earth.Messages.DomainIds.ShipId;
 
 namespace Evoluzione.IndependenceDay.Earth.Domain.Tests;
 
-/// <summary>
-/// La nave e' gia' caduta e il cannone spara ancora: il colpo si perde.
-/// </summary>
-/// <remarks>
-/// La Terra <b>non</b> spegne il cannone da sola, e non e' una svista. Non e' lei a sapere se quel
-/// fuoco serviva ancora: lo sa chi l'ha aperto, ed e' lui che deve chiuderlo. Ogni riga come questa
-/// nel diario e' un cessate il fuoco che non e' mai arrivato — un colpo in meno adesso, e un cannone
-/// che non c'e' quando arriva la nave dopo.
-/// </remarks>
 public class PullTrigger_WhenTheShipIsAlreadyDown_WastesTheRound : EarthCommandSpecification<PullTrigger>
 {
     private readonly ShipId _shipId = new(Guid.NewGuid());

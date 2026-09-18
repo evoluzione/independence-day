@@ -6,17 +6,6 @@ using CShipId = Evoluzione.IndependenceDay.Contracts.Ids.ShipId;
 
 namespace Evoluzione.IndependenceDay.Earth.ReadModel.EventHandlers;
 
-/// <summary>
-/// Il punto in cui un fatto della Terra diventa un fatto per tutti.
-/// </summary>
-/// <remarks>
-/// Gli eventi di dominio restano dentro il contesto che li ha scritti: quelli che escono sul bus sono
-/// una traduzione esplicita, con gli identificativi di <c>Contracts</c>.
-/// <para>
-/// Non tutti escono. <c>EarthShotFired</c> e <c>EarthShotWasted</c> non hanno una traduzione, e non
-/// per dimenticanza: sono cronaca del tiro colpo per colpo, e riguardano la pagina, non chi coordina.
-/// </para>
-/// </remarks>
 internal static class Translate
 {
     public static CEarthId Earth(Messages.DomainIds.EarthId id) => new(Guid.Parse(id.Value));

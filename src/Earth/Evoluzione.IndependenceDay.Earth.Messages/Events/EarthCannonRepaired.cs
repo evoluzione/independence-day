@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Earth.Messages.Events;
 
-/// <summary>Il cannone e' tornato disponibile. Disponibile, non in azione.</summary>
 public sealed class EarthCannonRepaired(
     EarthId aggregateId,
     CityId cityId,

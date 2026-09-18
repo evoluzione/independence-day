@@ -4,10 +4,6 @@ using ContractsCityId = Evoluzione.IndependenceDay.Contracts.Ids.CityId;
 
 namespace Evoluzione.IndependenceDay.Space.ReadModel.EventHandlers;
 
-/// <summary>
-/// Il punto in cui un fatto dello Spazio diventa un fatto per tutti: la nave partita viene
-/// annunciata sul bus come avvistamento, ed e' li' che la Terra la raccoglie.
-/// </summary>
 public class AlienShipDetectedPublisher(IEventBus eventBus, ILoggerFactory loggerFactory)
     : DomainEventHandlerAsync<AlienShipLaunched>(loggerFactory)
 {

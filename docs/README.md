@@ -6,7 +6,7 @@ points every AI assistant here before it touches code.
 
 ## Il gioco
 
-- [REGOLE.md](../REGOLE.md) — forze, combattimento, tempi, i dieci livelli
+- [REGOLE.md](../REGOLE.md) — forze, combattimento, tempi, l'ondata
 - [EVENTI.md](../EVENTI.md) — comandi ed eventi disponibili alla saga
 - [ARCHITETTURA.md](../ARCHITETTURA.md) — i tre servizi e dove sta cosa
 

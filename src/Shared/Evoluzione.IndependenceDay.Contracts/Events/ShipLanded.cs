@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Contracts.Events;
 
-/// <summary>Il tempo e' scaduto: la nave ha toccato terra e la citta' ne ha pagato il prezzo.</summary>
 public sealed class ShipLanded(
     EarthId aggregateId,
     ShipId shipId,

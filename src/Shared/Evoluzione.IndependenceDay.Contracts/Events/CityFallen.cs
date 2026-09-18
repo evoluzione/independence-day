@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Contracts.Events;
 
-/// <summary>L'integrita' e' a zero: la citta' e' perduta, e il suo cannone con lei.</summary>
 public sealed class CityFallen(EarthId aggregateId, CityId cityId, ShipId shipId, Guid correlationId)
     : IntegrationEvent(aggregateId, correlationId)
 {

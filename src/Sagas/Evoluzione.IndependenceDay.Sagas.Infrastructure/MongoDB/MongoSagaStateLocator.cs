@@ -7,15 +7,6 @@ using Muflone.Saga.Persistence;
 
 namespace Evoluzione.IndependenceDay.Sagas.Infrastructure.MongoDB;
 
-/// <summary>
-/// Trova una saga aperta per chiave di business, quando un evento non puo' indirizzarla per
-/// correlationId.
-/// </summary>
-/// <remarks>
-/// Filtra sempre per <c>stateType</c>: la collection e' eterogenea e due stati diversi possono avere
-/// una proprieta' con lo stesso nome. E filtra per stato aperto, perche' una saga fallita non va
-/// riaperta da un evento in ritardo.
-/// </remarks>
 public sealed class MongoSagaStateLocator(
     [FromKeyedServices("sagas-mongodb")] IMongoDatabase database) : ISagaStateLocator
 {

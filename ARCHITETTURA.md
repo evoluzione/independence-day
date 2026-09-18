@@ -38,7 +38,7 @@ Saghe                                         ShipDetected ◄──────
 Terra                                                        EarthFireOpened
                                                        ╔═══════════════════════╗
                                                        ║  FireControl: un      ║
-                                                       ║  colpo ogni 400 ms,   ║
+                                                       ║  colpo ogni 350 ms,   ║
                                                        ║  finché non si spegne ║
                                                        ╚═══════════════════════╝
                                                                    │
@@ -59,15 +59,15 @@ src/
 │   │   └── World/          Armory (colpi, ricarica, guasti) · Ships (stazze) · Cities · Invasion
 │   └── Infrastructure/     Mongo, KurrentDB, RabbitMQ: montaggio, non dominio
 ├── Space/
-│   ├── .Domain/            AlienShip · Invasion · WaveDifficulty (la curva dei dieci livelli)
+│   ├── .Domain/            AlienShip · Invasion · WaveDifficulty (l'unica ondata)
 │   ├── .Messages/          i suoi comandi ed eventi, privati
 │   ├── .ReadModel/         proiezioni, e i publisher che portano i fatti sul bus
-│   └── .Facade/            InvasionGenerator: manda una nave ogni 700 ms
+│   └── .Facade/            InvasionGenerator: manda una nave al secondo
 ├── Earth/
 │   ├── .Domain/            EarthDefense: cinque cannoni, le navi in volo, i guasti
 │   ├── .Messages/          i suoi comandi ed eventi, privati
 │   ├── .ReadModel/         proiezioni, publisher, e lo snapshot che la pagina legge
-│   ├── .Facade/            FireControl · ApproachDeadline · Heartbeat · gli endpoint
+│   ├── .Facade/            FireControl · ApproachDeadline · Heartbeat · SupplyConvoy · gli endpoint
 │   └── .Host/wwwroot/      la sala operativa: una pagina, alimentata da server-sent events
 └── Sagas/
     ├── .Sagas/             ◄── QUI. Due file: ShipInterceptionSaga e InterceptionState
@@ -85,23 +85,23 @@ della battaglia: la Terra risponde con un evento. Vedi
 sa la Terra, e resta sulla Terra. Il progetto saghe non contiene nessuna regola di gioco. Vedi
 [ADR-9070](docs/adr/9070-the-owner-decides.md).
 
-**Un comando che arriva a un aggregato produce sempre un evento.** Gli ordini che si perdono si
-fermano prima, sul collegamento (`RadioLink`, sul bordo della Terra). Un aggregato che ricevesse un
-comando valido e decidesse di ignorarlo sarebbe una rete che finge. Vedi
-[ADR-9080](docs/adr/9080-failure-is-the-game.md).
+**Un comando che arriva a un aggregato produce sempre un evento.** Un ordine impossibile e' un
+evento, non un silenzio: un aggregato che ricevesse un comando valido e decidesse di ignorarlo
+sarebbe una rete che finge. Vedi [ADR-9080](docs/adr/9080-failure-is-the-game.md).
 
 **Il tempo lo conosce chi esegue.** La ricarica sta in `FireControl`, la scadenza in
-`ApproachDeadline`, il battito in `Heartbeat`. Sono tre giri di fondo sulla Terra, e chi coordina non
-ha nessun timer.
+`ApproachDeadline`, la consegna in `SupplyConvoy`, il battito in `Heartbeat`. Sono quattro giri di
+fondo sulla Terra, e chi coordina non ha nessun timer.
 
 ## I giri di fondo
 
 | Servizio | Ogni | Cosa fa |
 | --- | ---: | --- |
-| `InvasionGenerator` | 500 ms | manda la prossima nave del piano (una al secondo), chiude l'ondata quando è vuota |
+| `InvasionGenerator` | 100 ms | manda la prossima nave del piano (una al secondo), chiude l'ondata quando è vuota |
 | `FireControl` | 100 ms | preme il grilletto ai cannoni che hanno finito di ricaricare |
-| `ApproachDeadline` | 500 ms | dopo 8 secondi fa toccare terra a quello che resta |
-| `Heartbeat` | 500 ms | racconta navi vive e cannoni rimasti accesi su relitti |
+| `ApproachDeadline` | 100 ms | dopo 8 secondi fa toccare terra a quello che resta |
+| `SupplyConvoy` | 100 ms | dopo qualche secondo consegna a un cannone a secco che l'ha chiamato |
+| `Heartbeat` | 500 ms | racconta le navi ancora vive, e quanti cannoni ha ciascuna addosso |
 
 Il battito è l'unico che non tocca nessun aggregato: non è un fatto di dominio, è un resoconto letto
 dal read model e messo sul bus com'è.

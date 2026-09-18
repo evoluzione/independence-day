@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Earth.Messages.Commands;
 
-/// <summary>Il tempo e' scaduto: la nave tocca terra.</summary>
 public sealed class LandShip(
     EarthId aggregateId,
     ShipId shipId,

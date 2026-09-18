@@ -2,7 +2,6 @@ using Evoluzione.IndependenceDay.Contracts.World;
 
 namespace Evoluzione.IndependenceDay.Earth.Messages.Events;
 
-/// <summary>Una nave e' stata presa in carico: da adesso la Terra accetta ordini di fuoco su di lei.</summary>
 public sealed class EarthShipDetected(
     EarthId aggregateId,
     CityId cityId,

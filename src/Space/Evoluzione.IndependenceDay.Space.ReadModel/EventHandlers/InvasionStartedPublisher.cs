@@ -7,7 +7,6 @@ namespace Evoluzione.IndependenceDay.Space.ReadModel.EventHandlers;
 public class InvasionStartedPublisher(IEventBus bus, ILoggerFactory loggerFactory)
     : DomainEventHandlerAsync<InvasionWaveStarted>(loggerFactory)
 
-
 {
     public override Task HandleAsync(InvasionWaveStarted @event, CancellationToken ct = default) =>
         bus.PublishAsync(new C.InvasionStarted(

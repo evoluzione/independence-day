@@ -16,10 +16,6 @@ public abstract class EarthCommandSpecification<TCommand> : Muflone.Specificatio
     protected static readonly Guid CityGuid = Cities.All[0].Id;
     protected static readonly CityId City = new(CityGuid);
 
-    /// <summary>
-    /// Gli stessi identificativi, ma condivisi: i tre ordini di fuoco arrivano da fuori e viaggiano
-    /// con i tipi di <c>Contracts</c>, non con quelli interni della Terra.
-    /// </summary>
     protected static readonly Contracts.Ids.EarthId SharedEarth = new(Cities.DefenseId);
 
     protected static readonly Contracts.Ids.CityId SharedCity = new(CityGuid);
@@ -28,10 +24,9 @@ public abstract class EarthCommandSpecification<TCommand> : Muflone.Specificatio
 
     protected static NullLoggerFactory LoggerFactory { get; } = new();
 
-    /// <summary>La difesa in piedi: cinque citta' intatte, cinque cannoni carichi e fermi.</summary>
     protected static IEnumerable<DomainEvent> EarthStanding(
-        int rounds = Armory.RoundsPerCity,
-        int integrity = Ships.FullIntegrity)
+    int rounds = Armory.RoundsPerCity,
+    int integrity = Ships.FullIntegrity)
     {
         yield return new EarthCommissioned(Earth, rounds, Guid.NewGuid());
 

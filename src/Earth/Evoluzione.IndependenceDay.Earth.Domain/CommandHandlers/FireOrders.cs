@@ -3,14 +3,6 @@ using Evoluzione.IndependenceDay.Infrastructure.Persistence;
 
 namespace Evoluzione.IndependenceDay.Earth.Domain.CommandHandlers;
 
-/// <summary>
-/// Il montaggio comune dei tre ordini che arrivano da fuori.
-/// </summary>
-/// <remarks>
-/// Apertura, cessate il fuoco e riparazione sono comandi di <c>Contracts</c> e non della Terra: sono
-/// il contratto con chi coordina, che non conosce i tipi interni di questo servizio. Arrivano con
-/// gli identificativi condivisi, e qui vengono tradotti in quelli dell'aggregato.
-/// </remarks>
 internal static class FireOrders
 {
     public static async Task On(
@@ -26,8 +18,6 @@ internal static class FireOrders
 
         order(earth);
 
-        // Il commitId e' l'identita' dell'append: una riconsegna dello stesso ordine non impegna un
-        // secondo cannone, perche' il secondo append viene scartato dall'event store.
         await repository.SaveAsync(earth, commitId, ct);
     }
 

@@ -1,6 +1,5 @@
 namespace Evoluzione.IndependenceDay.Earth.Messages.Events;
 
-/// <summary>Il cannone si e' inceppato: il colpo non e' partito e il fuoco si e' fermato.</summary>
 public sealed class EarthCannonJammed(
     EarthId aggregateId,
     CityId cityId,

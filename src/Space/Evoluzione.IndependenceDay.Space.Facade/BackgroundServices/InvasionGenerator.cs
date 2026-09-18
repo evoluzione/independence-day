@@ -9,26 +9,11 @@ namespace Evoluzione.IndependenceDay.Space.Facade.BackgroundServices;
 
 public class InvasionSettings
 {
-    /// <summary>Quanto passa fra una nave e l'altra dentro la stessa ondata.</summary>
     public int LaunchIntervalMs { get; set; } = 1000;
 
-    /// <summary>Ogni quanto il generatore si guarda intorno.</summary>
     public int TickMs { get; set; } = 100;
 }
 
-/// <summary>
-/// Manda in volo le navi dell'ondata in corso, e la chiude quando non ne resta nessuna.
-/// </summary>
-/// <remarks>
-/// Non decide niente: legge il piano dell'ondata dal read model e lo esegue. E' quello stato — un
-/// aggregato, non un campo qui dentro — a sapere a che punto siamo, cosi' un riavvio del servizio
-/// ritrova l'ondata dov'era invece di spegnerla.
-/// <para>
-/// Un'ondata e' finita quando tutte le sue navi sono partite e nessuna e' piu' in avvicinamento.
-/// Lo Spazio lo sa da solo: gli esiti gli tornano dalla Terra sul bus e finiscono nelle sue navi,
-/// quindi non serve che nessuno gli dica quando ha finito.
-/// </para>
-/// </remarks>
 public class InvasionGenerator(
     IServiceScopeFactory scopeFactory,
     IOptions<InvasionSettings> options,
@@ -57,7 +42,7 @@ public class InvasionGenerator(
             }
             catch (Exception ex)
             {
-                // Un giro mancato non deve spegnere l'invasione: si riprova al tick dopo.
+
                 logger.LogError(ex, "[Space] Giro del generatore fallito");
             }
         } while (await timer.WaitForNextTickAsync(stoppingToken));
@@ -75,24 +60,18 @@ public class InvasionGenerator(
         var ships = scope.ServiceProvider.GetRequiredService<IShipsService>();
         var launched = await ships.ShipsLaunched(progress.Wave, ct);
 
-        // Il piano non si porta dietro: si ricalcola dal livello. E' deterministico, quindi un
-        // riavvio del servizio ritrova l'ondata esattamente dov'era.
-        var plan = difficulty.Value.For(progress.Level);
+        var plan = difficulty.Value.Plan();
 
         if (launched < plan.Count)
         {
-            // Solo citta' ancora in piedi: una nave su macerie e' un bersaglio mancato.
+
             var targets = await scope.ServiceProvider.GetRequiredService<ITargetCityService>().Standing(ct);
 
-            // Niente piu' bersagli: le navi che restano non partiranno mai, quindi l'ondata finisce
-            // qui. Aspettarle vorrebbe dire aspettare per sempre, con la partita ferma a schermo.
             if (targets.Count > 0)
             {
                 if (DateTime.UtcNow - _lastLaunch < TimeSpan.FromMilliseconds(settings.LaunchIntervalMs))
                     return;
 
-                // A turno, non a caso: con cinque navi e cinque citta' ognuna riceve la sua, e due
-                // squadre diverse affrontano la stessa identica invasione.
                 await scope.ServiceProvider.GetRequiredService<ISpaceFacade>()
                     .LaunchShip(targets[launched % targets.Count], plan.Ships[launched], progress.Wave, ct);
                 _lastLaunch = DateTime.UtcNow;
@@ -104,7 +83,7 @@ public class InvasionGenerator(
         if (await ships.ShipsInFlight(progress.Wave, ct) > 0)
             return;
 
-        logger.LogInformation("[Space] Ondata {Wave} (livello {Level}) conclusa", progress.Wave, progress.Level);
+        logger.LogInformation("[Space] Ondata {Wave} conclusa", progress.Wave);
 
         await scope.ServiceProvider.GetRequiredService<IServiceBus>().SendAsync(
             new EndInvasion(new InvasionId(Invasion.Id), progress.Wave, Guid.NewGuid(), FleetCommand), ct);

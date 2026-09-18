@@ -21,12 +21,6 @@ public static class BattleEndpoints
         group.MapGet("/battle", async (IBattleService battle, CancellationToken ct) =>
             Results.Ok(await battle.GetSnapshot(ct)));
 
-        // I due pulsanti della sala operativa. Sono comandi di simulazione, non atti di dominio della
-        // Terra: partono da qui perche' qui sta l'operatore, e raggiungono lo Spazio sul bus come ogni
-        // altro messaggio (R-9000).
-        //
-        // Sono due e non uno perche' le due cose sono diverse: una campagna nuova riporta le difese a
-        // nuovo, l'ondata successiva no. E' quella differenza a fare il gioco.
         group.MapPost("/campaign/start", async (IServiceBus serviceBus, CancellationToken ct) =>
         {
             await serviceBus.SendAsync(
@@ -35,28 +29,16 @@ public static class BattleEndpoints
             return Results.Accepted();
         });
 
-        group.MapPost("/campaign/next-wave", async (IServiceBus serviceBus, CancellationToken ct) =>
-        {
-            await serviceBus.SendAsync(
-                new StartNextWave(new InvasionId(Invasion.Id), Guid.NewGuid(), EarthDefenses.HighCommand), ct);
-
-            return Results.Accepted();
-        });
-
-        // Server-sent events: la pagina non interroga, viene svegliata. Ogni evento proiettato suona
-        // la campanella e qui si rilegge lo snapshot e lo si spinge giu'.
         group.MapGet("/stream", async (HttpContext context, IBattleService battle, BattleFeed feed,
             CancellationToken ct) =>
         {
             context.Response.Headers.ContentType = "text/event-stream";
             context.Response.Headers.CacheControl = "no-cache";
-            // Senza questo un reverse proxy puo' tenersi lo stream in buffer e la pagina non vede nulla.
+
             context.Response.Headers["X-Accel-Buffering"] = "no";
 
             await Push(context, battle, ct);
 
-            // Il battito tiene viva la connessione anche nei minuti in cui non succede niente, e
-            // rimedia a un avviso perso mentre la pagina era ancora in fase di aggancio.
             using var heartbeat = new PeriodicTimer(TimeSpan.FromSeconds(10));
             var ticks = feed.Subscribe(ct);
             var beat = heartbeat.WaitForNextTickAsync(ct).AsTask();
@@ -86,7 +68,7 @@ public static class BattleEndpoints
             }
             catch (OperationCanceledException)
             {
-                // La pagina si e' chiusa: niente da segnalare.
+
             }
             finally
             {

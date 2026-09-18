@@ -6,7 +6,6 @@ namespace Evoluzione.IndependenceDay.Space.Facade.IntegrationEventHandlers;
 public class ShipLandedIntegrationEventHandler(IServiceBus serviceBus, ILoggerFactory loggerFactory)
     : IntegrationEventHandlerAsync<ShipLanded>(loggerFactory)
 
-
 {
     public override Task HandleAsync(ShipLanded @event, CancellationToken cancellationToken = default) =>
         serviceBus.SendAsync(

@@ -4,31 +4,30 @@ Tutto quello che il tuo processo può mandare, e tutto quello che gli arriva. St
 `src/Shared/Evoluzione.IndependenceDay.Contracts/`: sono il contratto fra i servizi, e l'unico
 vocabolario che hai.
 
-## Quello che mandi — tre ordini
+## Quello che mandi — quattro ordini
 
 | Comando | Cosa fa | Cosa torna indietro |
 | --- | --- | --- |
 | `OpenFire(shipId)` | accende un cannone su quella nave, e lo lascia acceso | `FireOpened(cityId)` oppure `NoCannonReady` |
 | `CeaseFire(cityId, shipId)` | lo spegne e lo restituisce | `FireCeased` |
-| `RepairCannon(cityId, shipId)` | prova a rimettere in sesto un cannone inceppato | `CannonRepaired` oppure `CannonStillJammed` |
+| `RepairCannon(cityId, shipId)` | prova a rimettere in sesto un cannone inceppato | `CannonRepaired` |
+| `RequestResupply(cityId, shipId)` | chiama il convoglio per un cannone a secco | `CannonResupplied` |
 
-Tre ordini, e nessuno dice *quale* cannone o *quanti* colpi: quelle sono decisioni della Terra.
+Quattro ordini, e nessuno dice *quale* cannone o *quanti* colpi: quelle sono decisioni della Terra.
 
 Ogni ordine va all'aggregato `EarthDefense`, con `Cities.DefenseId` come aggregato e il
 `CorrelationId` del tuo processo — è quello il filo che riporta l'esito a te e non a un altro.
 
 **Un ordine che arriva ed è ancora sensato produce sempre uno di questi eventi.** Non esiste un
-quarto esito che sia "niente".
+quinto esito che sia "niente".
 
-Esistono però due modi di non ricevere nessuna risposta, e sono cose diverse:
-
-| | |
-| --- | --- |
-| **L'ordine non è arrivato** | uno su venticinque si perde sul collegamento. Sulla Terra non succede niente, quindi non c'è niente da raccontare: nessun evento, nemmeno un rifiuto. **Non è un esito dell'ordine, è la sua assenza** — e l'unico modo di accorgersene è il battito |
-| **L'ordine non aveva più senso** | un cessate il fuoco su un cannone che nel frattempo è stato messo su un'altra nave, o la riconsegna di un ordine già eseguito. L'aggregato esce in silenzio perché non c'è niente da fare, ed è la stessa cosa che avrebbe fatto la seconda volta |
+Esiste però un modo di non ricevere nessuna risposta: **l'ordine non aveva più senso** — un cessate
+il fuoco su un cannone che nel frattempo è stato messo su un'altra nave, o la riconsegna di un ordine
+già eseguito. L'aggregato esce in silenzio perché non c'è niente da fare, ed è la stessa cosa che
+avrebbe fatto la seconda volta.
 
 Quello che un aggregato **non** fa mai è scartare un ordine che ha ancora senso. Se lo facesse
-sarebbe una rete che finge, e non sapresti più distinguere i due casi qui sopra.
+sarebbe una rete che finge.
 
 ## Quello che ti arriva
 
@@ -49,14 +48,14 @@ Terra non accetta ordini su quella nave.
 | `NoCannonReady(shipId)` | tutti impegnati, rotti o a secco. Temporaneo: riprova |
 | `FireCeased(cityId, shipId, roundsLeft)` | il cannone è tornato. **È la conferma della compensazione** |
 | `CannonRepaired(cityId, shipId, roundsLeft)` | disponibile, non in azione: riparare non riapre il fuoco |
-| `CannonStillJammed(cityId, shipId)` | la riparazione **non ha preso**: i colpi sono spesi, il cannone è fermo com'era |
+| `CannonResupplied(cityId, shipId, rounds)` | carico, non in azione: come riparare, rifornire non riapre il fuoco |
 
 ### I guasti
 
 | Evento | Cosa dice |
 | --- | --- |
 | `CannonJammed(cityId, shipId)` | il cannone si è fermato. Non si ripara da solo |
-| `CannonEmpty(cityId, shipId)` | ha finito i colpi. Per sempre — e **resta assegnato a quella nave** finché non lo restituisci |
+| `CannonEmpty(cityId, shipId)` | ha finito i colpi. **Si libera**: non è più assegnato a nessuna nave finché non torna carico |
 
 ### Gli esiti della nave
 
@@ -71,19 +70,17 @@ Terra non accetta ordini su quella nave.
 | Evento | Cosa dice |
 | --- | --- |
 | `ShipApproaching(shipId, cityId, msToImpact, cannonsFiring)` | la nave è ancora viva, e quanti cannoni le sono addosso |
-| `CannonStillFiring(cityId, shipId)` | questo cannone spara a una nave che non c'è più |
-| `CannonStillJammed(cityId, shipId)` | questo cannone è ancora inceppato |
 
-Sono i tre eventi che **arrivano senza che tu abbia chiesto niente**, e gli unici che possano rivelare
-un ordine perso. Un processo che non li ascolta funziona finché non si perde il primo ordine, e poi
-smette di funzionare in silenzio.
+È l'unico evento che **arriva senza che tu abbia chiesto niente**, e l'unico modo di scoprire che una
+nave è rimasta scoperta — perché tutti i cannoni erano impegnati quando è arrivata, non perché un
+ordine si sia perso da qualche parte.
 
-Attenzione a `cannonsFiring`: conta i cannoni **assegnati**, non quelli che stanno davvero sparando.
-Un cannone a secco è ancora assegnato, quindi vale uno — e finché è lì quella nave risulta coperta da
-un cannone che non spara.
+`cannonsFiring` conta i cannoni **assegnati e in azione**: un cannone a secco non conta più, perché
+si è già liberato da solo.
 
 Il battito però è una rete, non il meccanismo. Quando un evento dice già tutto quello che serve — un
-cannone riparato, un cannone a secco — aspettare il battito costa mezzo secondo su otto di finestra.
+cannone riparato, un cannone rifornito — aspettare il battito costa mezzo secondo su otto di
+finestra.
 
 ## Il giro completo, quando tutto va bene
 
@@ -99,22 +96,21 @@ AlienShipDetected      (Spazio → Terra)
 E quando qualcosa va storto:
 
 ```
-OpenFire            ──►  ✗ perso sul collegamento, non arriva mai
-  ShipApproaching   cannonsFiring: 0         ──►  OpenFire          ← si insiste
+OpenFire
+  ShipApproaching   cannonsFiring: 0         ──►  OpenFire          ← si insiste, il cannone era altrove
   FireOpened
   CannonJammed                               ──►  RepairCannon      ← si ripara
-  CannonStillJammed ✗ non ha preso           ──►  RepairCannon      ← si insiste
   CannonRepaired                             ──►  OpenFire          ← si rimette in azione, subito
+  CannonEmpty                                ──►  RequestResupply   ← si chiama il convoglio
+  CannonResupplied                           ──►  OpenFire          ← si rimette in azione, subito
   ShipDestroyed                              ──►  CeaseFire
-                    ──►  ✗ perso anche questo
-  CannonStillFiring                          ──►  CeaseFire         ← si richiude
   FireCeased                                      processo chiuso
 ```
 
 ## Come si aggancia un evento
 
 Quattro passi, e saltarne uno **non dà errore**: l'evento semplicemente non arriva mai, e il processo
-resta fermo sul gradino precedente.
+resta fermo com'era.
 
 1. **La saga lo dichiara** — `ISagaEventHandlerAsync<TEvento>` nell'elenco su `ShipInterceptionSaga`.
 2. **La saga lo gestisce** — un `HandleAsync` che chiama `Advance` con quello che c'è da fare.
@@ -128,9 +124,7 @@ Gli ultimi due sono trasporto, e sono quelli che si dimenticano.
 
 | | |
 | --- | --- |
-| Un evento per l'ordine perso | non esiste. L'ordine non è mai arrivato: non c'è niente da raccontare |
-| La differenza fra riparazione persa e riparazione non presa | `CannonStillJammed` arriva in tutti e due i casi, e non dice quale. Non serve: la risposta è la stessa |
 | `EarthShotFired` · `EarthShotMissed` · `EarthShotWasted` | cronaca del tiro colpo per colpo: riguarda la pagina, non te. Un bersaglio mancato non ti riguarda perché non c'è niente da fare — il cannone riprova da solo |
 | Quanti colpi serva una stazza | è un conto di dominio, e il dominio è la Terra |
-| Quanti colpi restano a un cannone | te lo dicono `FireOpened` e `FireCeased`, per quel cannone |
+| Quanti colpi restano a un cannone | te lo dicono `FireOpened`, `FireCeased` e `CannonResupplied`, per quel cannone |
 | Cosa stanno facendo gli altri processi | niente. Un processo vive per una nave sola |

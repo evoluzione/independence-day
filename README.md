@@ -2,7 +2,8 @@
 
 Gli alieni hanno deciso di invadere la terra (stranamente per primi gli Stati Uniti) e tu sei nel team di Difesa Intergalattica, è arrivato l'Independence Day! Dalla sala di controllo dovrai reagire agli eventi e lanciare dei comandi, il kata sta nel costruire una Saga che possa salvare il pianeta dall'incombente minaccia.
 
-Gli ordini si possono perdere per strada, i proiettili possono andare sprecati o mancare il bersaglio, i cannoni possono addirittura incepparsi. Il destino della terra è nelle tue mani.
+I proiettili possono andare sprecati o mancare il bersaglio, i cannoni possono incepparsi o restare
+a secco. Il destino della terra è nelle tue mani.
 
 Sotto ci sono tre servizi che non si conoscono — parlano solo via bus, ognuno con il proprio event
 store e il proprio read model — su Muflone, CQRS ed event sourcing.
@@ -81,9 +82,9 @@ Nessun IntelliSense, ma i test sono la specifica e bastano a chiudere il kata.
 
 ## I test
 
-Comunque tu li lanci, sono rossi e raggruppati in **tre gradini**, uno per livello. Falli diventare
-verdi in ordine: con i gradini fino a N verdi la campagna supera i primi N livelli, e senza il
-gradino giusto al livello dopo si perdono tutte e cinque le città.
+Comunque tu li lanci, sono **cinque, rossi, uno per problema**. Non è un cancello: ogni test in più
+fa abbattere più navi dell'ultimo, e si vede nel resoconto di fine ondata. Falli diventare verdi in
+ordine, dal primo — è la base di tutti gli altri.
 
 ## Dove sta cosa
 
@@ -100,7 +101,7 @@ Le porte pubblicate stanno fuori dagli standard di proposito: è normale avere g
 in ascolto, e un conflitto di porta si presenta come un servizio che non parte.
 
 - **[La guida](GUIDA.md)** — come si comincia, in sette passi
-- **[Le regole](REGOLE.md)** — cannoni, navi, guasti, i tre livelli
+- **[Le regole](REGOLE.md)** — cannoni, navi, guasti, l'ondata
 - **[Comandi ed eventi](EVENTI.md)** — cosa puoi mandare, cosa ti arriva, come si aggancia
 - **[L&#39;architettura](ARCHITETTURA.md)** — i tre servizi e dove sta cosa
 
@@ -117,17 +118,10 @@ services:
 
 ## La soluzione
 
-C'è un branch per ogni gradino, `livello-01`, `livello-02`, `livello-03`, con la saga scritta **fino
-a quel livello**. Guardali solo dopo aver provato la tua: il diff fra due consecutivi è esattamente
-quello che aggiunge quel gradino, e niente di più.
+C'è un branch, `soluzione`, con la saga completa: supera l'ondata con cinque città in piedi e
+nessuna nave a terra. Guardalo solo dopo aver provato la tua: il diff con `main` è di **due file**,
+ed è esattamente l'esercizio.
 
 ```bash
-git diff livello-01 livello-02 -- src/Sagas/
-```
-
-`livello-03` è la saga completa, che supera tutti e tre i livelli con cinque città in piedi e nessuna
-nave a terra. Il diff con `main` è di **due file**, ed è esattamente l'esercizio.
-
-```bash
-git diff main livello-03 -- src/Sagas/
+git diff main soluzione -- src/Sagas/
 ```

@@ -4,53 +4,35 @@ using Xunit.Abstractions;
 
 namespace Evoluzione.IndependenceDay.Sagas.Tests;
 
-/// <summary>
-/// La campagna intera, giocata in memoria.
-/// </summary>
-/// <remarks>
-/// Questi due test sono la rete del bilanciamento. Il primo dice che il gioco si puo' vincere; il
-/// secondo dice che <b>non</b> si vince senza restituire i cannoni. Se il secondo diventa verde
-/// significa che la compensazione e' diventata decorativa, e i numeri di <c>Armory</c> o della curva
-/// di difficolta' vanno ristretti.
-/// <para>
-/// Il primo e' anche il contatore dei gradini: <c>CleanThrough</c> dice fin dove si e' arrivati senza
-/// perdere una citta', ed e' il livello dell'ultimo gradino diventato verde. Finche' non lo sono
-/// tutti, il messaggio di fallimento dice a che livello ci si e' fermati — cioe' quali test
-/// guardare.
-/// </para>
-/// </remarks>
 public class CampaignTests(ITestOutputHelper output)
 {
     [Fact]
-    public void Chi_arriva_in_fondo_alla_scala_vince_la_campagna()
+    public void Ogni_comportamento_in_piu_abbatte_piu_navi_del_precedente()
     {
-        var campaign = new Campaign();
-        var result = campaign.Play();
+        Skills[] steps =
+        [
+            Skills.Fire,
+            Skills.Fire | Skills.Cease,
+            Skills.Fire | Skills.Cease | Skills.Repair,
+            Skills.Fire | Skills.Cease | Skills.Repair | Skills.Resume,
+            Skills.All
+        ];
 
-        output.WriteLine(result.ToString());
-        foreach (var (level, landed, standing, rounds) in campaign.PerLevel)
-            output.WriteLine($"  livello {level,2}: {landed} atterrate, {standing} citta', {rounds} colpi");
+        var results = steps.Select(skills => new Campaign { Skills = skills }.Play()).ToList();
 
-        Assert.Equal(3, campaign.CleanThrough);
-        Assert.True(result.Won, $"la campagna doveva essere vinta: {result}");
-        Assert.Equal(0, result.OpenCannons);
-        Assert.Equal(0, result.OpenLines);
-        Assert.Equal(0, result.Unattended);
-        Assert.True(result.RoundsLeft > 0, "vincere con zero colpi rimasti vuol dire margine nullo");
+        foreach (var (skills, result) in steps.Zip(results))
+            output.WriteLine($"{skills,-45} {result}");
 
-        // Qualche colpo su un relitto e' inevitabile: anche i cessate il fuoco si perdono, e fra
-        // l'ordine perso e il battito che lo rivela passa un po' di fuoco. Quello che conta e' che
-        // restino pochi, cioe' che ci si accorga in fretta.
-        Assert.True(result.RoundsWasted < 20, $"troppi colpi su relitti: {result}");
-    }
+        var destroyed = results.Select(r => r.ShipsDestroyed).ToList();
 
-    [Fact]
-    public void Chi_non_restituisce_i_cannoni_perde()
-    {
-        var result = new Campaign { Compensates = false }.Play();
-        output.WriteLine(result.ToString());
+        for (var i = 1; i < destroyed.Count; i++)
+            Assert.True(destroyed[i] > destroyed[i - 1],
+                $"il gradino {steps[i]} doveva abbattere piu' navi del precedente: {destroyed[i - 1]} -> {destroyed[i]}");
 
-        Assert.False(result.Won,
-            $"senza compensazione la campagna deve perdersi, altrimenti restituire i cannoni non conta: {result}");
+        var last = results[^1];
+        Assert.True(last.Won, $"con tutti i comportamenti la campagna doveva essere vinta: {last}");
+        Assert.Equal(0, last.ShipsLanded);
+        Assert.Equal(0, last.OpenCannons);
+        Assert.True(last.RoundsLeft > 0, "vincere con zero colpi rimasti vuol dire margine nullo");
     }
 }

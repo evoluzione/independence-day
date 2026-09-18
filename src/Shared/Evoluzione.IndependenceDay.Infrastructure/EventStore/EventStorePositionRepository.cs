@@ -4,13 +4,6 @@ using Muflone.Eventstore.gRPC.Persistence;
 
 namespace Evoluzione.IndependenceDay.Infrastructure.EventStore;
 
-/// <summary>
-/// Il segnalibro della sottoscrizione allo stream globale: da dove ripartire dopo un riavvio.
-/// </summary>
-/// <remarks>
-/// Sta su Mongo e non in memoria perche' senza di lui ogni riavvio del servizio rileggerebbe l'intero
-/// log dall'inizio e ripubblicherebbe ogni evento gia' proiettato.
-/// </remarks>
 public class EventStorePositionRepository(IMongoDatabase database) : IEventStorePositionRepository
 {
     private const string CollectionName = "last_event_positions";

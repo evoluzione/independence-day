@@ -8,14 +8,6 @@ using ShipId = Evoluzione.IndependenceDay.Earth.Messages.DomainIds.ShipId;
 
 namespace Evoluzione.IndependenceDay.Earth.Domain.Tests;
 
-/// <summary>
-/// Un caccia al primo livello rade al suolo una citta' esattamente come una corazzata al decimo.
-/// </summary>
-/// <remarks>
-/// Non c'e' integrita' da erodere: o la nave viene fermata, o quella citta' non c'e' piu'. E' la
-/// regola che rende il non fare niente una sconfitta immediata invece di un costo da ammortizzare —
-/// e il prezzo non e' un punto, e' il cannone di quella citta' per tutto il resto della campagna.
-/// </remarks>
 public class LandShip_WhenAnyShipTouchesGround_RazesTheCity : EarthCommandSpecification<LandShip>
 {
     private readonly ShipId _shipId = new(Guid.NewGuid());
@@ -26,7 +18,6 @@ public class LandShip_WhenAnyShipTouchesGround_RazesTheCity : EarthCommandSpecif
         foreach (var e in EarthStanding())
             yield return e;
 
-        // La stazza piu' leggera che ci sia: quella che verrebbe voglia di lasciar passare.
         yield return new EarthShipDetected(Earth, City, _shipId, ShipClass.Fighter, Guid.NewGuid());
     }
 

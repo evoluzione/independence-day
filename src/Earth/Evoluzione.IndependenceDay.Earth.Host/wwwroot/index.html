@@ -11,8 +11,6 @@
   }
   * { box-sizing: border-box; }
 
-  /* Le righe di scansione del monitor: appena percepibili. A piu' di cosi' il testo diventa
-     faticoso da leggere, e questa e' una pagina che si guarda per venti minuti di fila. */
   body::after {
     content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 100;
     background: repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
@@ -24,14 +22,12 @@
     font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     padding: 12px 16px; display: flex; flex-direction: column; gap: 10px;
   }
-  /* la barra di stato: e' un pannello come gli altri, non un'intestazione di pagina */
   .console { flex-direction: row; align-items: center; gap: 14px; padding: 7px 12px; }
   .status { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); flex: none;
             margin-left: 14px; box-shadow: 0 0 6px currentColor; color: var(--dim); }
   .status.live { background: var(--ok); color: var(--ok); }
   .status.down { background: var(--bad); color: var(--bad); animation: blink 1s steps(2) infinite; }
 
-  /* DEFCON: la prima cosa che si guarda, e cambia colore da sola */
   .defcon { display: flex; flex-direction: column; gap: 3px; padding-right: 18px; flex: none;
             border-right: 1px solid var(--line); }
   .defcon .head { font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: .06em;
@@ -41,11 +37,6 @@
   .defcon .bars { display: flex; gap: 4px; margin-top: 3px; }
   .defcon .bars i { width: 15px; height: 4px; background: #1b2836; border-radius: 1px; }
 
-  /* Il livello, grande, nell'angolo: e' il punteggio. */
-  .level { margin-left: auto; text-align: right; flex: none; line-height: 1; }
-  .level .k { display: block; color: var(--dim); font-size: 9px; letter-spacing: .22em; margin-bottom: 3px; }
-  .level b { font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
-  .level .of { color: var(--dim); font-size: 17px; font-weight: 600; }
   .defcon[data-level="5"] { --dc: var(--ok); }
   .defcon[data-level="4"] { --dc: var(--shield); }
   .defcon[data-level="3"] { --dc: var(--warn); }
@@ -72,7 +63,6 @@
   h2::before { content: ""; width: 5px; height: 5px; background: var(--shield); border-radius: 1px;
                box-shadow: 0 0 5px var(--shield); flex: none; }
 
-  /* I quattro angoli dei pannelli: e' quello che li fa sembrare quadranti e non riquadri. */
   section::before, section::after {
     content: ""; position: absolute; width: 9px; height: 9px; pointer-events: none;
     border: 1px solid var(--shield); opacity: .45;
@@ -81,7 +71,6 @@
   section::after { bottom: 4px; right: 4px; border-left: 0; border-top: 0; }
   svg { width: 100%; height: 100%; flex: 1; min-height: 0; display: block; }
 
-  /* diario */
   #log { overflow-y: auto; flex: 1; }
   .row { display: grid; grid-template-columns: 62px 22px 1fr; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
   .row:first-child { border-top: 0; }
@@ -93,17 +82,13 @@
   .row.bad .what { color: var(--bad); } .row.saga .what { color: var(--saga); }
   .empty { color: var(--dim); }
 
-  /* spazio */
   .star { fill: #9fb3c8; }
-  /* Lo scafo va riempito di un colore che si stacchi davvero dal pannello: a #1c1f2b su fondo
-     #0c131c restavano sedici punti per canale, e la nave madre si leggeva come un contorno vuoto. */
   .mother { filter: drop-shadow(0 4px 10px rgba(0,0,0,.65)); }
   .mother .hull { fill: #3b4760; stroke: #a8bbd8; stroke-width: 1.5; }
   .mother .dome { fill: #55658a; stroke: #c6d5ee; stroke-width: 1.2; }
   .mother .light { fill: #ff4d5e; filter: drop-shadow(0 0 4px rgba(255,77,94,.95));
                    animation: blink 2s ease-in-out infinite; }
   .mother .light:nth-child(odd) { animation-delay: 1s; }
-  /* Il fondo del lampeggio non scende sotto la meta': a 0.2 le luci sparivano del tutto. */
   @keyframes blink { 50% { opacity: .55; } }
   .mother .bar-bg { fill: #24161a; stroke: var(--line); stroke-width: .8; }
   .mother .bar { fill: var(--ok); transition: width 1s ease; }
@@ -117,22 +102,15 @@
                  filter: drop-shadow(0 0 4px rgba(255,77,94,.9)); }
   .fleet .dome { fill: #ffb3ba; stroke: #fff; stroke-width: .6; }
   .fleet .spur { stroke: #ffe3e6; stroke-width: 1.2; stroke-linecap: round; }
-  /* La corazzata non e' solo piu' grande: ha l'anello, e si riconosce da lontano. */
   .fleet .ring { fill: none; stroke: #ff8c9a; stroke-width: .8; stroke-dasharray: 3 3; opacity: .8; }
   .fleet text { fill: var(--ink); font-size: 10px; text-anchor: middle; transition: opacity .3s; }
   .fleet text.target { fill: var(--dim); font-size: 9px; }
-  /* Stessa barra delle citta', stessi colori: cosi' si legge senza spiegazioni. */
   .fleet .hp-bg { fill: #24161a; stroke: var(--line); stroke-width: .7; }
   .fleet .hp { fill: var(--bad); transition: width .4s ease; }
   .fleet.hurt .hp { fill: var(--warn); }
   .fleet.dying .hp { fill: var(--ok); }
   .fleet.resolved .hull, .fleet.resolved .dome, .fleet.resolved .spur, .fleet.resolved .ring,
   .fleet.resolved .hp, .fleet.resolved .hp-bg, .fleet.resolved text { opacity: 0; }
-  /* La discesa si anima sul gruppo interno, non sul gruppo posizionato: cosi' e' relativa al punto
-     in cui la flotta si trova. Sul gruppo esterno servirebbe ripetere la sua posizione dentro il
-     fotogramma, e quella e' scritta come attributo SVG — "translate(540, 62)", senza unita' — che
-     come proprieta' CSS non e' valida: la trasformazione veniva scartata e le navicelle ripartivano
-     dall'origine, cioe' volavano verso l'angolo in alto a sinistra. */
   .fleet .body { transform-box: fill-box; transform-origin: center; }
   .fleet.resolved.bad .body { animation: dive 1.6s ease-in forwards; }
   .fleet.resolved.bad .saucer { opacity: 1; fill: var(--bad); }
@@ -144,8 +122,6 @@
   @keyframes core { from { r: 10; opacity: 1; } to { r: 1; opacity: 0; } }
   @keyframes rays { to { transform: scale(3.2); opacity: 0; } }
 
-  /* Senza questa riga l'overlay resta davanti al pannello anche con l'attributo hidden: la regola
-     [hidden]{display:none} del browser perde contro un display:flex dichiarato su una classe. */
   .overlay[hidden], .verdict[hidden] { display: none; }
 
   button {
@@ -164,9 +140,6 @@
   .overlay p { margin: 0; color: var(--dim); max-width: 44ch; }
   .overlay .title { font-size: 17px; letter-spacing: .12em; }
 
-  /* resoconto */
-  /* Il resoconto e' una pagina, non un riquadro: dentro il pannello Spazio stava stretto e la
-     tabella delle citta' finiva sotto lo scorrimento. */
   #report { position: fixed; inset: 12px 16px; background: var(--panel); border: 1px solid var(--line);
             border-radius: 6px; padding: 18px 22px; overflow-y: auto; z-index: 10;
             display: flex; flex-direction: column; gap: 14px; }
@@ -183,7 +156,6 @@
   table { border-collapse: collapse; width: 100%; }
   th, td { text-align: left; padding: 4px 8px; border-top: 1px solid var(--line); }
   th { color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
-  /* Anche le intestazioni, non solo i valori: con il solo td.num la colonna restava sfalsata. */
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   tr.fallen td { color: var(--bad); }
   .report-actions { display: flex; gap: 10px; margin-top: auto; padding-top: 6px; }
@@ -195,7 +167,6 @@
   .verdict .actions { display: flex; gap: 10px; }
   .verdict.win b { color: var(--ok); } .verdict.lose b { color: var(--bad); }
 
-  /* l'arsenale, accanto alla griglia */
   .terra { display: grid; grid-template-columns: auto 1fr; gap: 14px; flex: 1; min-height: 0; }
   .arsenal { display: flex; flex-direction: column; gap: 6px; justify-content: center;
              border-right: 1px solid var(--line); padding-right: 14px; }
@@ -207,7 +178,6 @@
   .arsenal .u.empty b, .arsenal .u.empty span { color: var(--dim); opacity: .5; }
   @media (max-width: 1000px) { .terra { grid-template-columns: 1fr; } .arsenal { border-right: 0; } }
 
-  /* mappa */
   .gridline { stroke: #132030; stroke-width: 1; }
   .city .core { fill: #16304a; stroke: var(--shield); stroke-width: 1.5; }
   .city .shield { fill: none; stroke: var(--shield); stroke-width: 1.5; opacity: 0; stroke-dasharray: 4 3; }
@@ -222,7 +192,6 @@
   .city .name { fill: var(--ink); font-size: 11px; font-weight: 600; text-anchor: middle; }
   .city .stat { fill: var(--ink); font-size: 10px; text-anchor: middle; }
   .city .incoming { fill: var(--bad); font-size: 10px; text-anchor: middle; }
-  /* In marcia: uscite dalla riserva, non ancora in difesa. */
   .city .life-bg { fill: #24161a; stroke: var(--line); stroke-width: .8; }
   .city .life { fill: var(--ok); transition: width .8s ease; }
   .city.hurt .life { fill: var(--warn); }
@@ -237,7 +206,6 @@
 
 <section class="console">
   <div id="defcon" class="defcon"></div>
-  <div id="level" class="level"></div>
   <span id="conn" class="status" title="collegamento"></span>
 </section>
 
@@ -252,8 +220,8 @@
       <svg id="space" viewBox="0 0 600 240" preserveAspectRatio="xMidYMid meet"></svg>
       <div id="idle" class="overlay" hidden>
         <div class="title">🛸 Nessuna campagna in corso</div>
-        <p>Cinque citta', cinque cannoni, e un numero di colpi che non si ricarica mai. Ogni ondata e'
-           piu' dura della precedente: si resiste con quello che non e' stato sprecato.</p>
+        <p>Cinque citta', cinque cannoni, e un numero di colpi che non si ricarica da solo. Trentasei
+           navi in un'unica ondata: si resiste con quello che non e' stato sprecato.</p>
         <button id="start-btn">Inizia la campagna</button>
       </div>
       <div id="verdict" class="verdict" hidden></div>
@@ -281,56 +249,43 @@ const el = (tag, attrs = {}, text) => {
   return n;
 };
 
-// Le citta' stanno dove starebbero su una mappa: le stesse x servono allo Spazio, cosi' una flotta
-// compare sopra la citta' che punta. Gli id sono quelli fissi di Contracts/World/Cities.cs.
 const CITY_POS = {
-  // Due file sfalsate invece della geografia vera: un nome lungo come "Washington D.C." occupa
-  // centodieci pixel, e con le posizioni reali le etichette della costa est si coprivano a vicenda.
-  // L'ordine da ovest a est e' rispettato, la distanza no.
-  '11111111-0000-0000-0000-000000000002': [70, 110],    // Los Angeles
-  '11111111-0000-0000-0000-000000000005': [200, 228],   // Area 51
-  '11111111-0000-0000-0000-000000000004': [330, 110],   // Houston
-  '11111111-0000-0000-0000-000000000003': [440, 228],   // Washington D.C.
-  '11111111-0000-0000-0000-000000000001': [540, 105],   // New York
+  '11111111-0000-0000-0000-000000000002': [70, 110],
+  '11111111-0000-0000-0000-000000000005': [200, 228],
+  '11111111-0000-0000-0000-000000000004': [330, 110],
+  '11111111-0000-0000-0000-000000000003': [440, 228],
+  '11111111-0000-0000-0000-000000000001': [540, 105],
 };
 const posOf = (cityId) => CITY_POS[cityId] || [300, 160];
 
-// Ogni passo del diario ha un'icona e un'etichetta. Quello che non e' qui si mostra com'e'.
 const STEPS = {
-  'detected':      ['🛸', 'avvistamento'],
-  'fire':          ['🔫', 'fuoco aperto'],
-  'shot':          ['💢', 'colpo'],
-  'missed':        ['🎯', 'bersaglio mancato'],
-  'cease':         ['🛑', 'cessate il fuoco'],
-  'no-cannon':     ['🚫', 'nessun cannone'],
-  'order-lost':    ['📡', 'ordine perso'],
-  'jammed':        ['🔩', 'inceppato'],
-  'still-jammed':  ['🔩', 'riparazione non presa'],
-  'repaired':      ['🔧', 'riparato'],
-  'empty':         ['🈳', 'a secco'],
-  'wasted':        ['🕳️', 'colpo su un relitto'],
-  'destroyed':     ['💥', 'abbattuta'],
-  'landed':        ['👽', 'atterrata'],
-  'city-fallen':   ['🏚️', 'citta perduta'],
-  'wave-start':    ['📯', 'ondata'],
+  'detected':             ['🛸', 'avvistamento'],
+  'fire':                 ['🔫', 'fuoco aperto'],
+  'shot':                 ['💢', 'colpo'],
+  'missed':               ['🎯', 'bersaglio mancato'],
+  'cease':                ['🛑', 'cessate il fuoco'],
+  'no-cannon':            ['🚫', 'nessun cannone'],
+  'jammed':               ['🔩', 'inceppato'],
+  'repaired':             ['🔧', 'riparato'],
+  'empty':                ['🈳', 'a secco'],
+  'resupply-dispatched':  ['📦', 'convoglio chiamato'],
+  'resupplied':           ['📦', 'convoglio arrivato'],
+  'wasted':               ['🕳️', 'colpo su un relitto'],
+  'destroyed':            ['💥', 'abbattuta'],
+  'landed':               ['👽', 'atterrata'],
+  'city-fallen':          ['🏚️', 'citta perduta'],
+  'wave-start':           ['📯', 'ondata'],
 };
 
-// Lo stato di un cannone, come si legge ovunque: a schermo, nella mappa, nel resoconto.
 const CANNON = {
-  'ready':  ['🟢', 'pronto'],
-  'firing': ['🔫', 'in azione'],
-  'jammed': ['🔩', 'inceppato'],
-  'empty':  ['🈳', 'a secco'],
-  'lost':   ['🏚️', 'perduto'],
+  'ready':        ['🟢', 'pronto'],
+  'firing':       ['🔫', 'in azione'],
+  'jammed':       ['🔩', 'inceppato'],
+  'empty':        ['🈳', 'a secco'],
+  'resupplying':  ['📦', 'in rifornimento'],
+  'lost':         ['🏚️', 'perduto'],
 };
 
-
-/* ---------- la console: stato di allerta e livello ----------
-   Due letture sole, grandi. Tutto il resto — citta', navi, colpi — sta nei quadranti sotto, dove ha
-   un contesto: metterlo anche qui sopra voleva dire leggerlo due volte e non guardarlo mai.
-   Il DEFCON e' la lettura d'insieme: uno sguardo e sai se stai perdendo. Scende — cioe' peggiora —
-   su quello che non si recupera, non su quello che e' rumore: una nave in volo e' normale, una citta'
-   persa no. */
 const DEFCON = {
   5: ['FADE OUT', 'nessuna minaccia'],
   4: ['DOUBLE TAKE', 'campagna in corso'],
@@ -358,16 +313,8 @@ function renderConsole(s) {
   box.innerHTML = `<div class="head">DEFCON <span class="n">${level}</span></div>
     <div class="word">${word}</div>
     <div class="bars">${[5, 4, 3, 2, 1].map((n) => `<i class="${n >= level ? 'on' : ''}"></i>`).join('')}</div>`;
-
-  const i = s.invasion;
-
-  $('level').innerHTML = i.level
-    ? `<span class="k">LIVELLO</span><b>${i.level}</b><span class="of">/${i.lastLevel}</span>`
-    : `<span class="k">LIVELLO</span><b>—</b>`;
 }
 
-// Quanto resta e come se ne sta andando. Citta' per citta' lo dice gia' la mappa, sotto ogni
-// cannone: ripeterlo qui voleva dire leggere gli stessi cinque numeri due volte.
 function renderArsenal(earth, steps) {
   const sparati = (steps.shot || 0) + (steps.missed || 0) + (steps.wasted || 0);
   $('arsenal').innerHTML = `<h3>Arsenale</h3>
@@ -377,10 +324,9 @@ function renderArsenal(earth, steps) {
     <div class="u ${steps.missed ? '' : 'empty'}">🎯 <b>${steps.missed || 0}</b> <span>mancati</span></div>
     <div class="u ${steps.wasted ? '' : 'empty'}">🕳️ <b>${steps.wasted || 0}</b> <span>su relitti</span></div>
     <div class="u ${steps.jammed ? '' : 'empty'}">🔩 <b>${steps.jammed || 0}</b> <span>inceppamenti</span></div>
-    <div class="u ${steps['order-lost'] ? '' : 'empty'}">📡 <b>${steps['order-lost'] || 0}</b> <span>ordini persi</span></div>`;
+    <div class="u ${steps['resupply-dispatched'] ? '' : 'empty'}">📦 <b>${steps['resupply-dispatched'] || 0}</b> <span>rifornimenti</span></div>`;
 }
 
-/* ---------- diario: si accumula per id, mai riscritto ---------- */
 const seen = new Set();
 function resetLog() {
   seen.clear();
@@ -406,7 +352,6 @@ function renderLog(log) {
   }
 }
 
-/* ---------- spazio: la nave madre in alto, le flotte che ne escono e scendono ---------- */
 const space = $('space');
 for (let i = 0; i < 90; i++)
   space.appendChild(el('circle', { class: 'star', cx: Math.random() * 600, cy: 40 + Math.random() * 200,
@@ -427,21 +372,18 @@ space.appendChild(mother);
 function renderMother(inv) {
   const ratio = inv.totalShips ? inv.shipsRemaining / inv.totalShips : 0;
   motherBar.setAttribute('width', Math.max(0, BAR_W * ratio));
-  motherText.textContent = inv.level
-    ? `livello ${inv.level} · ${inv.shipsRemaining}/${inv.totalShips} navi ancora da fermare`
+  motherText.textContent = inv.totalShips
+    ? `${inv.shipsRemaining}/${inv.totalShips} navi ancora da fermare`
     : 'nave madre in posizione';
   mother.classList.toggle('critical', ratio > 0 && ratio < .25);
   mother.classList.toggle('dead', inv.shipsRemaining === 0);
 }
 
-const fleets = new Map();     // id -> nodo
-const removed = new Set();    // navi gia' sparite: lo snapshot le porta ancora per un po'
-const lastLane = new Map();   // ultima corsia nota, per chi e' uscito dal conteggio
+const fleets = new Map();
+const removed = new Set();
+const lastLane = new Map();
 let lastThreats = [];
 let lastLanes = new Map();
-/* Tre sagome, non tre misure della stessa: a schermo la stazza si deve riconoscere senza leggere
-   l'etichetta, perche' e' quella che dice quanto a lungo terra' occupato un cannone.
-   `h` e' la mezza altezza dello scafo, e serve a non far finire la barra sopra il disegno. */
 const SHAPES = {
   'caccia': { h: 6, bar: 26, draw: () => [
     el('path', { class: 'hull', d: 'M0,-6 L7,5 L0,2 L-7,5 Z' }),
@@ -464,13 +406,7 @@ const SHAPES = {
 };
 const shapeOf = (cls) => SHAPES[cls] || SHAPES['caccia'];
 
-// Con piu' flotte in volo insieme, due che puntano la stessa citta' finirebbero sulla stessa
-// colonna e si sovrapporrebbero. Quindi la posizione orizzontale non e' quella della citta' ma una
-// corsia: tante corsie quante sono le flotte in volo, assegnate nell'ordine da ovest a est delle
-// citta' che puntano. Con una flotta sola la corsia e' esattamente sopra la sua citta'.
 const LANE_FROM = 75, LANE_TO = 525;
-
-// Da dove escono e fin dove scendono: SKY sta sotto la nave madre e la sua etichetta.
 const SKY = 96, GROUND = 214;
 
 function lanesFor(threats) {
@@ -488,13 +424,10 @@ function lanesFor(threats) {
 }
 
 function fleetTransform(t, lanes) {
-  // Una flotta gia' risolta resta dov'e': ha perso la corsia, non deve saltare altrove mentre esplode.
   const x = lanes.get(t.id) ?? lastLane.get(t.id) ?? posOf(t.cityId)[0];
   lastLane.set(t.id, x);
   const age = Date.now() - new Date(t.detectedAt).getTime();
-  const progress = Math.min(1, age / 25000);            // in 25s attraversa lo spazio
-  // Si parte sotto la nave madre, etichetta compresa: piu' in alto le navi appena uscite le
-  // finivano sopra, e a scafo e scritta sovrapposti non si capiva piu' quante fossero.
+  const progress = Math.min(1, age / 25000);
   return `translate(${x}, ${SKY + progress * (GROUND - SKY)})`;
 }
 
@@ -509,8 +442,6 @@ function buildFleet(t) {
   body.appendChild(el('rect', { class: 'hp-bg', x: -shape.bar / 2, y: barY, width: shape.bar, height: 3, rx: 1.5 }));
   body.appendChild(el('rect', { class: 'hp', x: -shape.bar / 2, y: barY, width: shape.bar, height: 3, rx: 1.5 }));
 
-  // Due righe e non una: "corazzata 3/9 → Washington D.C." su una riga sola sfora il riquadro
-  // quando la nave punta una citta' del bordo.
   body.appendChild(el('text', { y: barY + 13, class: 'count' }, hits(t)));
   body.appendChild(el('text', { y: barY + 25, class: 'target' }, `→ ${t.cityName}`));
   g.appendChild(body);
@@ -518,11 +449,8 @@ function buildFleet(t) {
   return g;
 }
 
-/// La stazza e quanti cannoni le stanno sparando. Zero cannoni su una nave viva vuol dire che un
-/// ordine si e' perso: e' la cosa da guardare mentre la partita gira.
 const hits = (t) => `${t.class}${t.cannonsFiring ? ` 🔫${t.cannonsFiring}` : ' ⚠'}`;
 
-/// Quanto le resta, come per le citta': piena quando arriva, vuota quando cade.
 function setHp(g, t) {
   const shape = shapeOf(t.class);
   const left = Math.max(0, 1 - t.hits / Math.max(1, t.hitsToDestroy));
@@ -559,7 +487,6 @@ function renderSpace(threats) {
     }
   }
 }
-// La discesa e' continua anche fra un evento e l'altro.
 setInterval(() => {
   for (const t of lastThreats) {
     const g = fleets.get(t.id);
@@ -576,12 +503,9 @@ function renderInvasion(inv) {
   const box = $('verdict');
   box.hidden = !over || reportOpen;
   if (over && !reportOpen) {
-    const finita = inv.gameOver || inv.campaignWon;
     box.className = `verdict ${inv.gameOver ? 'lose' : 'win'}`;
     box.innerHTML = `<b>${titolo(inv)}</b><span>${esc(inv.verdict)}</span>`;
-    // Il pulsante veloce: chi sta provando una saga vuole ripartire, non leggere.
-    if (!finita) box.appendChild(button('Ondata successiva', '', nextWave));
-    if (finita) box.appendChild(button('Nuova campagna', '', startCampaign));
+    box.appendChild(button('Nuova campagna', '', startCampaign));
     box.appendChild(button('Vedi il resoconto', 'ghost', () => { reportOpen = true; render(last); }));
   }
 
@@ -591,10 +515,7 @@ function renderInvasion(inv) {
 }
 
 function titolo(inv) {
-  if (inv.gameOver) return `👽 TERRA CADUTA — livello ${inv.level}`;
-  if (inv.campaignWon) return '🏆 INVASIONE RESPINTA';
-
-  return `🌍 LIVELLO ${inv.level} DI ${inv.lastLevel} SUPERATO`;
+  return inv.gameOver ? '👽 TERRA CADUTA' : '🏆 INVASIONE RESPINTA';
 }
 
 function button(label, cls, onClick) {
@@ -616,10 +537,8 @@ function renderReport(s) {
   const box = $('report');
   box.innerHTML = `
     <div class="report-head ${s.gameOver ? 'lose' : 'win'}">
-      <b>${s.gameOver ? '👽 TERRA CADUTA' : s.campaignWon ? '🏆 INVASIONE RESPINTA'
-        : `🌍 LIVELLO ${s.level} SUPERATO`}</b>
-      <span class="sub">${s.gameOver ? `hai resistito ${s.level} ondate`
-        : s.campaignWon ? `tutti i ${s.level} livelli superati` : `ondata ${s.wave}`} · durata ${mm}:${ss}</span>
+      <b>${s.gameOver ? '👽 TERRA CADUTA' : '🏆 INVASIONE RESPINTA'}</b>
+      <span class="sub">${s.gameOver ? 'ondata interrotta' : 'ondata superata'} · durata ${mm}:${ss}</span>
     </div>
     <p style="margin:0;color:var(--dim)">${esc(s.verdict)}</p>
     <div class="report-grid">
@@ -633,7 +552,7 @@ function renderReport(s) {
       ${metric('🎯 bersagli mancati', s.steps.missed || 0)}
       ${metric('🕳️ colpi su relitti', s.roundsWasted, s.roundsWasted ? 'bad' : 'ok')}
       ${metric('🔩 inceppamenti', s.steps.jammed || 0)}
-      ${metric('📡 ordini persi', s.steps['order-lost'] || 0)}
+      ${metric('📦 rifornimenti', s.steps['resupply-dispatched'] || 0)}
       ${metric('🎯 colpi rimasti', s.roundsLeft, s.roundsLeft ? 'ok' : 'bad')}
     </div>
     <table>
@@ -647,10 +566,7 @@ function renderReport(s) {
     </table>
     <div class="report-actions"></div>`;
   const actions = box.querySelector('.report-actions');
-  const finita = s.gameOver || s.campaignWon;
-  if (!finita) actions.appendChild(button('Ondata successiva', '', nextWave));
-  actions.appendChild(button(finita ? 'Nuova campagna' : 'Ricomincia da capo', finita ? '' : 'ghost',
-    startCampaign));
+  actions.appendChild(button('Nuova campagna', '', startCampaign));
   actions.appendChild(button('Chiudi', 'ghost', () => { reportOpen = false; render(last); }));
 }
 
@@ -664,13 +580,10 @@ async function post(url, e) {
   }
 }
 
-// Due endpoint e non uno: la campagna riporta le difese a nuovo, l'ondata successiva no.
 const startCampaign = (e) => post('/earth/campaign/start', e);
-const nextWave = (e) => { reportOpen = false; return post('/earth/campaign/next-wave', e); };
 
 $('start-btn').addEventListener('click', startCampaign);
 
-/* ---------- terra: la mappa ---------- */
 const map = $('map');
 for (let x = 0; x <= 600; x += 50) map.appendChild(el('line', { class: 'gridline', x1: x, y1: 0, x2: x, y2: 320 }));
 for (let y = 0; y <= 320; y += 50) map.appendChild(el('line', { class: 'gridline', x1: 0, y1: y, x2: 600, y2: y }));
@@ -687,7 +600,6 @@ function buildCity(c) {
   g.appendChild(el('text', { class: 'name', y: -26 }, c.name));
   g.appendChild(el('rect', { class: 'life-bg', x: -LIFE_W / 2, y: 24, width: LIFE_W, height: 5, rx: 2 }));
   g.appendChild(el('rect', { class: 'life', x: -LIFE_W / 2, y: 24, width: LIFE_W, height: 5, rx: 2 }));
-  // Stato del cannone e colpi rimasti: e' quello che si guarda per capire come sta andando.
   g.appendChild(el('text', { class: 'stat', y: 42 }));
   g.appendChild(el('text', { class: 'stat', y: 54 }));
   g.appendChild(el('text', { class: 'incoming', y: 68 }));
@@ -721,8 +633,6 @@ let last = null;
 let shownWave = null;
 
 function render(s) {
-  // Ondata nuova: la battaglia precedente sparisce dallo schermo. I suoi eventi restano su Mongo,
-  // e' solo questa pagina a guardare un capitolo alla volta.
   if (shownWave !== null && s.invasion.wave !== shownWave) {
     resetLog();
     for (const [, g] of fleets) g.remove();
@@ -741,11 +651,10 @@ function render(s) {
   renderMap(s.earth, s.ships);
 }
 
-// Il browser riapre da solo un EventSource caduto: qui si aggiorna solo l'indicatore.
 const source = new EventSource('/earth/stream');
 source.onopen = () => { $('conn').className = 'status live'; $('conn').title = 'collegato'; };
 source.onerror = () => { $('conn').className = 'status down'; $('conn').title = 'collegamento perso, riprovo…'; };
-source.onmessage = (e) => { try { render(JSON.parse(e.data)); } catch { /* frame parziale: arriva il prossimo */ } };
+source.onmessage = (e) => { try { render(JSON.parse(e.data)); } catch {} };
 </script>
 
 </body>

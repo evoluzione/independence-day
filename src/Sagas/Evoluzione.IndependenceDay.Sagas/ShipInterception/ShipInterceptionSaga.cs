@@ -22,12 +22,10 @@ public sealed class ShipInterceptionSaga(
         ISagaEventHandlerAsync<ShipApproaching>,
         ISagaEventHandlerAsync<FireOpened>,
         ISagaEventHandlerAsync<FireCeased>,
-        ISagaEventHandlerAsync<NoCannonReady>,
         ISagaEventHandlerAsync<CannonJammed>,
-        ISagaEventHandlerAsync<CannonStillJammed>,
         ISagaEventHandlerAsync<CannonRepaired>,
         ISagaEventHandlerAsync<CannonEmpty>,
-        ISagaEventHandlerAsync<CannonStillFiring>,
+        ISagaEventHandlerAsync<CannonResupplied>,
         ISagaEventHandlerAsync<ShipDestroyed>,
         ISagaEventHandlerAsync<ShipLanded>
 {
@@ -54,17 +52,13 @@ public sealed class ShipInterceptionSaga(
 
     public Task HandleAsync(FireCeased @event) => Advance(@event, _ => []);
 
-    public Task HandleAsync(NoCannonReady @event) => Advance(@event, _ => []);
-
     public Task HandleAsync(CannonJammed @event) => Advance(@event, _ => []);
-
-    public Task HandleAsync(CannonStillJammed @event) => Advance(@event, _ => []);
 
     public Task HandleAsync(CannonRepaired @event) => Advance(@event, _ => []);
 
     public Task HandleAsync(CannonEmpty @event) => Advance(@event, _ => []);
 
-    public Task HandleAsync(CannonStillFiring @event) => Advance(@event, _ => []);
+    public Task HandleAsync(CannonResupplied @event) => Advance(@event, _ => []);
 
     private async Task Advance(Event @event, Func<InterceptionState, List<Command>> decide)
     {
@@ -90,6 +84,9 @@ public sealed class ShipInterceptionSaga(
 
     private static Command Repair(InterceptionState state, CityId cityId) =>
         new RepairCannon(Earth, cityId, new ShipId(state.ShipId), state.CorrelationId, Coordinator);
+
+    private static Command Resupply(InterceptionState state, CityId cityId) =>
+        new RequestResupply(Earth, cityId, new ShipId(state.ShipId), state.CorrelationId, Coordinator);
 
     private static Guid Id(CityId cityId) => Guid.Parse(cityId.Value);
 }

@@ -10,8 +10,8 @@ docker compose up --build
 
 Apri **[http://localhost:8080](http://localhost:8080)** e premi *Inizia la campagna*.
 
-Guarda cosa succede: cinque navi arrivano, nessun cannone spara, cinque città cadono. È il punto di
-partenza — la saga esiste ma non fa niente.
+Guarda cosa succede: le navi arrivano, nessun cannone spara, tutte e cinque le città cadono. È il
+punto di partenza — la saga esiste ma non fa niente.
 
 ## 2. Guarda i test
 
@@ -22,13 +22,11 @@ docker compose --profile test run --rm tests
 Se hai .NET installato, o se stai lavorando dentro il dev container, usa invece `dotnet test src/Evoluzione.IndependenceDay.slnx`: è la stessa cosa, ma parte subito. Le
 [tre strade](README.md#compilare-con-o-senza-net-installato) sono nel README.
 
-Test rossi, raggruppati in **tre gradini**, uno per livello. **Sono la specifica**: il nome dice a
-che livello servono, il commento dice perché, e l'asserzione dice esattamente cosa deve finire sul
-bus.
+Cinque test rossi, uno per problema. **Sono la specifica**: il nome dice qual è il problema, il
+commento dice perché, e l'asserzione dice esattamente cosa deve finire sul bus.
 
-Vanno fatti diventare verdi **in ordine**. Con i gradini fino a N verdi la campagna supera i primi N
-livelli senza perdere una città, e si ferma al successivo. Non per un pelo: senza il gradino giusto
-al livello dopo non perdi una città, **le perdi tutte e cinque**.
+Non è un cancello: ogni test in più fa abbattere **più navi** dell'ultimo, e si vede nel resoconto di
+fine ondata. Falli diventare verdi in ordine — dal primo, che è la base di tutti gli altri.
 
 ## 3. Apri i due file
 
@@ -42,8 +40,8 @@ Sono gli unici due file da scrivere. Gli handler ci sono già tutti e non fanno 
 
 ## 4. Fai verde il primo test
 
-`Livello_1_la_prima_mossa_e_aprire_il_fuoco` vuole una cosa sola: quando il processo parte, manda
-`OpenFire`.
+`Una_nave_avvistata_apre_il_fuoco_e_si_insiste_se_resta_scoperta` vuole due cose: quando il processo
+parte, manda `OpenFire`; e quando il battito dice che la nave è ancora scoperta, insiste.
 
 In `StartedByAsync`, dopo aver salvato lo stato, spedisci l'ordine con `SendCommand`. `OpenFire` è
 già lì in fondo al file, pronto.
@@ -66,7 +64,7 @@ services.AddSagaEventHandler<ShipDestroyed, ShipInterceptionSaga>();
 
 La prima lo fa arrivare dal bus, la seconda lo consegna al processo. **Dimenticarle non dà nessun
 errore**: l'evento semplicemente non arriva mai, i test unitari restano verdi — loro chiamano la saga
-a mano — e il gioco resta fermo sul gradino prima.
+a mano — e il gioco resta fermo com'era.
 
 Se un comportamento funziona nei test e non nel gioco, guarda qui per primo.
 
@@ -79,8 +77,7 @@ non c'e' niente da rilanciare. Il riavvio si vede qui:
 docker compose logs -f saga
 ```
 
-Poi *Inizia la campagna*, e guarda fin dove arrivi. Dovresti superare tanti livelli quanti test hai
-verdi.
+Poi *Inizia la campagna*, e guarda quante navi abbatti. Dovrebbero crescere con ogni test verde.
 
 Quando si rompe, hai tre posti dove guardare:
 
@@ -90,56 +87,47 @@ Quando si rompe, hai tre posti dove guardare:
 | `docker compose logs -f saga` | quello che il tuo processo decide, evento per evento             |
 | Il resoconto di fine ondata     | città, navi atterrate, colpi rimasti, cannoni lasciati accesi   |
 
-## 7. Ripeti fino a tre
+## 7. Ripeti fino a cinque
 
-Ogni gradino aggiunge un comportamento, e ogni comportamento sblocca un livello:
+Ogni test aggiunge un comportamento, e ogni comportamento abbatte più navi:
 
-|                                   |         |                                                                                        |
-| --------------------------------- | ------- | -------------------------------------------------------------------------------------- |
-| **1. Aprire**               | 5 navi  | chiedi un cannone, e qualcosa comincia a sparare                                       |
-| **2. Restituire e reagire** | 10 navi | il cannone è un prestito, gli ordini si perdono in silenzio, e i cannoni si inceppano |
-| **3. Chiudere**             | 15 navi | il processo finisce quando il conto è saldato, non quando la nave cade                |
+|                                   |                                                                                        |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| **1. Aprire**               | chiedi un cannone all'avvistamento, e insisti se il battito dice che sei scoperto      |
+| **2. Restituire**           | il cannone è un prestito: restituiscilo quando la nave cade                            |
+| **3. Riparare**             | un cannone inceppato non si sblocca da solo                                            |
+| **4. Rimettere in azione**  | riparare non riapre il fuoco: è una mossa a parte                                      |
+| **5. Rifornire**            | un cannone a secco chiama il convoglio, e alla consegna torna in azione                |
 
-Quando sono verdi tutti e tre, la campagna si vince.
+Quando sono verdi tutti e cinque, la campagna si vince.
 
 ---
 
 ## Le quattro cose da sapere prima di cominciare
 
-**Un ordine può non arrivare.** Uno su venticinque si perde, e un ordine perso **non produce nessun
-evento** — nemmeno un errore. Chi aspetta un fallimento aspetta per sempre. L'unico modo di
-accorgersene è il battito.
+**Un cannone può restare scoperto.** I cannoni sono cinque e le navi arrivano di più: una nave può
+non trovarne uno libero all'avvistamento. L'unico modo di accorgersene è il battito.
 
 **Aprire il fuoco è un prestito.** Il cannone resta acceso finché non lo restituisci, anche dopo che
-la nave è caduta. E il cessate il fuoco può perdersi come tutto il resto, quindi va **verificato**.
+la nave è caduta.
 
-**Il processo non finisce quando la nave cade.** Finisce quando il conto con la Terra è chiuso. È qui
-che si perde la partita, ed è l'unico errore che non dà nessun segnale.
+**Riparare e rifornire non riaprono il fuoco.** Rimettono il cannone disponibile, e fermo.
+Rimetterlo in azione è sempre una mossa a parte.
 
 **Qui non va una riga di dominio.** Quanti colpi regga una corazzata, quale cannone convenga, quanto
 duri una ricarica: non lo sai e non devi saperlo. Tu chiedi, la Terra decide.
 
 ## Dove guardare
 
-- **[Le regole](REGOLE.md)** — i numeri, i guasti, i tre livelli
+- **[Le regole](REGOLE.md)** — i numeri, i guasti, l'ondata
 - **[Comandi ed eventi](EVENTI.md)** — cosa puoi mandare e cosa ti arriva
 - **[L&#39;architettura](ARCHITETTURA.md)** — i tre servizi e dove sta cosa
 
 ## Se ti blocchi
 
-C'è un branch per ogni gradino — `livello-01`, `livello-02`, `livello-03` — con la soluzione **fino
-a quel livello**. Se sei fermo al secondo, guarda solo il secondo:
+C'è un branch con la soluzione, `soluzione`. Guardalo solo dopo aver provato la tua: il diff con
+`main` è di due file, ed è esattamente l'esercizio.
 
 ```bash
-git diff livello-01 livello-02 -- src/Sagas/
+git diff main soluzione -- src/Sagas/
 ```
-
-Il diff fra due branch consecutivi è esattamente quello che aggiunge quel gradino, e niente di più.
-Per vedere tutto quello che serve fino a un certo punto, confronta con `main`:
-
-```bash
-git diff main livello-02 -- src/Sagas/
-```
-
-`livello-03` è la saga completa. Guardala solo dopo aver provato la tua: il diff con `main` è di due
-file, ed è esattamente l'esercizio.

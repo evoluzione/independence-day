@@ -8,9 +8,6 @@ using Muflone.Saga.Persistence;
 
 namespace Evoluzione.IndependenceDay.Sagas.Tests.TestDoubles;
 
-/// <summary>
-/// Nessuna ricerca per chiave di business: i test indirizzano sempre per correlationId.
-/// </summary>
 public sealed class NoStateLocator : ISagaStateLocator
 {
     public Task<IReadOnlyList<TSagaState>> FindOpenStatesBy<TSagaState>(string stateField, Guid value,

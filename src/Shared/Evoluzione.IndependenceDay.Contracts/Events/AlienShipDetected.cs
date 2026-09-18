@@ -2,7 +2,6 @@ using Evoluzione.IndependenceDay.Contracts.World;
 
 namespace Evoluzione.IndependenceDay.Contracts.Events;
 
-/// <summary>Lo Spazio ha mandato una nave, e dice dove punta e di che stazza e'.</summary>
 public sealed class AlienShipDetected(
     ShipId aggregateId,
     CityId targetCity,

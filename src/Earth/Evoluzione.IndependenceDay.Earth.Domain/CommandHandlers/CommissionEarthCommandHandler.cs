@@ -11,8 +11,6 @@ public class CommissionEarthCommandHandler(IRepository repository, ILoggerFactor
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        // La difesa si mette in piedi a ogni avvio. Se c'e' gia', il suo stream esiste e non va
-        // riscritto: rifarla azzererebbe la partita in corso.
         var id = (EarthId)command.AggregateId;
         var existing = await Repository.TryGetByIdAsync<EarthDefense>(id, cancellationToken);
         if (existing is not null)

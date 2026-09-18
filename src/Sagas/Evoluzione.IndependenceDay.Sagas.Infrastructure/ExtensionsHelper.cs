@@ -28,19 +28,16 @@ public static class ExtensionsHelper
 
         services.AddScoped<ISagaRepository, MongoSagaRepository>();
         services.AddScoped<ISagaStateLocator, MongoSagaStateLocator>();
-        services.AddScoped<IOperationsRoom, MongoOperationsRoom>();
 
         return services;
     }
 
     private static Task EnsureIndexes(IMongoDatabase database, IReadOnlyList<string> businessKeyFields)
     {
-        // Si indicizza solo cio' che si interroga davvero: SaveAsync e' una ReplaceOne che gira a ogni
-        // passo di ogni saga, e ogni indice in piu' si paga su quella scrittura. _id e' gia' indicizzato.
+
         var models = businessKeyFields.Select(field => new CreateIndexModel<BsonDocument>(
             Builders<BsonDocument>.IndexKeys.Ascending(MongoSagaCollection.StateField(field)),
-            // Il nome e' derivato e non scelto: un indice con un nome diverso da quello gia' creato non
-            // sostituisce il vecchio, gli si affianca, e le scritture finiscono per pagarli entrambi.
+
             new CreateIndexOptions { Name = $"ix_sagas_state_{field.ToLowerInvariant()}" })).ToList();
 
         return database.GetCollection<BsonDocument>(MongoSagaCollection.Name).Indexes.CreateManyAsync(models);

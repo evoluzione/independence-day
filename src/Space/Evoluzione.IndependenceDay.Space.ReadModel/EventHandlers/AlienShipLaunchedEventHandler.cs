@@ -21,8 +21,7 @@ public class AlienShipLaunchedEventHandler(IShipsService service, ILoggerFactory
         }
         catch (Exception ex)
         {
-            // Una proiezione che rilancia avvelena la sottoscrizione per tutti gli eventi successivi:
-            // qui si registra e si prosegue.
+
             _logger.LogError(ex, "[AlienShipLaunchedEventHandler] Read model non aggiornato per la nave {ShipId}",
                 @event.ShipId.Value);
         }

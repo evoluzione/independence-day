@@ -11,11 +11,9 @@ public class Ship : IProjectionDocument
     public Guid MotherShipId { get; set; }
     public ShipClass Class { get; set; }
 
-    /// <summary>L'ondata a cui questa nave appartiene.</summary>
     public int Wave { get; set; }
     public string Status { get; set; } = string.Empty;
 
-    /// <summary>Perche' la nave e' finita cosi': "nuked", "repelled", "landed".</summary>
     public string Outcome { get; set; } = string.Empty;
 
     public DateTime LaunchedAt { get; set; }

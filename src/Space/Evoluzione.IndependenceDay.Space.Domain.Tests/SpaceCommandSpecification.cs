@@ -10,7 +10,6 @@ public abstract class SpaceCommandSpecification<TCommand> : CommandSpecification
 {
     protected static readonly Account Invaders = new("space", "Ship Command");
 
-    /// <summary>L'ondata degli scenari: una sola, perche' nessuno di questi test la attraversa.</summary>
     protected const int Wave = 1;
 
     protected static NullLoggerFactory LoggerFactory { get; } = new();

@@ -4,7 +4,6 @@ using Muflone.CustomTypes;
 
 namespace Evoluzione.IndependenceDay.Earth.Facade;
 
-/// <summary>Con cosa nasce la difesa, e chi firma i suoi ordini.</summary>
 public static class EarthDefenses
 {
     public static EarthId Id => new(Cities.DefenseId);
