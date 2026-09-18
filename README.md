@@ -18,6 +18,11 @@ Poi **[http://localhost:8080](http://localhost:8080)** e *Inizia la campagna*.
 Non serve altro: né .NET, né Node, né una base dati. I tre servizi vengono compilati dentro l'immagine
 SDK, quindi sulla macchina bastano Docker e questo repository.
 
+Questo vale per farlo girare. Per **scrivere** i due file dell'esercizio con IntelliSense, senza
+installare l'SDK .NET sulla macchina: estensione [Dev
+Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+in VS Code, poi *Reopen in Container* (richiede comunque Docker in esecuzione).
+
 ```bash
 docker compose --profile test run --rm tests
 ```
