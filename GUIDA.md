@@ -8,7 +8,7 @@ Come si comincia, in sette passi.
 docker compose up --build
 ```
 
-Apri **<http://localhost:8080>** e premi *Inizia la campagna*.
+Apri **[http://localhost:8080](http://localhost:8080)** e premi *Inizia la campagna*.
 
 Guarda cosa succede: cinque navi arrivano, nessun cannone spara, cinque città cadono. È il punto di
 partenza — la saga esiste ma non fa niente.
@@ -19,8 +19,7 @@ partenza — la saga esiste ma non fa niente.
 docker compose --profile test run --rm tests
 ```
 
-Se hai .NET installato, o se stai lavorando dentro il dev container, usa invece `dotnet test
-src/Evoluzione.IndependenceDay.slnx`: è la stessa cosa, ma parte subito. Le
+Se hai .NET installato, o se stai lavorando dentro il dev container, usa invece `dotnet test src/Evoluzione.IndependenceDay.slnx`: è la stessa cosa, ma parte subito. Le
 [tre strade](README.md#compilare-con-o-senza-net-installato) sono nel README.
 
 Test rossi, raggruppati in **tre gradini**, uno per livello. **Sono la specifica**: il nome dice a
@@ -82,21 +81,21 @@ verdi.
 
 Quando si rompe, hai tre posti dove guardare:
 
-| | |
-| --- | --- |
-| La console | il diario a destra racconta ogni passo di ogni nave, con l'esito |
-| `docker compose logs -f saga` | quello che il tuo processo decide, evento per evento |
-| Il resoconto di fine ondata | città, navi atterrate, colpi rimasti, cannoni lasciati accesi |
+|                                 |                                                                  |
+| ------------------------------- | ---------------------------------------------------------------- |
+| La console                      | il diario a destra racconta ogni passo di ogni nave, con l'esito |
+| `docker compose logs -f saga` | quello che il tuo processo decide, evento per evento             |
+| Il resoconto di fine ondata     | città, navi atterrate, colpi rimasti, cannoni lasciati accesi   |
 
 ## 7. Ripeti fino a tre
 
 Ogni gradino aggiunge un comportamento, e ogni comportamento sblocca un livello:
 
-| | | |
-| --- | --- | --- |
-| **1. Aprire** | 5 navi | chiedi un cannone, e qualcosa comincia a sparare |
+|                                   |         |                                                                                        |
+| --------------------------------- | ------- | -------------------------------------------------------------------------------------- |
+| **1. Aprire**               | 5 navi  | chiedi un cannone, e qualcosa comincia a sparare                                       |
 | **2. Restituire e reagire** | 10 navi | il cannone è un prestito, gli ordini si perdono in silenzio, e i cannoni si inceppano |
-| **3. Chiudere** | 15 navi | il processo finisce quando il conto è saldato, non quando la nave cade |
+| **3. Chiudere**             | 15 navi | il processo finisce quando il conto è saldato, non quando la nave cade                |
 
 Quando sono verdi tutti e tre, la campagna si vince.
 
@@ -121,7 +120,7 @@ duri una ricarica: non lo sai e non devi saperlo. Tu chiedi, la Terra decide.
 
 - **[Le regole](REGOLE.md)** — i numeri, i guasti, i tre livelli
 - **[Comandi ed eventi](EVENTI.md)** — cosa puoi mandare e cosa ti arriva
-- **[L'architettura](ARCHITETTURA.md)** — i tre servizi e dove sta cosa
+- **[L&#39;architettura](ARCHITETTURA.md)** — i tre servizi e dove sta cosa
 
 ## Se ti blocchi
 
