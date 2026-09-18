@@ -15,7 +15,7 @@ docker compose up --build
 
 Poi **[http://localhost:8080](http://localhost:8080)** e *Inizia la campagna*.
 
-Non serve altro: né .NET, né Node, né una base dati. I tre servizi vengono compilati dentro l'immagine
+Non serve altro: né .NET, né Node, né una base dati. I servizi vengono compilati dentro l'immagine
 SDK, quindi sulla macchina bastano **Docker** e **Git**.
 
 I due file da scrivere, che sono tutto l'esercizio:
@@ -23,6 +23,17 @@ I due file da scrivere, che sono tutto l'esercizio:
 ```
 src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/
 ```
+
+Il container della saga gira sotto `dotnet watch` con `src/` montato dentro: **salvi il file e
+ricompila e riparte da solo**, senza rilanciare `docker compose`. Errori di compilazione compresi —
+il container resta in piedi e aspetta, correggi e risalva.
+
+```bash
+docker compose logs -f saga
+```
+
+Tienilo aperto in un terminale a parte: è lì che si vede il riavvio, e da lì in poi è la finestra sul
+tuo processo mentre gioca.
 
 👉 **[La guida](GUIDA.md)** spiega i passi uno per uno. Comincia da lì.
 

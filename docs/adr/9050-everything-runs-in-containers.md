@@ -21,15 +21,30 @@ sull'immagine SDK.** `docker compose up --build` è l'unico comando necessario, 
 soltanto Docker e il repository. I test girano allo stesso modo, sotto il profilo `test`, nell'immagine
 SDK con il sorgente montato.
 
+**La saga fa eccezione: è il codice che si scrive, quindi gira direttamente nell'immagine SDK sotto
+`dotnet watch`, con `src/` montato.** Un salvataggio ricompila e riavvia il processo da solo: senza
+questo, ogni singola modifica al kata costerebbe un `--build` dell'intera solution. Il watcher usa il
+polling, perché su bind mount Docker gli eventi inotify del filesystem non arrivano al container.
+
+Il watcher gira con `--no-hot-reload`: la patch a caldo applicherebbe il codice nuovo a un container
+DI già costruito all'avvio, e la modifica risulterebbe compilata ma non ascoltata — il modo peggiore
+di sbagliare, perché sembra che il codice non faccia niente. Un riavvio pieno costa qualche secondo e
+non mente.
+
 Le porte pubblicate stanno fuori dagli standard (2114/2115, 5673/15673, 27018) perché è normale avere
 già un Mongo o un Rabbit in ascolto, e un conflitto di porta si presenta come un servizio che non parte.
 
 ## Consequences
 
 - Dal clone alla prima flotta non c'è niente da installare e niente da configurare.
-- Ogni modifica al codice richiede un `--build`: il ciclo di sviluppo è più lento di `dotnet watch`.
-  Chi lavora davvero sul codice può avviare l'host dall'IDE contro la stessa infrastruttura, perché gli
-  `appsettings.json` puntano a `localhost` e sono le variabili d'ambiente di compose a riscriverli.
+- Sulla saga il ciclo è quello di `dotnet watch`: si salva e basta. Su Spazio e Terra ogni modifica
+  richiede ancora un `--build`, ed è accettabile perché non sono il codice dell'esercizio. Chi ci lavora
+  davvero può avviare l'host dall'IDE contro la stessa infrastruttura, perché gli `appsettings.json`
+  puntano a `localhost` e sono le variabili d'ambiente di compose a riscriverli.
+- La saga non ha più un Dockerfile: gira nell'immagine SDK, non in quella runtime. È un container di
+  sviluppo, non un artefatto di produzione — che qui non esiste.
+- `src/bin` e `src/obj` sono condivisi fra host e container, come già per il profilo `test`: chi compila
+  anche sulla macchina paga un restore in più a ogni passaggio di lato.
 - Le immagini si costruiscono con il contesto su `src/`, quindi il restore vede tutta la solution: una
   build è più lenta di quella di un singolo progetto.
 - Non c'è nessun passaggio manuale da documentare, quindi nessun passaggio che possa restare indietro
