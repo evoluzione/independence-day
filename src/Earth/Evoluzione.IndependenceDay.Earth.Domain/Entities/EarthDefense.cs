@@ -192,9 +192,16 @@ public class EarthDefense : AggregateRoot
             return;
 
         var cannon = Cannons[ship.CityId];
+        var cityId = new CityId(Guid.Parse(ship.CityId));
+
+        if (cannon.Fallen)
+        {
+            RaiseEvent(new EarthShipLanded((EarthId)Id, cityId, shipId, 0, 0, correlationId));
+            return;
+        }
+
         var damage = Contracts.World.Ships.DamageOf(ship.Class);
         var integrityLeft = Math.Max(0, cannon.Integrity - damage);
-        var cityId = new CityId(Guid.Parse(ship.CityId));
 
         RaiseEvent(new EarthShipLanded((EarthId)Id, cityId, shipId, damage, integrityLeft, correlationId));
 
