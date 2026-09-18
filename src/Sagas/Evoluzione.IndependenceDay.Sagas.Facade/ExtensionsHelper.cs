@@ -43,16 +43,7 @@ public static class ExtensionsHelper
 
         services.AddSagaStarter<StartShipInterception, ShipInterceptionSaga>();
 
-        // Ogni evento vuole due registrazioni, e servono entrambe: la prima lo fa arrivare dal bus, la
-        // seconda lo consegna al processo. Dimenticare la prima non da' errore — l'evento
-        // semplicemente non arriva mai, e il processo resta fermo sul gradino precedente.
-        //
-        // TODO: per ogni evento che il processo deve ascoltare, due righe.
-        //
-        //   services.AddIntegrationEventHandler<SagaIntegrationEventHandler<ShipApproaching>>();
-        //   services.AddSagaEventHandler<ShipApproaching, ShipInterceptionSaga>();
-        //
-        // L'elenco completo di quello che la Terra manda sta in EVENTI.md, e quali servono a che
-        // livello sta in REGOLE.md.
+        // services.AddIntegrationEventHandler<SagaIntegrationEventHandler<ShipApproaching>>();
+        // services.AddSagaEventHandler<ShipApproaching, ShipInterceptionSaga>();
     }
 }
