@@ -88,6 +88,9 @@ public class EarthDefense : AggregateRoot
         if (!Ships.ContainsKey(shipId.Value))
             return;
 
+        if (Cannons.Values.Any(cannon => cannon.Target == shipId.Value))
+            return;
+
         var chosen = Cannons
             .Where(entry => entry.Value.Available)
             .OrderBy(entry => entry.Value.Rounds)
