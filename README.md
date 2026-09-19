@@ -19,7 +19,8 @@ Poi **[http://localhost:8080](http://localhost:8080)** e *Inizia la campagna*.
 Non serve altro: né .NET, né Node, né una base dati. I servizi vengono compilati dentro l'immagine
 SDK, quindi sulla macchina bastano **Docker** e **Git**.
 
-I due file da scrivere, che sono tutto l'esercizio:
+I due file dell'esercizio — ma solo uno dei due va riempito davvero, e scoprire quale è metà del
+punto:
 
 ```
 src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/
@@ -119,8 +120,8 @@ services:
 ## La soluzione
 
 C'è un branch, `soluzione`, con la saga completa: supera l'ondata con cinque città in piedi e
-nessuna nave a terra. Guardalo solo dopo aver provato la tua: il diff con `main` è di **due file**,
-ed è esattamente l'esercizio.
+nessuna nave a terra. Guardalo solo dopo aver provato la tua — e nota una cosa: `InterceptionState`
+non compare nel diff, perché nella soluzione **resta vuoto**.
 
 ```bash
 git diff main soluzione -- src/Sagas/

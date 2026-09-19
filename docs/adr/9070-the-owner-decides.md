@@ -47,7 +47,14 @@ e due file in tutto — la saga e il suo stato.
 - Nessuna conoscenza duplicata: quanti colpi regga una corazzata è scritto in un posto solo, e chi
   coordina lo scopre perché la nave cade.
 - La Terra è diventata più grossa: sceglie il cannone, tiene il contatore dei guasti, e la scelta
-  «il libero con più colpi» è una regola di dominio in più da mantenere.
+  «il libero con più colpi» è una regola di dominio in più da mantenere. Dal 2026-09-19 anche
+  «un cannone per nave basta» e «il cessate il fuoco vale per tutti i cannoni su quella nave»:
+  erano nel processo, ed erano allocazione di risorse decisa da chi non ne vede lo stato.
+- Portata alle sue conseguenze, la decisione svuota lo stato del processo: se il proprietario sa
+  tutto, al coordinatore non resta niente da ricordare — vedi
+  [R-9060](../rules/9060-saga-does-not-decide.md) e l'emendamento a
+  [R-9070](../rules/9070-compensation-is-confirmed.md). "Due file in tutto" resta vero, ma il
+  secondo è vuoto.
 - L'esercizio è più difficile da *capire* e più facile da *scrivere*: il codice da produrre è poco,
   ma va messo nei punti giusti.
 - Un partecipante che cerca la leva strategica non la trova. È voluto, e va detto nel README —

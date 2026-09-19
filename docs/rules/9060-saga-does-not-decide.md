@@ -16,8 +16,11 @@ La differenza si vede da una domanda sola: **se cambio questa riga, cambia il gi
 di condurlo?** Se cambia il gioco, la riga è nel posto sbagliato.
 
 Una saga è **due file**: lo stato e la saga. Lo stato è quello che si ricorda fra un evento e
-l'altro; la saga è un handler per evento, ognuno corto abbastanza da leggersi tutto insieme, più il
-giro comune — carica, scarta le riconsegne, decide, salva, spedisce.
+l'altro — ma solo di quello che **nessun altro sa già**. Se il proprietario della risorsa lo sa, non
+va ricordato qui: una copia in ritardo di una verità che vive altrove è la stessa violazione di
+prima, scritta come campo invece che come `if`. Quando il proprietario sa tutto, lo stato resta
+vuoto, e va bene così. La saga è un handler per evento, ognuno corto abbastanza da leggersi tutto
+insieme, più il giro comune — carica, scarta le riconsegne, decide, salva, spedisce.
 
 ## Why
 

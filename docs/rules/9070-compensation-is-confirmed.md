@@ -15,14 +15,31 @@ Due conseguenze, entrambe obbligatorie:
 2. Il processo **non si chiude** quando l'obiettivo è raggiunto, ma quando non resta nessun debito
    aperto. Sono due condizioni separate e servono entrambe.
 
-Lo stato della saga tiene l'elenco dei debiti aperti. Se un evento di apertura arriva quando
-l'obiettivo è già risolto — l'ordine era per strada mentre la nave cadeva — quel debito va aperto e
-chiuso subito, non ignorato.
+L'elenco dei debiti aperti sta **dove sta la risorsa**, non nel coordinatore: se il proprietario sa
+enumerare i propri debiti, è lui a tenerne il conto. Al processo resta indirizzare la compensazione
+all'**obiettivo** — la nave — e non alla singola risorsa, così che sia il proprietario a chiudere
+tutti i debiti che quell'obiettivo ha aperto.
 
 > **Amendment 2026-09-18.** Un terzo punto imponeva di ripetere la compensazione perché anche lei
 > poteva perdersi sul collegamento. È caduto con l'ordine perso stesso — vedi
 > [ADR-9080](../adr/9080-failure-is-the-game.md). Un cessate il fuoco che arriva a destinazione non
 > ha più bisogno di essere insistito.
+
+> **Amendment 2026-09-19.** La regola diceva "lo stato della saga tiene l'elenco dei debiti aperti",
+> e imponeva di riaprire e richiudere subito un debito che arrivasse a obiettivo già risolto.
+> Entrambe le cose descrivevano un rattoppo, non il disegno.
+>
+> Il `Firing` della saga era una replica in ritardo di `Cannon.Target`, che la Terra tiene già. Due
+> copie della stessa verità divergono: sul bus il processo può vedere `ShipDestroyed` **prima** di
+> `FireOpened`, e la riapertura immediata del debito esisteva solo per rimediare a quella
+> divergenza. Con `CeaseFire` indirizzato alla nave, il ventaglio si risolve sull'aggregato, dove
+> l'ordine è già deciso: il caso da rattoppare non si presenta più, e il registro torna a essere uno
+> solo. Il processo non ricorda più niente.
+>
+> Resta scoperto il punto 1: `FireCeased` ha un handler vuoto, quindi la compensazione parte ma
+> nessuno ne ascolta la conferma. E la chiusura del punto 2 non è implementata — non lo era nemmeno
+> prima. Vanno insieme: un evento di disimpegno alzato dalla Terra a ventaglio finito darebbe
+> all'uno la conferma e all'altro la condizione, sempre con zero memoria nel processo.
 
 ## Why
 

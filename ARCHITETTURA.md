@@ -46,7 +46,9 @@ Saghe                                           ShipDestroyed ◄────┘
                                                     │
                                                 CeaseFire ─────────┐
                                                                    ▼
-Terra                                                        EarthFireCeased
+Terra                                                  EarthFireCeased × n
+                                                       (uno per cannone che
+                                                        era su quella nave)
 Saghe                                              FireCeased ◄────┘   chiuso
 ```
 
@@ -70,7 +72,7 @@ src/
 │   ├── .Facade/            FireControl · ApproachDeadline · Heartbeat · SupplyConvoy · gli endpoint
 │   └── .Host/wwwroot/      la sala operativa: una pagina, alimentata da server-sent events
 └── Sagas/
-    ├── .Sagas/             ◄── QUI. Due file: ShipInterceptionSaga e InterceptionState
+    ├── .Sagas/             ◄── QUI. Due file: ShipInterceptionSaga e InterceptionState (vuoto)
     ├── .Facade/            le registrazioni: due righe per ogni evento che vuoi ascoltare
     └── .Infrastructure/    lo stato delle saghe su Mongo
 ```

@@ -39,12 +39,14 @@ pronto, in azione, inceppato, a secco, in rifornimento, perduto.
 
 ## Cessate il fuoco
 
-**L'ordine che spegne un cannone e lo restituisce.** È l'azione compensativa del processo, e la sola
-che rimetta indietro qualcosa.
+**L'ordine che spegne i cannoni su una nave e li restituisce.** È l'azione compensativa del
+processo, e la sola che rimetta indietro qualcosa.
 
 - **Aliases / Acronyms**: CeaseFire
-- **Context**: Va **confermato**: un processo che chiude senza aspettare la conferma lascia un
-  cannone a sparare su relitti per il resto della campagna.
+- **Context**: Parla della **nave**, non del cannone: chi coordina non sa quali cannoni le stiano
+  sparando, e non deve saperlo — è la Terra a enumerarli. Va **confermato**, una volta per cannone:
+  un processo che chiude senza aspettare la conferma lascia un cannone a sparare su relitti per il
+  resto della campagna.
 - **Related**: Cannone, Colpo su un relitto, Intercettazione
 - **Source**: `src/Shared/Evoluzione.IndependenceDay.Contracts/Commands/CeaseFire.cs`
 
@@ -110,7 +112,8 @@ finisce quando la nave cade: finisce quando il conto con la Terra è chiuso.
 
 - **Aliases / Acronyms**: Interception, saga
 - **Context**: Non vede le altre intercettazioni, non vede i colpi rimasti, non sa quanti ne servano.
-  Quello che sa lo ha sentito dire.
+  Quello che sa lo ha sentito dire — e non se lo ricorda: il suo stato è vuoto, perché ogni cosa che
+  le servirebbe la sa già la Terra.
 - **Related**: Cessate il fuoco, Battito
 - **Source**: `src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/ShipInterceptionSaga.cs`
 

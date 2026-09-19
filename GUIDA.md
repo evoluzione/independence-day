@@ -38,13 +38,22 @@ src/Sagas/Evoluzione.IndependenceDay.Sagas/ShipInterception/
 
 Sono gli unici due file da scrivere. Gli handler ci sono già tutti e non fanno niente.
 
+Lo stato arriva vuoto, e **la domanda da farsi prima di metterci un campo è sempre la stessa: questa
+cosa la sa già la Terra?** Quasi sempre sì — quali cannoni stiano sparando a una nave, se la nave sia
+ancora in volo, quanti colpi restino. Ricordarsela qui vuol dire tenerne una seconda copia, che
+prima o poi dirà una cosa diversa dall'originale. La soluzione di riferimento lascia
+`InterceptionState` vuoto dal primo test all'ultimo: se ti accorgi di volerci scrivere qualcosa,
+rileggi l'ordine che stavi per mandare — probabilmente c'è un modo di chiederlo che non richiede di
+ricordare.
+
 ## 4. Fai verde il primo test
 
 `Una_nave_avvistata_apre_il_fuoco_e_si_insiste_se_resta_scoperta` vuole due cose: quando il processo
 parte, manda `OpenFire`; e quando il battito dice che la nave è ancora scoperta, insiste.
 
 In `StartedByAsync`, dopo aver salvato lo stato, spedisci l'ordine con `SendCommand`. `OpenFire` è
-già lì in fondo al file, pronto.
+già lì in fondo al file, pronto, e vuole solo l'id della nave: sta nel comando che ti ha fatto
+partire.
 
 ```bash
 docker compose --profile test run --rm tests
@@ -94,7 +103,7 @@ Ogni test aggiunge un comportamento, e ogni comportamento abbatte più navi:
 |                                   |                                                                                        |
 | --------------------------------- | -------------------------------------------------------------------------------------- |
 | **1. Aprire**               | chiedi un cannone all'avvistamento, e insisti se il battito dice che sei scoperto      |
-| **2. Restituire**           | il cannone è un prestito: restituiscilo quando la nave cade                            |
+| **2. Restituire**           | i cannoni sono un prestito: restituiscili quando la nave cade                          |
 | **3. Riparare**             | un cannone inceppato non si sblocca da solo                                            |
 | **4. Rimettere in azione**  | riparare non riapre il fuoco: è una mossa a parte                                      |
 | **5. Rifornire**            | un cannone a secco chiama il convoglio, e alla consegna torna in azione                |
@@ -125,8 +134,8 @@ duri una ricarica: non lo sai e non devi saperlo. Tu chiedi, la Terra decide.
 
 ## Se ti blocchi
 
-C'è un branch con la soluzione, `soluzione`. Guardalo solo dopo aver provato la tua: il diff con
-`main` è di due file, ed è esattamente l'esercizio.
+C'è un branch con la soluzione, `soluzione`. Guardalo solo dopo aver provato la tua — e nota che
+`InterceptionState` non compare nel diff: nella soluzione resta vuoto.
 
 ```bash
 git diff main soluzione -- src/Sagas/

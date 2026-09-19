@@ -9,11 +9,14 @@ vocabolario che hai.
 | Comando | Cosa fa | Cosa torna indietro |
 | --- | --- | --- |
 | `OpenFire(shipId)` | accende un cannone su quella nave, e lo lascia acceso | `FireOpened(cityId)` oppure `NoCannonReady` |
-| `CeaseFire(cityId, shipId)` | lo spegne e lo restituisce | `FireCeased` |
+| `CeaseFire(shipId)` | spegne **ogni** cannone su quella nave e li restituisce | un `FireCeased(cityId)` per cannone |
 | `RepairCannon(cityId, shipId)` | prova a rimettere in sesto un cannone inceppato | `CannonRepaired` |
 | `RequestResupply(cityId, shipId)` | chiama il convoglio per un cannone a secco | `CannonResupplied` |
 
 Quattro ordini, e nessuno dice *quale* cannone o *quanti* colpi: quelle sono decisioni della Terra.
+`OpenFire` e `CeaseFire` non nominano nemmeno la città — parlano della **nave**, e la Terra traduce:
+uno sceglie il cannone da accendere, l'altro spegne tutti quelli che erano su quella nave. Non è un
+dettaglio di comodo: vuol dire che non devi tenere il conto di chi sta sparando a chi.
 
 Ogni ordine va all'aggregato `EarthDefense`, con `Cities.DefenseId` come aggregato e il
 `CorrelationId` del tuo processo — è quello il filo che riporta l'esito a te e non a un altro.
@@ -22,9 +25,12 @@ Ogni ordine va all'aggregato `EarthDefense`, con `Cities.DefenseId` come aggrega
 quinto esito che sia "niente".
 
 Esiste però un modo di non ricevere nessuna risposta: **l'ordine non aveva più senso** — un cessate
-il fuoco su un cannone che nel frattempo è stato messo su un'altra nave, o la riconsegna di un ordine
-già eseguito. L'aggregato esce in silenzio perché non c'è niente da fare, ed è la stessa cosa che
-avrebbe fatto la seconda volta.
+il fuoco su una nave su cui non spara più nessuno, un'apertura del fuoco su una nave già caduta o già
+coperta, o la riconsegna di un ordine già eseguito. L'aggregato esce in silenzio perché non c'è
+niente da fare, ed è la stessa cosa che avrebbe fatto la seconda volta.
+
+Vale la pena fermarsi su questo: **è la Terra a sapere quando un ordine non ha più senso**, e lo sa
+meglio di te. Un ordine mandato a vuoto non costa niente e non va evitato ricordandosi le cose.
 
 Quello che un aggregato **non** fa mai è scartare un ordine che ha ancora senso. Se lo facesse
 sarebbe una rete che finge.

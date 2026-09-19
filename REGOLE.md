@@ -27,7 +27,8 @@ e non te lo dice nessuno: il fuoco è aperto, quindi il cannone ricarica e ripro
 
 Un ordine di apertura non è un colpo: **accende** un cannone, che da lì spara da solo finché non gli
 si dice di smettere. **Non si ferma quando la nave cade.** Fermarlo è un ordine a parte —
-`CeaseFire` — e va confermato.
+`CeaseFire` — e va confermato. L'ordine parla della nave, non del cannone: spegne tutti quelli che
+le stavano sparando, e ognuno conferma per conto suo.
 
 ## Le navi
 
@@ -104,7 +105,7 @@ abbatte **più navi** di quella prima, e si vede nel resoconto di fine ondata.
 | # | Problema | Senza |
 | ---: | --- | --- |
 | 1 | Aprire il fuoco all'avvistamento, e insistere se il battito dice che la nave è scoperta | non spara nessuno |
-| 2 | Restituire il cannone quando la nave cade | il fuoco continua sul relitto, e il cannone manca alla nave dopo |
+| 2 | Restituire i cannoni quando la nave cade | il fuoco continua sul relitto, e i cannoni mancano alla nave dopo |
 | 3 | Far riparare un cannone inceppato | un cannone su cinque è perso per sempre al primo inceppamento |
 | 4 | Rimettere subito in azione un cannone appena riparato | il cannone resta fermo fino al battito successivo |
 | 5 | Chiedere i rifornimenti per un cannone a secco, e riaprire il fuoco alla consegna | un cannone su cinque si ferma per sempre alla prima ricarica esaurita |
@@ -120,7 +121,7 @@ A parità di vittoria contano, in quest'ordine: le **città in piedi**, le **nav
 ## Cosa si può toccare
 
 **Sì** a tutto quello che sta sotto `src/Sagas/`: la saga, il suo stato, il processo, le
-registrazioni.
+registrazioni. Lo stato puoi anche lasciarlo vuoto — la soluzione di riferimento lo fa.
 
 **No** agli aggregati, ai guasti e alla curva di difficoltà: sono il campo di gioco, uguale per
 tutti.

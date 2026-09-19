@@ -29,7 +29,8 @@ e la partita si ferma senza che a schermo si veda niente
 ([R-9020](docs/rules/9020-projections-never-rethrow.md)).
 
 **Il progetto delle saghe non ospita dominio.** Nessuna costante di gioco, nessun conto: quelli
-stanno nell'aggregato che possiede la risorsa. Una saga è due file, lo stato e la saga
+stanno nell'aggregato che possiede la risorsa. Una saga è due file, lo stato e la saga — e lo stato
+ricorda solo quello che nessun altro sa già, quindi può essere vuoto
 ([R-9060](docs/rules/9060-saga-does-not-decide.md)).
 
 ## Prima di dire che è fatto

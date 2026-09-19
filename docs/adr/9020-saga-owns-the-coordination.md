@@ -27,6 +27,14 @@ sa nemmeno che esista una difesa: apprende dagli eventi come è finita la flotta
 La saga tiene uno stato esplicito con il gradino corrente, e ogni suo passo pubblica
 `DefenseActionTaken`, che è l'unica cosa che la sala operativa vede del coordinamento.
 
+> **Nota 2026-09-19.** Due frasi di questo ADR non descrivono più il codice. Il «gradino corrente» è
+> caduto con la scala delle contromisure ([ADR-9030](9030-defense-escalation-ladder.md)), e «tiene
+> lo stato del giro» è caduto con [ADR-9070](9070-the-owner-decides.md), portato alle sue
+> conseguenze: lo stato dell'intercettazione è vuoto, perché tutto quello che servirebbe ricordare
+> lo sa già la Terra. Resta vero il cuore della decisione — **c'è un solo posto che decide quale
+> contromisura viene dopo** — e resta vero che quel posto è una saga orchestrata. Cambia solo che
+> non ha bisogno di memoria propria per farlo.
+
 ## Consequences
 
 - La sequenza completa si legge in un file solo, e i test la percorrono gradino per gradino.
