@@ -37,8 +37,6 @@ public sealed class ShipInterceptionSaga(
         SaveState(command.CorrelationId, new InterceptionState
         {
             CorrelationId = command.CorrelationId,
-            ShipId = Guid.Parse(command.ShipId.Value),
-            CityId = Guid.Parse(command.TargetCity.Value),
             Status = SagaStatus.InProgress
         });
 
@@ -60,7 +58,7 @@ public sealed class ShipInterceptionSaga(
 
     public Task HandleAsync(CannonResupplied @event) => Advance(@event, _ => []);
 
-    private async Task Advance(Event @event, Func<InterceptionState, List<Command>> decide)
+    private async Task Advance(Event @event, Func<Guid, List<Command>> decide)
     {
         var correlationId = @event.Headers.CorrelationId;
 
@@ -68,25 +66,21 @@ public sealed class ShipInterceptionSaga(
         if (state is null || !TryAcceptEvent(state, @event))
             return;
 
-        var orders = decide(state);
-
         await SaveState(correlationId, state);
 
-        foreach (var order in orders)
+        foreach (var order in decide(correlationId))
             await SendCommand(order, correlationId);
     }
 
-    private static Command OpenFire(InterceptionState state) =>
-        new OpenFire(Earth, new ShipId(state.ShipId), state.CorrelationId, Coordinator);
+    private static Command OpenFire(ShipId shipId, Guid correlationId) =>
+        new OpenFire(Earth, shipId, correlationId, Coordinator);
 
-    private static Command CeaseFire(InterceptionState state, CityId cityId) =>
-        new CeaseFire(Earth, cityId, new ShipId(state.ShipId), state.CorrelationId, Coordinator);
+    private static Command CeaseFire(ShipId shipId, Guid correlationId) =>
+        new CeaseFire(Earth, shipId, correlationId, Coordinator);
 
-    private static Command Repair(InterceptionState state, CityId cityId) =>
-        new RepairCannon(Earth, cityId, new ShipId(state.ShipId), state.CorrelationId, Coordinator);
+    private static Command Repair(CityId cityId, ShipId shipId, Guid correlationId) =>
+        new RepairCannon(Earth, cityId, shipId, correlationId, Coordinator);
 
-    private static Command Resupply(InterceptionState state, CityId cityId) =>
-        new RequestResupply(Earth, cityId, new ShipId(state.ShipId), state.CorrelationId, Coordinator);
-
-    private static Guid Id(CityId cityId) => Guid.Parse(cityId.Value);
+    private static Command Resupply(CityId cityId, ShipId shipId, Guid correlationId) =>
+        new RequestResupply(Earth, cityId, shipId, correlationId, Coordinator);
 }

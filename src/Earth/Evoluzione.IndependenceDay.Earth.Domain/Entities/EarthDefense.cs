@@ -106,14 +106,15 @@ public class EarthDefense : AggregateRoot
         RaiseEvent(new EarthFireOpened((EarthId)Id, city, shipId, chosen.Cannon.Rounds, correlationId));
     }
 
-    public void CeaseFire(CityId cityId, ShipId shipId, Guid correlationId)
+    public void CeaseFire(ShipId shipId, Guid correlationId)
     {
-        if (!Cannons.TryGetValue(cityId.Value, out var cannon) ||
-            cannon.Status != CannonStatus.Firing ||
-            cannon.Target != shipId.Value)
-            return;
+        var engaged = Cannons
+            .Where(entry => entry.Value.Status == CannonStatus.Firing && entry.Value.Target == shipId.Value)
+            .Select(entry => (City: new CityId(Guid.Parse(entry.Key)), entry.Value.Rounds))
+            .ToList();
 
-        RaiseEvent(new EarthFireCeased((EarthId)Id, cityId, shipId, cannon.Rounds, correlationId));
+        foreach (var (city, rounds) in engaged)
+            RaiseEvent(new EarthFireCeased((EarthId)Id, city, shipId, rounds, correlationId));
     }
 
     public void RepairCannon(CityId cityId, ShipId shipId, Guid correlationId)

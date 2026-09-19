@@ -33,6 +33,7 @@ public class CampaignTests(ITestOutputHelper output)
         Assert.True(last.Won, $"con tutti i comportamenti la campagna doveva essere vinta: {last}");
         Assert.Equal(0, last.ShipsLanded);
         Assert.Equal(0, last.OpenCannons);
+        Assert.Equal(0, last.RoundsWasted);
         Assert.True(last.RoundsLeft > 0, "vincere con zero colpi rimasti vuol dire margine nullo");
     }
 }

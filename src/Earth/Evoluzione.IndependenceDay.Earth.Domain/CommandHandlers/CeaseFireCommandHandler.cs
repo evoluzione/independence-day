@@ -8,7 +8,6 @@ public class CeaseFireCommandHandler(IRepository repository, ILoggerFactory logg
 {
     public override Task HandleAsync(CeaseFire command, CancellationToken cancellationToken = default) =>
         FireOrders.On(Repository, (Contracts.Ids.EarthId)command.AggregateId,
-            earth => earth.CeaseFire(FireOrders.City(command.CityId), FireOrders.Ship(command.ShipId),
-                command.CorrelationId),
+            earth => earth.CeaseFire(FireOrders.Ship(command.ShipId), command.CorrelationId),
             command.MessageId, cancellationToken);
 }

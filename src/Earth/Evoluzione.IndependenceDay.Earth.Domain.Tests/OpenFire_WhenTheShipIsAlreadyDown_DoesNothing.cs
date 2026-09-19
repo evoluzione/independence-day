@@ -8,10 +8,9 @@ using ShipId = Evoluzione.IndependenceDay.Earth.Messages.DomainIds.ShipId;
 
 namespace Evoluzione.IndependenceDay.Earth.Domain.Tests;
 
-public class CeaseFire_WhenTheCannonHasMovedOn_DoesNothing : EarthCommandSpecification<CeaseFire>
+public class OpenFire_WhenTheShipIsAlreadyDown_DoesNothing : EarthCommandSpecification<OpenFire>
 {
-    private readonly ShipId _old = new(Guid.NewGuid());
-    private readonly ShipId _current = new(Guid.NewGuid());
+    private readonly ShipId _ship = new(Guid.NewGuid());
     private readonly Guid _correlationId = Guid.NewGuid();
 
     protected override IEnumerable<DomainEvent> Given()
@@ -19,14 +18,14 @@ public class CeaseFire_WhenTheCannonHasMovedOn_DoesNothing : EarthCommandSpecifi
         foreach (var e in EarthStanding())
             yield return e;
 
-        yield return new EarthShipDetected(Earth, City, _current, ShipClass.Fighter, Guid.NewGuid());
-        yield return new EarthFireOpened(Earth, City, _current, Armory.RoundsPerCity, Guid.NewGuid());
+        yield return new EarthShipDetected(Earth, City, _ship, ShipClass.Fighter, Guid.NewGuid());
+        yield return new EarthShipDestroyed(Earth, City, _ship, Guid.NewGuid());
     }
 
-    protected override CeaseFire When() => new(SharedEarth, SharedShip(_old), _correlationId, Coordinator);
+    protected override OpenFire When() => new(SharedEarth, SharedShip(_ship), _correlationId, Coordinator);
 
-    protected override ICommandHandlerAsync<CeaseFire> OnHandler() =>
-        new CeaseFireCommandHandler(Repository, LoggerFactory);
+    protected override ICommandHandlerAsync<OpenFire> OnHandler() =>
+        new OpenFireCommandHandler(Repository, LoggerFactory);
 
     protected override IEnumerable<DomainEvent> Expect() => [];
 }

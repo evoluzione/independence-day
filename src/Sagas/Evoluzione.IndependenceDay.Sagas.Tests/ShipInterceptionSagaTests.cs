@@ -32,8 +32,6 @@ public class ShipInterceptionSagaTests
     private CityId Gun => new(_gunGuid);
     private CityId Target => new(_cityGuid);
 
-    private InterceptionState? State() => _repository.Peek<InterceptionState>(_correlationId);
-
     private Task Start() =>
     Saga().StartedByAsync(new StartShipInterception(Ship, Target, _correlationId, Coordinator));
 
@@ -62,11 +60,9 @@ public class ShipInterceptionSagaTests
         await Start();
         await Firing();
 
-        Assert.Contains(_gunGuid, State()!.Firing);
-
         await Saga().HandleAsync(new ShipDestroyed(Earth, Ship, Target, _correlationId));
 
-        Assert.Equal(_gunGuid, Guid.Parse(Last<CeaseFire>().CityId.Value));
+        Assert.Equal(_shipGuid, Guid.Parse(Last<CeaseFire>().ShipId.Value));
     }
 
     [Fact]
@@ -78,7 +74,6 @@ public class ShipInterceptionSagaTests
         await Saga().HandleAsync(new CannonJammed(Earth, Gun, Ship, _correlationId));
 
         Assert.Equal(_gunGuid, Guid.Parse(Last<RepairCannon>().CityId.Value));
-        Assert.Empty(State()!.Firing);
     }
 
     [Fact]

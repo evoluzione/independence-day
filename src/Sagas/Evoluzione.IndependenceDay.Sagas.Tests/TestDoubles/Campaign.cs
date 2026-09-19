@@ -351,8 +351,7 @@ public sealed class Campaign
                 _earth.OpenFire(new EarthShipId(Guid.Parse(fire.ShipId.Value)), Guid.NewGuid());
                 break;
             case CeaseFire cease when Skills.HasFlag(Skills.Cease):
-                _earth.CeaseFire(new EarthCityId(Guid.Parse(cease.CityId.Value)),
-                    new EarthShipId(Guid.Parse(cease.ShipId.Value)), Guid.NewGuid());
+                _earth.CeaseFire(new EarthShipId(Guid.Parse(cease.ShipId.Value)), Guid.NewGuid());
                 break;
             case RepairCannon repair when Skills.HasFlag(Skills.Repair):
                 _earth.RepairCannon(new EarthCityId(Guid.Parse(repair.CityId.Value)),
